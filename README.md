@@ -1,2 +1,2 @@
-# momo
-Tagging-based movement modeling
+# **momo**
+Tagging-based **mo**vement **mo**deling
