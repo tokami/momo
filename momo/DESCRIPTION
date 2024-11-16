@@ -1,0 +1,30 @@
+Package: momo
+Type: Package
+Title: Tagging-based movement modeling
+Version: 0.0.0.9000
+Date: 2024-11-16
+Authors@R:
+    c(person("Tobias", "Mildenberger",
+           role = c("aut", "cre"),
+           email = "tobm@dtu.dk",
+           comment = c(ORCID = "0000-0002-6631-7524")),
+    person("Anders","Nielsen",
+           email = "an@dtu.dk",
+           role = "aut",
+           comment = c(ORCID = "0000-0001-9683-9262")))
+Maintainer: Tobias Mildenberger <tobm@dtu.dk>
+Description: Estimate animal movement rates based on tagging data.
+License: GPL (>= 3)
+Depends:
+    R (>= 4.0),
+    RTMB (>= 1.0)
+Imports:
+    Matrix, RTMB, RTMBconvenience, spdep
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+VignetteBuilder: knitr, rmarkdown
+Suggests: knitr, rmarkdown
+URL: https://github.com/tokami/momo
+BugReports: https://github.com/tokami/momo/issues
+NeedsCompilation: yes
+Encoding: UTF-8

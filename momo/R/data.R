@@ -1,0 +1,387 @@
+##' Simulated tags
+##'
+##' @name simTags
+##' @docType data
+##' @author Tobias Mildenberger \email{tobm@dtu.dk}
+##' @references \url{bla bla}
+##' @keywords data
+NULL
+
+
+##' prep.ctags
+##'
+##' @param x Data frame with required information
+##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
+##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
+##' @param speed.limit Optional speed in km/d
+##' @param verbose Print messages?
+##'
+##' @export
+prep.ctags <- function(x,
+                       names,
+                       origin = NULL,
+                       speed.limit = NULL,
+                       verbose = TRUE){
+
+    ## Select columns
+    idx <- names %in% colnames(x)
+    if(sum(idx) != length(names)){
+        stop(paste0(paste(names[!idx],collapse = ","),
+                    " not found in x!"))
+    }
+    res <- x[,match(names,colnames(x))]
+    colnames(res) <- c("t0","t1","x0","x1","y0","y1")
+
+    ## Convert dates
+    if(!is.null(origin)){
+        res$t0 <- lubridate::decimal_date(as.Date(res$t0, origin = origin))
+        res$t1 <- lubridate::decimal_date(as.Date(res$t1, origin = origin))
+    }
+
+    ## Remove tags without release location
+    idx <- which(is.na(res$x0) | is.na(res$y0))
+    if(length(idx) > 0){
+        if(verbose) writeLines(paste0("Removing ", length(idx),
+                          "tags without release location."))
+        res <- res[-idx,]
+    }
+
+    ## Remove tags that are recaptured but miss date or location info
+    recaptured <- !is.na(res$t1) | !is.na(res$x1) | !is.na(res$y1)
+    idx <- which(recaptured & (is.na(res$t1) |
+                               is.na(res$x1) |
+                               is.na(res$y1)))
+    if(length(idx) > 0){
+        if(verbose) writeLines(paste0("Removing ", length(idx),
+                          " recaptured tags with incomplete recapture information (date, location)."))
+        res <- res[-idx,]
+    }
+
+    ## Omit tags with t0 >= t1
+    idx <- which(!is.na(res$t1) & res$t0 >= res$t1)
+    if(length(idx) > 0){
+        if(verbose) writeLines(paste0("Removing ", length(idx)," recaptured tags for which release time is after recapture time (t0 > t1)."))
+        res <- res[-idx,]
+    }
+
+
+    ## Speed filter
+    if(!is.null(speed.limit)){
+        tdiff <- as.numeric(res$t1 - res$t0) * 365
+        dist <- rep(NA, nrow(res))
+        idx <- which(!is.na(res$x1) & !is.na(res$y1))
+        for(i in 1:length(idx)){
+            dist[idx[i]] <- geosphere::distm(cbind(res$x0[idx[i]], res$y0[idx[i]]),
+                                                 cbind(res$x1[idx[i]], res$y1[idx[i]]),
+                                                 fun = geosphere::distGeo) / 1000 ## km
+        }
+        speed <- dist / tdiff
+
+        idx <- which(speed > speed.limit)
+        if(length(idx) > 0){
+            writeLines(paste0("Removing ", length(idx)," recaptured tags that are faster than the provided speed limit(",speed.limit," km/d)."))
+            res <- res[-idx,]
+        }
+    }
+
+    res <- add.class(res, "momo.ctags")
+
+    return(res)
+}
+
+
+
+##' prep.atags
+##'
+##' @param x Data frame with required information
+##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
+##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
+##' @param speed.limit Optional speed in km/d
+##' @param verbose Print messages?
+##'
+##' @export
+prep.atags <- function(x,
+                       names,
+                       origin = NULL,
+                       speed.limit = NULL,
+                       verbose = TRUE){
+
+
+    x0 <- x
+    x <- lapply(seq_along(x), function(i) {
+        x[[i]]$id <- i
+        return(x[[i]])
+    })
+    x <- do.call(rbind, x)
+
+
+    ## Select columns
+    idx <- names %in% colnames(x)
+    if(sum(idx) != length(names)){
+        stop(paste0(paste(names[!idx],collapse = ","),
+                    " not found in x!"))
+    }
+    dat <- x[,match(names,colnames(x))]
+    colnames(dat) <- c("t","x","y")
+    id <- x$id
+
+    ## Convert dates
+    if(!is.null(origin)){
+        dat$t <- lubridate::decimal_date(as.Date(dat$t, origin = origin))
+    }
+
+    res <- split(dat, id)
+
+    res <- add.class(res, "momo.atags")
+
+    return(res)
+}
+
+
+##' prep.env
+##'
+##' @param x Data frame with required information
+##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
+##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
+##' @param verbose Print messages?
+##'
+##' @export
+prep.env <- function(x,
+                     names,
+                     origin = NULL,
+                     verbose = TRUE){
+
+    res <- x
+
+    if(inherits(x, "list")){
+        res <- simplify2array(x)
+    }
+
+    if(length(dim(x)) == 2){
+        res <- array(x, c(dim(x),1))
+    }
+
+    ## if(length(dim(x)) == 3){
+    ##     res <- lapply(seq(dim(x)[3]), function(i) x[,,i])
+    ## }
+
+    res <- add.class(res, "momo.env")
+
+    return(res)
+}
+
+
+##' prep.effort
+##'
+##' @param x Data frame with required information
+##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
+##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
+##' @param verbose Print messages?
+##'
+##' @export
+prep.effort <- function(x,
+                     names,
+                     origin = NULL,
+                     verbose = TRUE){
+
+    res <- x
+
+    if(inherits(x, "list")){
+        res <- simplify2array(x)
+    }
+
+    if(length(dim(x)) == 2){
+        res <- array(x, c(dim(x),1))
+    }
+
+    ## if(length(dim(x)) == 3){
+    ##     res <- lapply(seq(dim(x)[3]), function(i) x[,,i])
+    ## }
+
+    res <- add.class(res, "momo.effort")
+
+    return(res)
+}
+
+
+
+##' setup.momo.data
+##'
+##' @export
+setup.momo.data <- function(grid,
+                            env,
+                            ctags = NULL,
+                            atags = NULL,
+                            effort = NULL,
+                            trange = NULL){
+
+    res <- list()
+
+    env <- check.that.list(env)
+
+    ## Time
+    if(is.null(trange)){
+        dim.tags <- get.dim(ctags, atags)
+        trange <- dim.tags$trange
+    }
+    res$trange[1] <- floor(trange[1])
+    res$trange[2] <- ceiling(trange[2])
+    res$dt <- 1/10
+    res$time.cont <- seq(res$trange[1],
+                         res$trange[2],
+                         res$dt)
+    nt <- length(res$time.cont)
+
+    ## Space
+    res$xygrid <- grid$xygrid
+    res$igrid <- grid$igrid
+    res$celltable <- grid$celltable
+    res$xrange <- attr(grid, "xrange")
+    res$yrange <- attr(grid, "yrange")
+    res$dxdy <- attr(grid, "dxdy")
+    res$xgr <- attr(grid, "xgr")
+    res$ygr <- attr(grid, "ygr")
+    res$xcen <- attr(grid, "xcen")
+    res$ycen <- attr(grid, "ycen")
+    res$nx <- attr(grid, "nx")
+    res$ny <- attr(grid, "ny")
+    res$nextTo <- get.neighbours(res$celltable)
+    res$next.dist <- c(res$dxdy[1],res$dxdy[1],
+                       res$dxdy[2],res$dxdy[2])
+    ## TODO: use sum(res$dxdy^2)/2 for all diagonal neighbours
+
+    ## Env
+    res$env <- env
+    if(!is.null(env)){
+        res$xranges <- matrix(res$xrange, nrow = length(env), ncol = 2, byrow = TRUE)
+        res$yranges <- matrix(res$yrange, nrow = length(env), ncol = 2, byrow = TRUE)
+    }
+
+    ## ctags
+    res$ctags <- ctags
+
+    if(!is.null(ctags)){
+
+        ## TODO: check which tags outside of spatial domain (grid)
+        ## ## Remove tags released outside of spatial domain
+        ## idx <- which(res$x0 < lon.range.mod[1] | res$x0 > lon.range.mod[2] |
+        ##              res$y0 < lat.range.mod[1] | res$y0 > lat.range.mod[2])
+        ## print(length(idx))
+        ## if(length(idx) > 0){
+        ##     writeLines(paste0("Tags released outside of spatial domain: ", length(idx)))
+        ##     res <- res[-idx,]
+        ## }
+
+        ## ## Remove tags recpatured outside of spatial domain
+        ## idx <- which(!is.na(res$x1) & (res$x1 < lon.range.mod[1] |
+        ##                                res$x1 > lon.range.mod[2]) |
+        ##              !is.na(res$y1) & (res$y1 < lat.range.mod[1] |
+        ##                                res$y1 > lat.range.mod[2]))
+        ## print(length(idx))
+        ## if(length(idx) > 0){
+        ##     writeLines(paste0("Tags recaptured outside of spatial domain: ", length(idx),". Removing them."))
+        ##     res <- res[-idx,]
+        ## }
+
+        ## Checks
+        res$ctags <- res$ctags[res$ctags$x0 >= res$xrange[1] &
+                               res$ctags$x0 <= res$xrange[2],]
+
+        res$ctags <- res$ctags[is.na(res$ctags$x1) |
+                               (res$ctags$x1 >= res$xrange[1] &
+                               res$ctags$x1 <= res$xrange[2]),]
+
+        res$ctags <- res$ctags[res$ctags$y0 >= res$yrange[1] &
+                               res$ctags$y0 <= res$yrange[2],]
+
+        res$ctags <- res$ctags[is.na(res$ctags$x1) |
+                               (res$ctags$y1 >= res$yrange[1] &
+                               res$ctags$y1 <= res$yrange[2]),]
+
+
+        ## CHECK: same time step recovery allowed for expm?
+        res$ctags <- res$ctags[is.na(res$ctags$t1) |
+                               res$ctags$t0 != res$ctags$t1,]
+        ## TODO: cut to time step than check if equal?
+
+        ## set t1 non-recpatured tags equal to trange[2]
+        ## later with recapture locations not needed anymore
+        res$ctags$t1[is.na(res$ctags$x1)] <- res$trange[2]
+
+    }
+
+
+    ## atags
+    res$atags <- atags
+
+    if(!is.null(atags)){
+
+        na <- length(atags)
+        res$atags <- vector("list", na)
+        for(a in 1:na){
+            tag <- as.data.frame(atags[[a]])
+            tag$it <- as.integer(cut(tag$t, res$time.cont,
+                                     include.lowest = TRUE))
+            tag$ic <- res$celltable[cbind(as.integer(cut(tag$x, res$xgr)),
+                                          as.integer(cut(tag$y, res$ygr)))]
+            res$atags[[a]] <- tag
+        }
+
+        ## Checks
+        ## Deactivate any archival tag that leaves the grid (NA in ic)
+        for(a in 1:na){
+            tag <- as.data.frame(res$atags[[a]])
+            if(any(is.na(tag$ic))){
+                tag$use <- 0
+            }else{
+                tag$use <- 1
+            }
+            res$atags[[a]] <- tag
+        }
+
+    }
+
+    res$len.mins <- matrix(0, 2, 2)
+
+    ## Effort
+    res$effort <- effort
+
+    if(!is.null(res$effort)){
+
+        if(!inherits(res$effort, "list")) res$effort <- list(res$effort)
+
+        res$xranges.eff <- matrix(res$xrange, nrow = length(res$effort),
+                                  ncol = 2, byrow = TRUE)
+        res$yranges.eff <- matrix(res$yrange, nrow = length(res$effort),
+                                  ncol = 2, byrow = TRUE)
+        res$ne <- 1
+        res$time.cont.eff <- rep(0, 10)
+        res$nm <- 1
+    }else{
+        res$xranges.eff <- matrix(res$xrange, nrow = 1, ncol = 2, byrow = TRUE)
+        res$yranges.eff <- matrix(res$yrange, nrow = 1, ncol = 2, byrow = TRUE)
+
+        res$ne <- 1
+        res$time.cont.eff <- rep(0, 10)
+        res$nm <- 1
+    }
+
+    ieff <- rep(sapply(res$effort, function(x) dim(x)[3]),
+                    each = length(res$time.cont))
+    res$ieff <- matrix(ieff, length(res$effort), length(res$time.cont))
+
+    res$log2steps <- 0
+
+    ## Prediction
+    res$xygrid.pred <- res$xygrid
+    res$igrid.pred <- res$igrid
+    res$time.cont.pred <- res$time.cont
+    res$env.pred <- sapply(env, function(x) seq(min(x), max(x), length.out = 100))
+
+    res$ddt <- 0.01
+    res$eps <- 0.000001
+
+    ## Return
+    res <- add.class(res, "momo.data")
+    return(res)
+}
