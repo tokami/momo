@@ -16,7 +16,7 @@ Maintainer: Tobias Mildenberger <tobm@dtu.dk>
 Description: Estimate animal movement rates based on tagging data.
 License: GPL (>= 3)
 Depends:
-    R (>= 4.0),
+    R (>= 4.4),
     RTMB (>= 1.0)
 Imports:
     Matrix, RTMB, RTMBconvenience, spdep
