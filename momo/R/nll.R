@@ -94,56 +94,59 @@ nll <- function(par, dat){
                 ts <- seq(dat$ctags$t0[i], dat$ctags$t1[i], by = dat$ddt)
                 nts <- length(ts)
 
-                lpC <- lpC.cum <- lpS <- rep(0, nts+1)
+                if(nts > 0){
 
-                for(t in 1:nts){
-                    if(dat$use.taxis){
-                        mxy <- mxy + habitat.tax$grad(mxy, ts[t]) * dat$ddt
-                    }
-                    if(dat$use.advection){
-                        mxy[1] <- mxy[1] + habitat.adv.x$val(mxy, ts[t]) * dat$ddt
-                        mxy[2] <- mxy[2] + habitat.adv.y$val(mxy, ts[t]) * dat$ddt
-                    }
-                    vxy <- vxy + 2 * exp(habitat.dif$val(mxy, ts[t])) * dat$ddt
+                    lpC <- lpC.cum <- lpS <- rep(0, nts+1)
 
-                    if(flag.effort){
-                        e <- 1 ## fleet LATER:
-                        fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * ts[t]) *
-                            effort$val(mxy, ts[t])
-                        tot.mort <- fish.mort + nat.mort
-                        lpS[t+1] <- lpS[t] - tot.mort * dat$ddt
-                        lpC[t+1] <- lpS[t] + log(fish.mort) - log(tot.mort) +
-                            log1p(-exp(-tot.mort * dat$ddt))
-                        lpC.cum[t+1] <- RTMBconvenience::logspace_add(lpC.cum[t],
-                                                                      lpC[t+1])
-                    }
-                }
-                if(flag.effort){
-                    lpC.cum <- RTMBconvenience::logspace_sub(lpC.cum, 0)
-                }
-
-                if(dat$excl.ctags[i] == 0){
-
-                    if(!is.na(dat$ctags$x1[i])){
-
-                        loglik.ctags <- loglik.ctags +
-                            dnorm(dat$ctags$x1[i], mxy[1], sqrt(vxy[1]), TRUE)
-                        res.cx[i] <- (dat$ctags$x1[i] - mxy[1])/sqrt(vxy[1])
-                        loglik.ctags <- loglik.ctags +
-                            dnorm(dat$ctags$y1[i], mxy[2], sqrt(vxy[2]), TRUE)
-                        res.cy[i] <- (dat$ctags$y1[i] - mxy[2])/sqrt(vxy[2])
+                    for(t in 1:nts){
+                        if(dat$use.taxis){
+                            mxy <- mxy + habitat.tax$grad(mxy, ts[t]) * dat$ddt
+                        }
+                        if(dat$use.advection){
+                            mxy[1] <- mxy[1] + habitat.adv.x$val(mxy, ts[t]) * dat$ddt
+                            mxy[2] <- mxy[2] + habitat.adv.y$val(mxy, ts[t]) * dat$ddt
+                        }
+                        vxy <- vxy + 2 * exp(habitat.dif$val(mxy, ts[t])) * dat$ddt
 
                         if(flag.effort){
-                            loglik.ctags <- loglik.ctags + lpC[t+1]
-                            if(!RTMB:::ad_context()){
-                                res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t]),
-                                                   exp(lpC.cum[t+1])))
-                            }
+                            e <- 1 ## fleet LATER:
+                            fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * ts[t]) *
+                                effort$val(mxy, ts[t])
+                            tot.mort <- fish.mort + nat.mort
+                            lpS[t+1] <- lpS[t] - tot.mort * dat$ddt
+                            lpC[t+1] <- lpS[t] + log(fish.mort) - log(tot.mort) +
+                                log1p(-exp(-tot.mort * dat$ddt))
+                            lpC.cum[t+1] <- RTMBconvenience::logspace_add(lpC.cum[t],
+                                                                          lpC[t+1])
                         }
-                    }else if(flag.effort){
-                        loglik.ctags <- loglik.ctags + log1p(-exp(lpC.cum[t+1]))
-                        if(!RTMB:::ad_context()){
-                           res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t+1]), 1))
+                    }
+                    if(flag.effort){
+                        lpC.cum <- RTMBconvenience::logspace_sub(lpC.cum, 0)
+                    }
+
+                    if(dat$excl.ctags[i] == 0){
+
+                        if(!is.na(dat$ctags$x1[i])){
+
+                            loglik.ctags <- loglik.ctags +
+                                dnorm(dat$ctags$x1[i], mxy[1], sqrt(vxy[1]), TRUE)
+                            res.cx[i] <- (dat$ctags$x1[i] - mxy[1])/sqrt(vxy[1])
+                            loglik.ctags <- loglik.ctags +
+                                dnorm(dat$ctags$y1[i], mxy[2], sqrt(vxy[2]), TRUE)
+                            res.cy[i] <- (dat$ctags$y1[i] - mxy[2])/sqrt(vxy[2])
+
+                            if(flag.effort){
+                                loglik.ctags <- loglik.ctags + lpC[t+1]
+                                if(!RTMB:::ad_context()){
+                                    res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t]),
+                                                             exp(lpC.cum[t+1])))
+                                }
+                            }
+                        }else if(flag.effort){
+                            loglik.ctags <- loglik.ctags + log1p(-exp(lpC.cum[t+1]))
+                            if(!RTMB:::ad_context()){
+                                res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t+1]), 1))
+                            }
                         }
                     }
                 }
@@ -170,60 +173,64 @@ nll <- function(par, dat){
 
                 res.axy[[at]] <- matrix(NA, nrow(thisAT), 2)
 
-                obsvar <- exp(2 * par$logSdObsATS)
-                lastt <- as.numeric(thisAT[1,1])
-                lastxy <- as.numeric(thisAT[1,2:3])
-                P <- D <- A <- c(0,0)
+                ## Use tag?
+                if(nrow(thisAT) > 3 && all(thisAT$use == 1)){
 
-                lpS <- lpC <- lpC.cum <- rep(0, nrow(thisAT))
+                    obsvar <- exp(2 * par$logSdObsATS)
+                    lastt <- as.numeric(thisAT[1,1])
+                    lastxy <- as.numeric(thisAT[1,2:3])
+                    P <- D <- A <- c(0,0)
 
-                for(r in 2:nrow(thisAT)){
-                    thist <- thisAT[r,1]
-                    dt <- (thist - lastt)
-                    D <- exp(habitat.dif$val(lastxy, thisAT[r,1]))
-                    if(dat$use.taxis){
-                        T <- habitat.tax$grad(lastxy, thisAT[r,1])
-                    }
-                    if(dat$use.advection){
-                        A[1] <- habitat.adv.x$val(lastxy, thisAT[r,1])
-                        A[2] <- habitat.adv.y$val(lastxy, thisAT[r,1])
-                    }
-                    predxy <- lastxy + (A + T) * dt
-                    PP <- P + 2 * D * dt
-                    if(r == nrow(thisAT)){
-                        F <- PP
-                    }else{
-                        F <- PP + obsvar
-                    }
-                    thisxy <- as.numeric(thisAT[r,2:3])
-                    w <- thisxy - predxy
-                    lastxy <- predxy + PP / F * w
-                    P <- PP - PP / F * PP
-                    lastt <- thist
-                    loglik.atags <- loglik.atags + dnorm(w[1], 0, sqrt(F[1]), TRUE)
-                    loglik.atags <- loglik.atags + dnorm(w[2], 0, sqrt(F[2]), TRUE)
-                    res.axy[[at]][r,1] <- w[1] / sqrt(F[1])
-                    res.axy[[at]][r,2] <- w[2] / sqrt(F[2])
+                    lpS <- lpC <- lpC.cum <- rep(0, nrow(thisAT))
 
+                    for(r in 2:nrow(thisAT)){
+                        thist <- thisAT[r,1]
+                        dt <- (thist - lastt)
+                        D <- exp(habitat.dif$val(lastxy, thisAT[r,1]))
+                        if(dat$use.taxis){
+                            T <- habitat.tax$grad(lastxy, thisAT[r,1])
+                        }
+                        if(dat$use.advection){
+                            A[1] <- habitat.adv.x$val(lastxy, thisAT[r,1])
+                            A[2] <- habitat.adv.y$val(lastxy, thisAT[r,1])
+                        }
+                        predxy <- lastxy + (A + T) * dt
+                        PP <- P + 2 * D * dt
+                        if(r == nrow(thisAT)){
+                            F <- PP
+                        }else{
+                            F <- PP + obsvar
+                        }
+                        thisxy <- as.numeric(thisAT[r,2:3])
+                        w <- thisxy - predxy
+                        lastxy <- predxy + PP / F * w
+                        P <- PP - PP / F * PP
+                        lastt <- thist
+                        loglik.atags <- loglik.atags + dnorm(w[1], 0, sqrt(F[1]), TRUE)
+                        loglik.atags <- loglik.atags + dnorm(w[2], 0, sqrt(F[2]), TRUE)
+                        res.axy[[at]][r,1] <- w[1] / sqrt(F[1])
+                        res.axy[[at]][r,2] <- w[2] / sqrt(F[2])
+
+                        if(flag.effort){
+                            e <- 1 ## fleet LATER:
+                            fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * thist) * effort$val(predxy, thist)
+                            tot.mort <- fish.mort + nat.mort
+                            lpS[r] <- lpS[r-1] - tot.mort * dt
+                            lpC[r] <- lpS[r-1] + log(fish.mort) - log(tot.mort) +
+                                log1p(-exp(-tot.mort * dt))
+                            lpC.cum[r] <- RTMBconvenience::logspace_add(lpC.cum[r-1],
+                                                                        lpC[r])
+                        } ## end effort
+                    }
                     if(flag.effort){
-                        e <- 1 ## fleet LATER:
-                        fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * thist) * effort$val(predxy, thist)
-                        tot.mort <- fish.mort + nat.mort
-                        lpS[r] <- lpS[r-1] - tot.mort * dt
-                        lpC[r] <- lpS[r-1] + log(fish.mort) - log(tot.mort) +
-                            log1p(-exp(-tot.mort * dt))
-                        lpC.cum[r] <- RTMBconvenience::logspace_add(lpC.cum[r-1],
-                                                                    lpC[r])
-                    } ## end effort
-                }
-                if(flag.effort){
-                    loglik.atags <- loglik.atags + lpC[r]
-                    if(!RTMB:::ad_context()){
-                        res.at[at] <- qnorm(runif(1,
-                                            exp(lpC.cum[r-1]),
-                                            exp(lpC.cum[r-1]) +
-                                            fish.mort / tot.mort *
-                                            (1 - exp(-tot.mort * dt))))
+                        loglik.atags <- loglik.atags + lpC[r]
+                        if(!RTMB:::ad_context()){
+                            res.at[at] <- qnorm(runif(1,
+                                                      exp(lpC.cum[r-1]),
+                                                      exp(lpC.cum[r-1]) +
+                                                      fish.mort / tot.mort *
+                                                      (1 - exp(-tot.mort * dt))))
+                        }
                     }
                 }
             }
@@ -295,7 +302,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                4 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate -------------------------
@@ -481,7 +488,7 @@ nll <- function(par, dat){
                 res.axy[[a]] <- matrix(NA, itmax, 2)
 
                 ## Use tag?
-                if(all(tag$use == 1)){
+                if(itmax > 3 && all(tag$use == 1)){
 
                     ## Distribution probability
                     dist.prob <- RTMB::matrix(0, itmax, ncem)
@@ -622,16 +629,16 @@ nll <- function(par, dat){
                             xres.cum <- c(0, cumsum(xres))
                             xres.cum <- xres.cum / xres.cum[length(xres.cum)]
                             res.axy[[a]][t,1] <- qnorm(runif(1,
-                                                       xres.cum[dat$igrid$idx[recapLoc]],
-                                                       xres.cum[dat$igrid$idx[recapLoc] + 1]))
+                                                             xres.cum[dat$igrid$idx[recapLoc]],
+                                                             xres.cum[dat$igrid$idx[recapLoc] + 1]))
                             yres.cum <- c(0,
-                                      cumsum(dist.prob[t,
-                                                       dat$igrid$idx ==
-                                                       dat$igrid$idx[recapLoc]]))
+                                          cumsum(dist.prob[t,
+                                                           dat$igrid$idx ==
+                                                           dat$igrid$idx[recapLoc]]))
                             yres.cum <- yres.cum / yres.cum[length(yres.cum)]
                             res.axy[[a]][t,2] <- qnorm(runif(1,
-                                                       yres.cum[dat$igrid$idy[recapLoc]],
-                                                       yres.cum[dat$igrid$idy[recapLoc] + 1]))
+                                                             yres.cum[dat$igrid$idy[recapLoc]],
+                                                             yres.cum[dat$igrid$idy[recapLoc] + 1]))
                         }
                     }
 
