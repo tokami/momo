@@ -502,26 +502,26 @@ nll <- function(par, dat){
                         j = 2
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
+                            tmp[ind,1] / (2 * dat$next.dist[j-1])
                         j = 3
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
+                            -tmp[ind,1] / (2 * dat$next.dist[j-1])
                         j = 4
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
+                            tmp[ind,2] / (2 * dat$next.dist[j-1])
                         j = 5
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * tmp[ind,2] / dat$next.dist[j-1]
+                            - tmp[ind,2] / (2 * dat$next.dist[j-1])
 
                         ## Diffusion rate ---------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                4 * exp(hD[ind]) / (dat$next.dist[j-1])^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate ---------------------
@@ -589,15 +589,25 @@ nll <- function(par, dat){
 
                     } ## end of time loop
 
+
                     ## Likelihood contribution -----------------------------
-                    for(t in 2:itmax){
-                        tmp <- log(sum(dist.prob[t,1:nc] *
-                                    dnorm(tag$x[t],
-                                          dat$xcen[dat$igrid$idx], sdObsATS) *
-                                    dnorm(tag$y[t],
-                                          dat$ycen[dat$igrid$idy], sdObsATS)))
-                        loglik.atags <- loglik.atags - tmp
+                    for(t in 2:(itmax-1)){
+                        ## tmp <- log(sum(dist.prob[t,1:nc] *
+                        ##                dnorm(dat$xygrid[,1], tag$x[t], sdObsATS) *
+                        ##                dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)) +
+                        ##            1e-10)
+                        ## tmp <- log(
+                        ##     sum(dist.prob[t,1:nc] *
+                        ##         (pnorm(dat$xgr[dat$igrid$idx+1], tag$x[t], sdObsATS) -
+                        ##          pnorm(dat$xgr[dat$igrid$idx], tag$x[t], sdObsATS)) *
+                        ##         (pnorm(dat$ygr[dat$igrid$idy+1], tag$y[t], sdObsATS) -
+                        ##          pnorm(dat$ygr[dat$igrid$idy], tag$y[t], sdObsATS))))
+                        tmp <- log(dist.prob[t, tag$ic[t]])
+                        loglik.atags <- loglik.atags + tmp
                     }
+                    loglik.atags <- loglik.atags +
+                        log(dist.prob[itmax,tag$ic[itmax]])
+
 
                     if(!RTMB:::ad_context()){
 
