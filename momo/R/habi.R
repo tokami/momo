@@ -5,7 +5,7 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS){
 
     dxfield <- function(field, xr){
         ret <- matrix(0, nrow(field), ncol(field))
-        onedx <- (xr[2] - xr[1]) / (nrow(field)) ##  - 1)
+        onedx <- (xr[2] - xr[1]) / nrow(field) ## WHY: (nrow(field) - 1)
         twodx <- 2 * onedx
         for(i in 2:(nrow(field)-1)){
             ret[i,] <- (field[i+1,] - field[i-1,]) / twodx
