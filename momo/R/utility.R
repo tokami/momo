@@ -535,6 +535,7 @@ get.diag <- function(fit){
         }else{
             tmp <- data.frame(fit$dat$ctags,
                               resid = fit$rep[[var]])
+            tmp <- tmp[fit$conf$excl.ctags == 0,]
         }
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
@@ -547,7 +548,7 @@ get.diag <- function(fit){
                                                     spdep::dnearneigh(
                                                                tmp[,c("x1","y1")],
                                                                d1 = 0,
-                                                               d2 = mean(fit$dat$dxdy)))))
+                                                               d2 = 2 * mean(fit$dat$dxdy)))))
         if(do.box){
             res$box <- Box.test(tmp$resid, lag = 4, type = "Ljung-Box", fitdf = 1)
         }
