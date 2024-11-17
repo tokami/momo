@@ -81,7 +81,8 @@ fit.momo <- function(dat,
                                   "mins). Model ", "not "[opt$convergence],
                                   "converged. Estimating uncertainty."))
 
-    rep <- obj$report()
+    ## rep <- obj$report()
+    rep <- list() ## HERE:
 
     res <- list(dat = dat,
                 conf = conf,

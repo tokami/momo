@@ -7,7 +7,7 @@
 get.diag(fit)
 }
 \arguments{
-\item{celltable}{celltable}
+\item{fit}{fit}
 }
 \description{
 Get neighbours for each cell of a grid

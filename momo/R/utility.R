@@ -517,7 +517,7 @@ get.sim.funcs <- function(funcs = NULL, dat, conf, env, par){
 
 ##' Get neighbours for each cell of a grid
 ##'
-##' @param celltable celltable
+##' @param fit fit
 ##'
 ##' @export
 get.diag <- function(fit){
@@ -573,4 +573,49 @@ get.diag <- function(fit){
     }
 
     return(fit)
+}
+
+
+
+get.adv <- function(dat, par, conf, funcs = NULL){
+    par <- get.sim.par(par)
+    env <- check.that.list(dat$env)
+    dat$env <- env
+    dat$env.pred <- NULL
+    conf <- def.conf(dat)
+    funcs <- get.sim.funcs(funcs, dat, conf, env, par)
+    hTdx.true <- sapply(dat$time.cont.pred,
+                        function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[1]))
+    hTdy.true <- sapply(dat$time.cont.pred,
+                        function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[2]))
+    uv.true <- matrix(NA, nrow(dat$xygrid), 2)
+    uv.true[,1] <- rowMeans(hTdx.true)
+    uv.true[,2] <- rowMeans(hTdy.true)
+
+    return(uv.true)
+}
+
+
+##' Get peclet number
+##'
+##' @param grid grid
+##'
+##' @export
+get.peclet <- function(grid, env, par){
+
+    dat <- setup.momo.data(grid = grid,
+                           env = env)
+    conf <- def.conf(dat)
+
+    uv <- get.adv(dat, par, conf)
+
+    ## Péclet number
+    peclet <- data.frame(u = uv[,1] * dat$dxdy[1]/mean(exp(par$beta)),
+                         v = uv[,2] * dat$dxdy[2]/mean(exp(par$beta)))
+    ## TODO: make similar get.dif function!
+
+    ## For numerical stability: PE <= 2
+    ## or: u/D <= 2/\{Delta}x
+
+    return(peclet)
 }

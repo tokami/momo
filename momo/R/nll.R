@@ -283,19 +283,19 @@ nll <- function(par, dat){
                         j = 2
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,1] / (2 * dat$next.dist[j-1])
+                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 3
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -tmp[ind,1] / (2 * dat$next.dist[j-1])
+                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 4
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,2] / (2 * dat$next.dist[j-1])
+                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
                         j = 5
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - tmp[ind,2] / (2 * dat$next.dist[j-1])
+                            - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
 
                         ## Diffusion rate --------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
@@ -509,19 +509,19 @@ nll <- function(par, dat){
                         j = 2
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,1] / (2 * dat$next.dist[j-1])
+                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 3
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -tmp[ind,1] / (2 * dat$next.dist[j-1])
+                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 4
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,2] / (2 * dat$next.dist[j-1])
+                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
                         j = 5
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - tmp[ind,2] / (2 * dat$next.dist[j-1])
+                            - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
 
                         ## Diffusion rate ---------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
