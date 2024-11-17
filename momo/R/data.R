@@ -221,8 +221,12 @@ setup.momo.data <- function(grid,
 
     ## Time
     if(is.null(trange)){
-        dim.tags <- get.dim(ctags, atags)
-        trange <- dim.tags$trange
+        if(!is.null(ctags) || !is.null(atags)){
+            dim.tags <- get.dim(ctags, atags)
+            trange <- dim.tags$trange
+        }else{
+            trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
+        }
     }
     res$trange[1] <- floor(trange[1])
     res$trange[2] <- ceiling(trange[2])
