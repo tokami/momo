@@ -325,7 +325,7 @@ sim.atags <- function(grid,
         return(ret)
     }
 
-    res <- replicate(n, dooneAT())
+    res <- replicate(n, dooneAT(by = by, sdObs = exp(par$logSdObsATS)))
     res <- res[lapply(res, nrow) > 3]
 
     return(res)
