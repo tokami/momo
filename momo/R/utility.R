@@ -548,7 +548,7 @@ get.diag <- function(fit){
                                              spdep::dnearneigh(
                                                         tmp[,c("x1","y1")],
                                                         d1 = 0,
-                                                        d2 = 1.5 * mean(fit$dat$dxdy)))))
+                                                        d2 =  mean(fit$dat$dxdy)))))
         if(inherits(moransI, "try-error")){
             moransI <- list(p.value = NA)
         }
