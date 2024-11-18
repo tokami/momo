@@ -10,7 +10,7 @@ def.par <- function(dat, conf){
     par <- list()
 
     ## Taxis
-    par$alpha <- matrix(rep(0, length(conf$knots.tax)),
+    par$alpha <- matrix(rep(1, length(conf$knots.tax)),
                         nrow(conf$knots.tax),
                         ncol(conf$knots.tax))
 

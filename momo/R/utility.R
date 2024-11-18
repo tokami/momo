@@ -451,7 +451,7 @@ get.env.funcs <- function(dat, conf, par){
 
 get.sim.par <- function(par = NULL){
 
-    par.out <- list(alpha = matrix(c(0, 0.1, 0.001), 3, 1),
+    par.out <- list(alpha = matrix(c(1, 1.1, 1.001), 3, 1),
                     beta = matrix(log(0.02), 1, 1),
                     gamma = matrix(0, 2, 1),
                     logLambda = matrix(log(0.5), 1, 1),
