@@ -560,7 +560,7 @@ plotmomo.resid <- function(fit,
         abline(h = 0, lty = 3)
         points(x, resid, pch = 1)
         box(lwd = 1.5)
-        if(!is.null(pval)){
+        if(!is.null(pval) && !is.na(pval)){
             title(paste0("Bias p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
                                get.momo.cols(1, type = "pos"),
@@ -580,7 +580,7 @@ plotmomo.resid <- function(fit,
         ## legend('topright', legend=NA, title = txt, col=2,
         ##        bty='n', pt.cex=0, text.col=2)
         box(lwd = 1.5)
-        if(!is.null(pval)){
+        if(!is.null(pval) && !is.na(pval)){
             title(paste0("LBox p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
                                     get.momo.cols(1, type = "pos"),
@@ -593,7 +593,7 @@ plotmomo.resid <- function(fit,
                main = "")  ## ylim = range(resi[is.finite(resi)]),
         qqline(resid)
         box(lwd = 1.5)
-        if(!is.null(pval)){
+        if(!is.null(pval) && !is.na(pval)){
             title(paste0("Shapiro p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
                                get.momo.cols(1, type = "pos"),
@@ -616,10 +616,11 @@ plotmomo.resid <- function(fit,
                                get.momo.cols(1, type = "neg")))
         box(lwd = 1.5)
         if(!is.null(pval)){
-            title(paste0("Moran's I p-val: ", signif(pval,5)),
-                  col.main = ifelse(pval >= 0.05,
+            coli <- ifelse(pval >= 0.05,
                                get.momo.cols(1, type = "pos"),
-                               get.momo.cols(1, type = "neg")))
+                               get.momo.cols(1, type = "neg"))
+            title(paste0("Moran's I p-val: ", signif(pval,5)),
+                  col.main = ifelse(is.na(coli), "grey50", coli))
         }
     }
 

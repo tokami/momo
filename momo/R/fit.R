@@ -26,6 +26,7 @@ fit.momo <- function(dat,
                      rel.tol = 1e-10,
                      verbose = TRUE,
                      do.sdreport = TRUE,
+                     do.report = TRUE,
                      ...){
 
     ## RTMB does not allow you to pass the dat to MakeADFun
@@ -81,16 +82,18 @@ fit.momo <- function(dat,
                                   "mins). Model ", "not "[opt$convergence],
                                   "converged. Estimating uncertainty."))
 
-    ## rep <- obj$report()
-    rep <- list() ## HERE:
-
     res <- list(dat = dat,
                 conf = conf,
                 opt = opt,
                 obj = obj,
-                rep = rep,
                 low = lower,
                 hig = upper)
+
+    if(do.report){
+        rep <- obj$report()
+        res$rep <- rep
+    }
+
 
     if(do.sdreport){
         sdrep <- sdreport(obj = obj,

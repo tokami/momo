@@ -541,14 +541,19 @@ get.diag <- function(fit){
         tmp <- tmp[order(tmp$t1),]
 
         res <- list(mean = mean(tmp$resid, na.rm = TRUE),
-                    ttest = t.test(tmp$resid),
-                    moransI = spdep::moran.test(
-                                         tmp$resid,
-                                         spdep::nb2listw(
-                                                    spdep::dnearneigh(
-                                                               tmp[,c("x1","y1")],
-                                                               d1 = 0,
-                                                               d2 = 2 * mean(fit$dat$dxdy)))))
+                    ttest = t.test(tmp$resid))
+        moransI <- try(spdep::moran.test(
+                                  tmp$resid,
+                                  spdep::nb2listw(
+                                             spdep::dnearneigh(
+                                                        tmp[,c("x1","y1")],
+                                                        d1 = 0,
+                                                        d2 = 1.5 * mean(fit$dat$dxdy)))))
+        if(inherits(moransI, "try-error")){
+            moransI <- list(p.value = NA)
+        }
+        res$moransI <- moransI
+
         if(do.box){
             res$box <- Box.test(tmp$resid, lag = 4, type = "Ljung-Box", fitdf = 1)
         }
