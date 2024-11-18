@@ -279,48 +279,30 @@ nll <- function(par, dat){
                             Cstar <- Ostar <- RTMB::matrix(0, ncem, ncem)
 
                         ## Taxis rate -----------------------
-                        ## tmp <- habitat.tax$grad(dat$xygrid, dat$time.cont[itabs])
-                        ## j = 2
-                        ## ind <- which(!is.na(dat$nextTo[,j]))
-                        ## Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                        ##     0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        ## j = 3
-                        ## ind <- which(!is.na(dat$nextTo[,j]))
-                        ## Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                        ##     -0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        ## j = 4
-                        ## ind <- which(!is.na(dat$nextTo[,j]))
-                        ## Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                        ##     0.5 * tmp[ind,2] / dat$next.dist[j-1]
-                        ## j = 5
-                        ## ind <- which(!is.na(dat$nextTo[,j]))
-                        ## Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                        ##     - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
-
                         tmp <- habitat.tax$grad(dat$xygrid, dat$time.cont[itabs])
                         j = 2
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,1]
+                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 3
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - tmp[ind,1]
+                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
                         j = 4
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            tmp[ind,2]
+                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
                         j = 5
                         ind <- which(!is.na(dat$nextTo[,j]))
                         Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - tmp[ind,2]
+                            - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
 
                         ## Diffusion rate --------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                2 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate -------------------------
