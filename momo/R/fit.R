@@ -66,7 +66,7 @@ fit.momo <- function(dat,
 
     t1 <- Sys.time()
     opt <- nlminb(obj$par, obj$fn, obj$gr,
-                  control = list(trace = 1,
+                  control = list(trace = as.integer(verbose),
                                  eval.max = 2000,
                                  iter.max = 1000,
                                  rel.tol = rel.tol),
