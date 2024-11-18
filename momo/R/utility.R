@@ -267,7 +267,7 @@ get.momo.cols <- function(n = 1, alpha = 1, type = NULL){
     }else if(type == "true"){
         adjustcolor("darkorange", alpha)
     }else if(type == "pos"){
-        adjustcolor("chartreuse4", alpha)
+        adjustcolor("dodgerblue3", alpha)
     }else if(type == "neg"){
         adjustcolor("firebrick3", alpha)
     }else{

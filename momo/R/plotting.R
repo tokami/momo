@@ -101,9 +101,11 @@ plotmomo.env <- function(env,
         }
         box(lwd = 1.5)
     }
-    mtext(xlab, 1, 1, outer = TRUE)
-    mtext(ylab, 2, 1, outer = TRUE)
-    mtext(main, 3, 0, outer = TRUE)
+    if(!keep.par){
+        mtext(xlab, 1, 1, outer = TRUE)
+        mtext(ylab, 2, 1, outer = TRUE)
+        mtext(main, 3, 0, outer = TRUE)
+    }
 
 
     return(invisible(NULL))
@@ -359,6 +361,7 @@ plotmomo.taxis <- function(x,
                            funcs = NULL,
                            env = NULL,
                            alpha = 0.5,
+                           main = "Taxis",
                            keep.par = FALSE,
                            ...){
 
@@ -421,7 +424,7 @@ plotmomo.taxis <- function(x,
          ylim = attr(x,"yrange"),
          xlab = "x",
          ylab = "y",
-         main = "True advection")
+         main = main)
         par <- get.sim.par(par)
         env <- check.that.list(env)
         dat <- setup.momo.data(grid, env, trange = c(0,
@@ -440,8 +443,8 @@ plotmomo.taxis <- function(x,
         uv.true[,2] <- rowMeans(hTdy.true)
         arrows(x$xygrid[,1],
                x$xygrid[,2],
-               x$xygrid[,1]+uv.true[,1],
-               x$xygrid[,2]+uv.true[,2],
+               x$xygrid[,1]+uv.true[,1] * cor,
+               x$xygrid[,2]+uv.true[,2] * cor,
                length = .1)
         ## uv.true <- t(apply(x$xygrid, 1, function(xy)
         ##     taxis.fun(xy,1)))
@@ -461,6 +464,9 @@ plotmomo.taxis <- function(x,
 plotmomo.dif <- function(x,
                          cor = 20,
                          par = NULL,
+                         funcs = NULL,
+                         env = NULL,
+                         main = "Diffusion",
                          keep.par = FALSE,
                          ...){
 
@@ -506,13 +512,22 @@ plotmomo.dif <- function(x,
          ylim = attr(x,"yrange"),
          xlab = "x",
          ylab = "y",
-         main = "True diffusion")
-        dif.true <- t(apply(x$dat$xygrid, 1, function(xy)
-            diffusion.fun(xy,NA,par)))
+         main = main)
+        par <- get.sim.par(par)
+        env <- check.that.list(env)
+        dat <- setup.momo.data(grid, env, trange = c(0,
+                                                     max(sapply(env,
+                                                                function(x) dim(x)[3]))))
+        conf <- def.conf(dat)
+        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
 
-        points(x$dat$xygrid[,1],
-               x$dat$xygrid[,2],
-               cex = sqrt(dif.true) * cor)
+        D.true <- sapply(dat$time.cont.pred,
+                         function(t) apply(dat$xygrid.pred, 1,
+                                           function(x) exp(funcs$dif(x,t)[1])))
+
+        points(dat$xygrid[,1],
+               dat$xygrid[,2],
+               cex = sqrt(rowMeans(D.true)) * cor)
     }
 }
 

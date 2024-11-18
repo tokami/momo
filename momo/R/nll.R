@@ -302,7 +302,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                2 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate -------------------------
@@ -528,7 +528,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                2 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate ---------------------
@@ -599,10 +599,14 @@ nll <- function(par, dat){
 
                     ## Likelihood contribution -----------------------------
                     for(t in 2:(itmax-1)){
+                        ## px <- dnorm(dat$xygrid[,1], tag$x[t], sdObsATS)
+                        ## px <- px/sum(px)
+                        ## py <- dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)
+                        ## py <- py/sum(py)
+                        ## tmp <- log(sum(dist.prob[t,1:nc] * px * py))
                         ## tmp <- log(sum(dist.prob[t,1:nc] *
                         ##                dnorm(dat$xygrid[,1], tag$x[t], sdObsATS) *
-                        ##                dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)) +
-                        ##            1e-10)
+                        ##                dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)))
                         ## tmp <- log(
                         ##     sum(dist.prob[t,1:nc] *
                         ##         (pnorm(dat$xgr[dat$igrid$idx+1], tag$x[t], sdObsATS) -
