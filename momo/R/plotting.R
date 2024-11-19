@@ -701,13 +701,13 @@ plotmomo.resid <- function(fit,
                                get.momo.cols(1, type = "pos"),
                                get.momo.cols(1, type = "neg")))
         box(lwd = 1.5)
-        if(!is.null(pval)){
-            coli <- ifelse(pval >= 0.05,
-                               get.momo.cols(1, type = "pos"),
-                               get.momo.cols(1, type = "neg"))
-            title(paste0("Moran's I p-val: ", signif(pval,5)),
-                  col.main = ifelse(is.na(coli), "grey50", coli))
-        }
+        ## if(!is.null(pval)){
+        ##     coli <- ifelse(pval >= 0.05,
+        ##                        get.momo.cols(1, type = "pos"),
+        ##                        get.momo.cols(1, type = "neg"))
+        ##     title(paste0("Moran's I p-val: ", signif(pval,5)),
+        ##           col.main = ifelse(is.na(coli), "grey50", coli))
+        ## }
     }
 
     if(fit$conf$use.ctags){

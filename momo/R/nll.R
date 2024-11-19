@@ -302,7 +302,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                exp(hD[ind]) / dat$next.dist[j-1]^2
+                                1.5 * exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate -------------------------
@@ -528,7 +528,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                exp(hD[ind]) / dat$next.dist[j-1]^2
+                                1.5 * exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
                         ## Advection rate ---------------------
