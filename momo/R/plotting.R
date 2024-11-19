@@ -271,6 +271,8 @@ plotmomo.pref <- function(x,
                           type = "taxis",
                           ci = 0.95,
                           par = NULL,
+                          funcs = NULL,
+                          env = NULL,
                           keep.par = FALSE,
                           ...){
 
@@ -353,7 +355,7 @@ plotmomo.pref <- function(x,
             get.true.pref <- momo:::poly.fun(knots,  par.true)
 
             lines(env.pred[,i], get.true.pref(env.pred[,i]),
-                  col = get.momo.cols(1, 0.7, type = "true"), lwd = 1)
+                  col = get.momo.cols(1, 0.7, type = "true"), lwd = 3)
             points(knots, par.true,
                    col = get.momo.cols(1, 0.7, type = "true"),
                    pch = 15, cex = 1.2)
@@ -371,7 +373,53 @@ plotmomo.pref <- function(x,
 
     }else{
 
-       stop("fit needed, right?")
+        i = 1
+
+
+        par <- get.sim.par(par)
+        env <- check.that.list(env)
+        dat <- setup.momo.data(grid, env, trange = c(0,
+                                                     max(sapply(env,
+                                                                function(x) dim(x)[3]))))
+        conf <- def.conf(dat)
+        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
+
+        env.pred <- dat$env.pred
+
+        xlims <- apply(dat$env.pred, 2, range)
+
+        if(!is.null(par)) par.true <- par$alpha[,i]
+
+        knots <- conf$knots.tax[,i]
+
+        get.true.pref <- momo:::poly.fun(knots,  par.true)
+
+        pref <- get.true.pref(dat$env.pred[,i])
+
+        ylims <- range(pref)
+
+        if(!is.null(par)) ylims <- range(ylims, par.true)
+
+        cols <- get.momo.cols(2)
+        alpha <- 0.3
+
+        plot(NA, ty = 'n',
+             xlim = xlims,
+             ylim = ylims,
+             ylab = "",
+             xlab = "")
+
+        lines(env.pred[,i], pref,
+              col = get.momo.cols(1, 0.7, type = "true"), lwd = 3)
+        points(knots, par.true,
+               col = get.momo.cols(1, 0.7, type = "true"),
+               pch = 15, cex = 1.2)
+        legend("topright",
+               legend = c("est.", "true"),
+               col = c(cols[i], get.momo.cols(1, 0.7, type = "true")),
+               pch = c(16,15), bg = "white")
+        box(lwd=1.5)
+
     }
 }
 
