@@ -649,8 +649,8 @@ plotmomo.resid <- function(fit,
         if(!is.null(pval) && !is.na(pval)){
             title(paste0("Bias p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
-                               get.momo.cols(1, type = "pos"),
-                               get.momo.cols(1, type = "neg")))
+                               get.momo.cols(1, type = "notsig"),
+                               get.momo.cols(1, type = "sig")))
         }
     }
 
@@ -669,8 +669,8 @@ plotmomo.resid <- function(fit,
         if(!is.null(pval) && !is.na(pval)){
             title(paste0("LBox p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
-                                    get.momo.cols(1, type = "pos"),
-                                    get.momo.cols(1, type = "neg")))
+                                    get.momo.cols(1, type = "notsig"),
+                                    get.momo.cols(1, type = "sig")))
         }
     }
 
@@ -682,8 +682,8 @@ plotmomo.resid <- function(fit,
         if(!is.null(pval) && !is.na(pval)){
             title(paste0("Shapiro p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
-                               get.momo.cols(1, type = "pos"),
-                               get.momo.cols(1, type = "neg")))
+                               get.momo.cols(1, type = "notsig"),
+                               get.momo.cols(1, type = "sig")))
         }
     }
 
@@ -703,8 +703,8 @@ plotmomo.resid <- function(fit,
         box(lwd = 1.5)
         ## if(!is.null(pval)){
         ##     coli <- ifelse(pval >= 0.05,
-        ##                        get.momo.cols(1, type = "pos"),
-        ##                        get.momo.cols(1, type = "neg"))
+        ##                        get.momo.cols(1, type = "notsig"),
+        ##                        get.momo.cols(1, type = "sig"))
         ##     title(paste0("Moran's I p-val: ", signif(pval,5)),
         ##           col.main = ifelse(is.na(coli), "grey50", coli))
         ## }

@@ -270,6 +270,10 @@ get.momo.cols <- function(n = 1, alpha = 1, type = NULL){
         adjustcolor("dodgerblue3", alpha)
     }else if(type == "neg"){
         adjustcolor("firebrick3", alpha)
+    }else if(type == "notsig"){
+        adjustcolor("chartreuse4", alpha)
+    }else if(type == "sig"){
+        adjustcolor("firebrick3", alpha)
     }else{
         adjustcolor(c("dodgerblue3","goldenrod2",
                       "darkgreen","purple",
