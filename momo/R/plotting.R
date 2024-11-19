@@ -90,7 +90,7 @@ plotmomo.env <- function(env,
              ylab = "")
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
         contour(x, y, env[,,i], add = TRUE)
-        legend("topleft", legend = paste0("Field ", i),
+        if(nt > 1) legend("topleft", legend = paste0("Field ", i),
                bg = "white", pch = NA)
         if(plot.land){
             maps::map("world",
@@ -175,10 +175,20 @@ plotmomo.ctags <- function(ctags,
                            main = "Conventional tags",
                            plot.land = FALSE,
                            keep.par = FALSE,
+                           xlim = NULL,
+                           ylim = NULL,
                            ...){
 
-    xlims <- range(ctags$x0, ctags$x1, na.rm = TRUE)
-    ylims <- range(ctags$y0, ctags$y1, na.rm = TRUE)
+    if(is.null(xlim)){
+        xlims <- range(ctags$x0, ctags$x1, na.rm = TRUE)
+    }else{
+        xlims <- xlim
+    }
+    if(is.null(ylim)){
+        ylims <- range(ctags$y0, ctags$y1, na.rm = TRUE)
+    }else{
+        ylims <- ylim
+    }
 
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
@@ -212,7 +222,20 @@ plotmomo.ctags <- function(ctags,
 plotmomo.atags <- function(atags,
                            main = "Archival tags",
                            keep.par = FALSE,
+                           xlim = NULL,
+                           ylim = NULL,
                            ...){
+
+    if(is.null(xlim)){
+        xlims <- range(sapply(atags, function(x) range(x[,2])))
+    }else{
+        xlims <- xlim
+    }
+    if(is.null(ylim)){
+        ylims <- range(sapply(atags, function(x) range(x[,3])))
+    }else{
+        ylims <- ylim
+    }
 
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
@@ -223,8 +246,8 @@ plotmomo.atags <- function(atags,
     cols <- get.momo.cols(2)
 
     plot(0,0, ty = "n", main = main,
-         xlim = range(sapply(atags, function(x) range(x[,2]))),
-         ylim = range(sapply(atags, function(x) range(x[,3]))),
+         xlim = xlims,
+         ylim = ylims,
          xlab = "x", ylab = "y")
     for(i in 1:length(atags)){
         points(atags[[i]][1,2], atags[[i]][1,3], col = cols[1], pch = 1)
