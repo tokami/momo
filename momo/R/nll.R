@@ -71,6 +71,13 @@ nll <- function(par, dat){
                              dat$ieff, dat$time.cont)
     }
 
+    if(dat$use.boundaries){
+    bound <- habi.light(dat$boundaries,
+                             dat$xranges + c(-1,1) * dat$dxdy[1],
+                             dat$yranges + c(-1,1) * dat$dxdy[2],
+                        dat$ibound, dat$time.cont)
+    }
+
 
     if(dat$use.kf){
 
@@ -99,14 +106,23 @@ nll <- function(par, dat){
                     lpC <- lpC.cum <- lpS <- rep(0, nts+1)
 
                     for(t in 1:nts){
+                        move <- c(0,0)
                         if(dat$use.taxis){
-                            mxy <- mxy + habitat.tax$grad(mxy, ts[t]) * dat$ddt
+                            move <- move + habitat.tax$grad(mxy, ts[t]) * dat$ddt
                         }
                         if(dat$use.advection){
-                            mxy[1] <- mxy[1] + habitat.adv.x$val(mxy, ts[t]) * dat$ddt
-                            mxy[2] <- mxy[2] + habitat.adv.y$val(mxy, ts[t]) * dat$ddt
+                            move <- move + c(habitat.adv.x$val(mxy, ts[t]),
+                                             habitat.adv.y$val(mxy, ts[t])) * dat$ddt
                         }
-                        vxy <- vxy + 2 * exp(habitat.dif$val(mxy, ts[t])) * dat$ddt
+                        if(dat$use.boundaries){
+                            move <- move * bound$val(mxy, ts[t])
+                        }
+                        dif <- exp(habitat.dif$val(mxy, ts[t]))
+                        if(dat$use.boundaries){
+                            dif <- dif * bound$val(mxy, ts[t])
+                        }
+                        mxy <- mxy + move
+                        vxy <- vxy + 2 * dif * dat$ddt
 
                         if(flag.effort){
                             e <- 1 ## fleet LATER:
@@ -184,18 +200,25 @@ nll <- function(par, dat){
                     lpS <- lpC <- lpC.cum <- rep(0, nrow(thisAT))
 
                     for(r in 2:nrow(thisAT)){
+                        move <- c(0,0)
                         thist <- thisAT[r,1]
                         dt <- (thist - lastt)
-                        D <- exp(habitat.dif$val(lastxy, thisAT[r,1]))
                         if(dat$use.taxis){
-                            T <- habitat.tax$grad(lastxy, thisAT[r,1])
+                            move <- move + habitat.tax$grad(lastxy, thisAT[r,1]) * dt
                         }
                         if(dat$use.advection){
-                            A[1] <- habitat.adv.x$val(lastxy, thisAT[r,1])
-                            A[2] <- habitat.adv.y$val(lastxy, thisAT[r,1])
+                            move <- move + c(habitat.adv.x$val(lastxy, thisAT[r,1]),
+                                             habitat.adv.y$val(lastxy, thisAT[r,1])) * dt
                         }
-                        predxy <- lastxy + (A + T) * dt
-                        PP <- P + 2 * D * dt
+                        if(dat$use.boundaries){
+                            move <- move * bound$val(lastxy, thisAT[r,1])
+                        }
+                        dif <- exp(habitat.dif$val(lastxy, thisAT[r,1]))
+                        if(dat$use.boundaries){
+                            dif <- dif * bound$val(lastxy, thisAT[r,1])
+                        }
+                        predxy <- lastxy + move
+                        PP <- P + 2 * dif * dt
                         if(r == nrow(thisAT)){
                             F <- PP
                         }else{
@@ -275,66 +298,54 @@ nll <- function(par, dat){
                         itabs <- itrel + t - 1
 
                         ## Set to zero
-                        Zstar <- Dstar <- Astar <-
+                        Astar <- Dstar <-
                             Cstar <- Ostar <- RTMB::matrix(0, ncem, ncem)
 
-                        ## Taxis rate -----------------------
-                        tmp <- habitat.tax$grad(dat$xygrid, dat$time.cont[itabs])
-                        j = 2
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        j = 3
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        j = 4
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
-                        j = 5
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
+                        ## Active & passive advection -----------------------
+                        move <- matrix(0, nc, 2)
+                        if(dat$use.taxis){
+                            move <- move +
+                                habitat.tax$grad(dat$xygrid,
+                                                 dat$time.cont[itabs])
+                        }
+                        if(dat$use.advection){ ## but matrix not mass-balanced
+                            move <- move +
+                                c(habitat.adv.x$val(dat$xygrid,
+                                                    dat$time.cont[itabs]),
+                                  habitat.adv.y$val(dat$xygrid,
+                                                    dat$time.cont[itabs]))
+                        }
+                        if(dat$use.boundaries){
+                            move <- move * bound$val(dat$xygrid,
+                                                     dat$time.cont[itabs])
+                        }
+                        xyind <- c(1,1,2,2)
+                        posneg <- c(0.5,-0.5,0.5,-0.5)
+                        for(j in 2:ncol(dat$nextTo)){
+                            ind <- which(!is.na(dat$nextTo[,j]))
+                            Astar[cbind(ind, dat$nextTo[ind,j])] <-
+                                posneg[j-1] * move[ind,xyind[j-1]] /
+                                dat$next.dist[j-1] ## dat$nneigh[j-1]
+                        }
 
                         ## Diffusion rate --------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
+                        if(dat$use.boundaries){
+                            hD <- hD * bound$val(dat$xygrid,
+                                                 dat$time.cont[itabs])
+                        }
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                1.5 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
-                        ## Advection rate -------------------------
-                        hAx <- habitat.adv.x$val(dat$xygrid, dat$time.cont[itabs])
-                        hAy <- habitat.adv.y$val(dat$xygrid, dat$time.cont[itabs])
-                        ## right neighbour
-                        j = 2
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * hAx[ind] / dat$next.dist[j-1]
-                        ## left neighbour
-                        j = 3
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - 0.5 * hAx[ind] / dat$next.dist[j-1]
-                        ## top neighbour
-                        j = 4
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * hAy[ind] / dat$next.dist[j-1]
-                        ## down neighbour
-                        j = 5
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - 0.5 * hAy[ind] / dat$next.dist[j-1]
-
                         ## Mass balance ---------------------------
-                        Zstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Zstar)
+                        Astar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Astar)
                         Dstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Dstar)
 
                         ## Movement rates ------------------------
-                        Mstar <- Zstar + Dstar + Astar
+                        Mstar <- Astar + Dstar
 
                         ## Add natural and fishing mortality
                         if(flag.effort){
@@ -350,6 +361,9 @@ nll <- function(par, dat){
 
                             ## Instantaneous natural mortality rate
                             Ostar[1:nc,ncem] <- rep(nat.mort, nc)
+
+                            Cstar <- Cstar * dt.ctags
+                            Ostar <- Ostar * dt.ctags
 
                             ## Mass balance
                             Cstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Cstar)
@@ -401,6 +415,7 @@ nll <- function(par, dat){
                                 recapLoc <- as.integer(dat$icrec[ind.tag])
                                 ## print(recapTime+1)
                                 ## print(dim(dist.prob))
+
                                 loglik.ctags <- loglik.ctags +
                                     log(dist.prob[recapTime+1, recapLoc])
 
@@ -501,66 +516,46 @@ nll <- function(par, dat){
                         dt.atags <- tag$t[t] - tag$t[t-1]
 
                         ## Set to zero
-                        Zstar <- Dstar <- Astar <-
+                        Astar <- Dstar <-
                             Cstar <- Ostar <- RTMB::matrix(0, ncem, ncem)
 
-                        ## Taxis rate ----------------------
-                        tmp <- habitat.tax$grad(dat$xygrid, dat$time.cont[itabs])
-                        j = 2
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        j = 3
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * tmp[ind,1] / dat$next.dist[j-1]
-                        j = 4
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * tmp[ind,2] / dat$next.dist[j-1]
-                        j = 5
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Zstar[cbind(ind, dat$nextTo[ind,j])] <-
-                            - 0.5 * tmp[ind,2] / dat$next.dist[j-1]
+                        ## Active & passive advection -----------------------
+                        move <- matrix(0, nc, 2)
+                        if(dat$use.taxis){
+                            move <- move +
+                                habitat.tax$grad(dat$xygrid,
+                                                 dat$time.cont[itabs])
+                        }
+                        if(dat$use.advection){
+                            move <- move +
+                                c(habitat.adv.x$val(dat$xygrid,
+                                                    dat$time.cont[itabs]),
+                                  habitat.adv.y$val(dat$xygrid,
+                                                    dat$time.cont[itabs]))
+                        }
+                        xyind <- c(1,1,2,2)
+                        posneg <- c(0.5,-0.5,0.5,-0.5)
+                        for(j in 2:ncol(dat$nextTo)){
+                            ind <- which(!is.na(dat$nextTo[,j]))
+                            Astar[cbind(ind, dat$nextTo[ind,j])] <-
+                                posneg[j-1] * move[ind,xyind[j-1]] /
+                                dat$next.dist[j-1] ## dat$nneigh[j-1]
+                        }
 
                         ## Diffusion rate ---------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                1.5 * exp(hD[ind]) / dat$next.dist[j-1]^2
+                                exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
-                        ## Advection rate ---------------------
-                        hAx <- habitat.adv.x$val(dat$xygrid, dat$time.cont[itabs])
-                        hAy <- habitat.adv.y$val(dat$xygrid, dat$time.cont[itabs])
-                        ## right neighbour
-                        j = 2
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * hAx[ind] / dat$next.dist[j-1]
-                        ## left neighbour
-                        j = 3
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * hAx[ind] / dat$next.dist[j-1]
-                        ## top neighbour
-                        j = 4
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            0.5 * hAy[ind] / dat$next.dist[j-1]
-                        ## down neighbour
-                        j = 5
-                        ind <- which(!is.na(dat$nextTo[,j]))
-                        Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                            -0.5 * hAy[ind] / dat$next.dist[j-1]
-
                         ## Mass balance ----------------------
-                        Zstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Zstar)
+                        Astar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Astar)
                         Dstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Dstar)
 
                         ## Movement rates ------------------
-                        Mstar <- Zstar + Dstar + Astar
+                        Mstar <- Astar + Dstar
 
                         ## Add natural and fishing mortality
                         if(flag.effort){
@@ -599,21 +594,15 @@ nll <- function(par, dat){
 
                     ## Likelihood contribution -----------------------------
                     for(t in 2:(itmax-1)){
-                        ## px <- dnorm(dat$xygrid[,1], tag$x[t], sdObsATS)
-                        ## px <- px/sum(px)
-                        ## py <- dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)
-                        ## py <- py/sum(py)
-                        ## tmp <- log(sum(dist.prob[t,1:nc] * px * py))
-                        ## tmp <- log(sum(dist.prob[t,1:nc] *
-                        ##                dnorm(dat$xygrid[,1], tag$x[t], sdObsATS) *
-                        ##                dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)))
-                        ## tmp <- log(
-                        ##     sum(dist.prob[t,1:nc] *
-                        ##         (pnorm(dat$xgr[dat$igrid$idx+1], tag$x[t], sdObsATS) -
+                        oprob <- dnorm(dat$xygrid[,1], tag$x[t], sdObsATS) *
+                            dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)
+                        ## oprob <- (pnorm(dat$xgr[dat$igrid$idx+1], tag$x[t], sdObsATS) -
                         ##          pnorm(dat$xgr[dat$igrid$idx], tag$x[t], sdObsATS)) *
                         ##         (pnorm(dat$ygr[dat$igrid$idy+1], tag$y[t], sdObsATS) -
-                        ##          pnorm(dat$ygr[dat$igrid$idy], tag$y[t], sdObsATS))))
-                        tmp <- log(dist.prob[t, tag$ic[t]])
+                        ##          pnorm(dat$ygr[dat$igrid$idy], tag$y[t], sdObsATS))
+                        oprob <- oprob / sum(oprob) * prod(dat$dxdy)
+                        tmp <- log(sum(dist.prob[t,1:nc] * oprob))
+                        ## tmp <- log(dist.prob[t, tag$ic[t]])
                         loglik.atags <- loglik.atags + tmp
                     }
                     loglik.atags <- loglik.atags +

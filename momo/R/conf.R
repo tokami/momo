@@ -25,6 +25,7 @@ def.conf <- function(dat, const.dif = TRUE){
     conf$est.var.atags <- FALSE
     conf$est.n <- FALSE
     conf$pred.move <- TRUE
+    conf$use.boundaries <- TRUE
 
     ## Env
     if(!is.null(dat$env)){
@@ -55,22 +56,6 @@ def.conf <- function(dat, const.dif = TRUE){
                           dif   = ienv.dif,
                           adv.x = ienv.adv.x,
                           adv.y = ienv.adv.y)
-    }
-
-    conf$knots.tax <- sapply(dat$env,
-                             function(x)
-                                 quantile(as.numeric(x),
-                                          c(0.05, 0.5, 0.95), na.rm = TRUE))
-
-    if(const.dif){
-        conf$knots.dif <- matrix(0,
-                                 1, ## constant diffusion by default
-                                 length(dat$env))
-    }else{
-        conf$knots.dif <- sapply(dat$env,
-                                 function(x)
-                                     quantile(as.numeric(x),
-                                              c(0.05, 0.5, 0.95), na.rm = TRUE))
     }
 
     ## Tags
@@ -122,6 +107,43 @@ def.conf <- function(dat, const.dif = TRUE){
         rec <- NULL
     }
     conf$rec <- rec
+
+
+    ## Knots
+    env.obs <- get.env(dat, conf)
+    if(is.null(env.obs)){
+        env.obs <- dat$env
+    }
+    conf$knots.tax <- sapply(env.obs,
+                             function(x)
+                                 quantile(as.numeric(x),
+                                          c(0.05, 0.5, 0.95), na.rm = TRUE))
+
+    if(any(apply(conf$knots.tax,2,duplicated))) warning("Some knots are the same! This will likely give an error!")
+
+    if(const.dif){
+        conf$knots.dif <- matrix(0,
+                                 1, ## constant diffusion by default
+                                 length(dat$env))
+    }else{
+        conf$knots.dif <- sapply(dat$env,
+                                 function(x)
+                                     quantile(as.numeric(x),
+                                              c(0.05, 0.5, 0.95), na.rm = TRUE))
+    }
+
+
+    ## Boundaries
+    ## tmp <- array(1, c(dat$nx+2, dat$ny+2,1))
+    ## tmp[c(1,dat$nx+2),,1] <- 0
+    ## tmp[,c(1,dat$ny+2),1] <- 0
+    tmp <- array(1, c(dat$nx, dat$ny,1))
+    tmp[c(1,dat$nx),,1] <- 0
+    tmp[,c(1,dat$ny),1] <- 0
+    conf$boundaries <- list(tmp)
+
+    conf$ibound <- matrix(1, 1, length(dat$time.cont))
+
 
     return(conf)
 }

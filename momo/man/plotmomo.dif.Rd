@@ -4,7 +4,17 @@
 \alias{plotmomo.dif}
 \title{Plot diffusion}
 \usage{
-plotmomo.dif(x, cor = 20, par = NULL, keep.par = FALSE, ...)
+plotmomo.dif(
+  x,
+  cor = 20,
+  par = NULL,
+  funcs = NULL,
+  env = NULL,
+  main = "Diffusion",
+  alpha = 0.5,
+  keep.par = FALSE,
+  ...
+)
 }
 \description{
 Plot diffusion

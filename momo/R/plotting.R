@@ -483,6 +483,7 @@ plotmomo.taxis <- function(x,
                x$dat$xygrid[,2],
                x$dat$xygrid[,1] + tax.x * cor,
                x$dat$xygrid[,2] + tax.y * cor,
+                              col = get.momo.cols(1),
                length = .1)
 
         box(lwd = 1.5)
@@ -516,6 +517,7 @@ plotmomo.taxis <- function(x,
                x$xygrid[,2],
                x$xygrid[,1]+uv.true[,1] * cor,
                x$xygrid[,2]+uv.true[,2] * cor,
+                   col = get.momo.cols(1, alpha, type = "true"),
                length = .1)
         ## uv.true <- t(apply(x$xygrid, 1, function(xy)
         ##     taxis.fun(xy,1)))
@@ -538,6 +540,7 @@ plotmomo.dif <- function(x,
                          funcs = NULL,
                          env = NULL,
                          main = "Diffusion",
+                         alpha = 0.5,
                          keep.par = FALSE,
                          ...){
 
@@ -557,13 +560,24 @@ plotmomo.dif <- function(x,
          main = "")
 
         if(!is.null(par)){
-            dif.true <- t(apply(x$dat$xygrid, 1, function(xy)
-                diffusion.fun(xy,NA,par)))
+
+par <- get.sim.par(par)
+        env <- check.that.list(env)
+        dat <- setup.momo.data(grid, env, trange = c(0,
+                                                     max(sapply(env,
+                                                                function(x) dim(x)[3]))))
+        conf <- def.conf(dat)
+        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
+
+        D.true <- sapply(dat$time.cont.pred,
+                         function(t) apply(dat$xygrid.pred, 1,
+                                           function(x) exp(funcs$dif(x,t)[1])))
+
 
             points(x$dat$xygrid[,1],
                    x$dat$xygrid[,2],
                    col = get.momo.cols(1, 0.3, type = "true"),
-                   cex = sqrt(dif.true) * cor)
+                   cex = sqrt(D.true) * cor)
         }
 
         dif.est <- exp(apply(x$rep$hD.pred, 1, mean))
@@ -571,6 +585,7 @@ plotmomo.dif <- function(x,
 
         points(x$dat$xygrid[,1],
                x$dat$xygrid[,2],
+               col = get.momo.cols(1),
                cex = sqrt(dif.est) * cor)
 
 
@@ -584,6 +599,7 @@ plotmomo.dif <- function(x,
          xlab = "x",
          ylab = "y",
          main = main)
+
         par <- get.sim.par(par)
         env <- check.that.list(env)
         dat <- setup.momo.data(grid, env, trange = c(0,
@@ -598,6 +614,7 @@ plotmomo.dif <- function(x,
 
         points(dat$xygrid[,1],
                dat$xygrid[,2],
+                   col = get.momo.cols(1, alpha, type = "true"),
                cex = sqrt(rowMeans(D.true)) * cor)
     }
 }

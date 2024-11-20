@@ -436,6 +436,11 @@ get.env.funcs <- function(dat, conf, par){
                                conf$ienv$adv.y, dat$time.cont,
                                env.func.adv.y, env.dfunc.adv)
 
+    if(conf$use.effort){
+        effort <- habi.light(dat$effort, dat$xranges.eff, dat$yranges.eff,
+                             dat$ieff, dat$time.cont)
+    }
+
     diffusion.fun <- function(xy, t){
         habitat.dif$val(xy, t)
     }
@@ -446,8 +451,21 @@ get.env.funcs <- function(dat, conf, par){
 
     ## TODO: advection + flags to turn stuff on and off
 
+
     res <- list(dif = diffusion.fun,
                 tax = taxis.fun)
+
+    if(conf$use.boundaries){
+        bound <- habi.light(conf$boundaries,
+                            dat$xranges,## + c(-1,1) * dat$dxdy[1],
+                            dat$yranges,## + c(-1,1) * dat$dxdy[2],
+                            conf$ibound, dat$time.cont)
+        bound.fun <- function(xy, t){
+            bound$val(xy, t)
+        }
+        res$bound <- bound.fun
+
+    }
 
     return(res)
 }
@@ -455,7 +473,7 @@ get.env.funcs <- function(dat, conf, par){
 
 get.sim.par <- function(par = NULL){
 
-    par.out <- list(alpha = matrix(c(1, 1.1, 1.001), 3, 1),
+    par.out <- list(alpha = matrix(c(0, 0.1, 0.001), 3, 1),
                     beta = matrix(log(0.02), 1, 1),
                     gamma = matrix(0, 2, 1),
                     logLambda = matrix(log(0.5), 1, 1),
@@ -497,14 +515,19 @@ get.sim.funcs <- function(funcs = NULL, dat, conf, env, par){
 ##                                       -0.5 * xy[2] + 0.4,
 ##                                       -0.5 * xy[2] + 0.15))}
     adv.fun <- function(xy, t){ c(0,0) }
+
+    bound.fun <- function(xy, t){ 1 }
+
     fish.mort.fun <- function(xy, t){ exp(par$logLambda) }
     ## 0.5 * dnorm(xy[1],.2,.3)*dnorm(xy[2],.2,.3)/(dnorm(0,sd=.3)^2)
     nat.mort.fun <- function(xy, t){ exp(par$logM) }
+
 
     funcs.out <- list(
         tax = taxis.fun,
         dif = diffusion.fun,
         adv = adv.fun,
+        bound = bound.fun,
         fish.mort = fish.mort.fun,
         nat.mort = nat.mort.fun)
 
@@ -627,4 +650,51 @@ get.peclet <- function(grid, env, par){
     ## or: u/D <= 2/\{Delta}x
 
     return(peclet)
+}
+
+
+##' Get Courant–Friedrichs–Lewy condition
+##'
+##' @param grid grid
+##'
+##' @export
+get.cfl <- function(grid, env, par){
+
+    dat <- setup.momo.data(grid = grid,
+                           env = env)
+    conf <- def.conf(dat)
+
+    uv <- get.adv(dat, par, conf)
+
+    u <- momo:::get.adv(dat, true1, conf)[,1]
+    cfl <- min(dat$dxdy[1] / abs(u), prod(dat$dxdy) / (2 * mean(exp(true1$beta))))
+    ## improve beta component! get.dif()
+
+
+    ## Courant–Friedrichs–Lewy (CFL) condition: delta t <= min(Delta x/ u, Delta x^2 / 2D)
+
+    return(cfl)
+}
+
+
+## TODO: improve by allowing to use for diffusion, advection,
+## TODO: option to select rel and/or rec!
+get.env <- function(dat, conf){
+
+    if(is.null(dat$ctags) && is.null(dat$atags)){
+        return(NULL)
+    }
+
+    nenv <- length(dat$env)
+
+    xind <- as.integer(cut(c(dat$ctags$x0,dat$ctags$x1), dat$xgr, include.lowest = TRUE))
+    yind <- as.integer(cut(c(dat$ctags$y0,dat$ctags$y1), dat$ygr, include.lowest = TRUE))
+    tind <- as.integer(cut(c(dat$ctags$t0,dat$ctags$t1), dat$time.cont, include.lowest = TRUE))
+
+    env.obs <- vector("list", nenv)
+    for(i in 1:nenv){
+        env.obs[[i]] <- dat$env[[i]][cbind(xind,yind,conf$ienv$tax[i,tind])]
+    }
+
+    return(env.obs)
 }

@@ -11,12 +11,12 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS){
             ret[i,] <- (field[i+1,] - field[i-1,]) / twodx
         }
         ## TODO: make this an option!
-        ## ## right edge
-        ## i <- nrow(field)
-        ## ret[i,] <- (field[i,] - field[i-1,]) / onedx
-        ## ## left edge
-        ## i <- 1
-        ## ret[i,] <- (field[i+1,] - field[i,]) / onedx
+        ## right edge
+        i <- nrow(field)
+        ret[i,] <- (field[i,] - field[i-1,]) / onedx
+        ## left edge
+        i <- 1
+        ret[i,] <- (field[i+1,] - field[i,]) / onedx
         return(ret)
     }
 

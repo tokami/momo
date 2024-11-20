@@ -9,6 +9,8 @@ plotmomo.ctags(
   main = "Conventional tags",
   plot.land = FALSE,
   keep.par = FALSE,
+  xlim = NULL,
+  ylim = NULL,
   ...
 )
 }

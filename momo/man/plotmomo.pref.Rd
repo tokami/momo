@@ -4,7 +4,16 @@
 \alias{plotmomo.pref}
 \title{Plot preference}
 \usage{
-plotmomo.pref(x, type = "taxis", ci = 0.95, par = NULL, keep.par = FALSE, ...)
+plotmomo.pref(
+  x,
+  type = "taxis",
+  ci = 0.95,
+  par = NULL,
+  funcs = NULL,
+  env = NULL,
+  keep.par = FALSE,
+  ...
+)
 }
 \description{
 Plot preference

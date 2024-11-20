@@ -4,7 +4,14 @@
 \alias{plotmomo.atags}
 \title{Plot momo atags}
 \usage{
-plotmomo.atags(atags, main = "Archival tags", keep.par = FALSE, ...)
+plotmomo.atags(
+  atags,
+  main = "Archival tags",
+  keep.par = FALSE,
+  xlim = NULL,
+  ylim = NULL,
+  ...
+)
 }
 \description{
 Plot momo atags

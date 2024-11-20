@@ -225,12 +225,12 @@ setup.momo.data <- function(grid,
             dim.tags <- get.dim(ctags, atags)
             trange <- dim.tags$trange
         }else{
-            trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
+            trange <- c(0, max(1,max(sapply(env, function(x) dim(x)[3]))-1))
         }
     }
     res$trange[1] <- floor(trange[1])
     res$trange[2] <- ceiling(trange[2])
-    res$dt <- 1/10
+    res$dt <- 0.1
     res$time.cont <- seq(res$trange[1],
                          res$trange[2],
                          res$dt)

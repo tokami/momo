@@ -19,6 +19,7 @@ fit.momo(
   rel.tol = 1e-10,
   verbose = TRUE,
   do.sdreport = TRUE,
+  do.report = TRUE,
   ...
 )
 }

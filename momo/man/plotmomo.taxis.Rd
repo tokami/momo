@@ -11,6 +11,7 @@ plotmomo.taxis(
   funcs = NULL,
   env = NULL,
   alpha = 0.5,
+  main = "Taxis",
   keep.par = FALSE,
   ...
 )
