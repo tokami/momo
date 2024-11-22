@@ -180,10 +180,14 @@ sim.ctags <- function(grid,
     funcs <- get.sim.funcs(funcs, dat, conf, env, par)
 
     doone <- function(by = 0.01){
-        t0 <- round(runif(1, trange.rel[1], trange.rel[2])/by) * by
+        t0 <- round(runif(1, trange.rel[1],
+                          ifelse(trange.rel[2]-by < trange.rel[1],
+                                 trange.rel[1], trange.rel[2]-by))/by) * by
         if(!flag.effort){
             trec1 <- ifelse(trange.rec[1] < t0, t0, trange.rec[1])
-            t1 <- round(runif(1, trec1, trange.rec[2]-by)/by) * by
+            t1 <- round(runif(1, trec1,
+                              ifelse(trange.rec[2]-by < trec1,
+                                 trec1, trange.rec[2]-by))/by) * by
         }else{
             t1 <- trange[2]-by
         }

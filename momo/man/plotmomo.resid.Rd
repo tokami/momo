@@ -4,7 +4,7 @@
 \alias{plotmomo.resid}
 \title{Plot residuals}
 \usage{
-plotmomo.resid(fit, keep.par = FALSE, ...)
+plotmomo.resid(fit, add.dist = FALSE, keep.par = FALSE, ...)
 }
 \description{
 Plot residuals

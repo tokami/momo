@@ -561,7 +561,7 @@ get.diag <- function(fit){
                               resid = fit$rep[[var]][,select])
         }else{
             tmp <- data.frame(fit$dat$ctags,
-                              resid = fit$rep[[var]])
+                              resid = fit$rep[[var]][,select])
             tmp <- tmp[fit$conf$excl.ctags == 0,]
         }
         tmp <- tmp[!is.na(tmp$resid),]
@@ -590,14 +590,18 @@ get.diag <- function(fit){
 
     ret <- list()
     if(fit$conf$use.ctags){
-        ret$ctags.x <- get.diag.single(fit, "res.cx")
-        ret$ctags.y <- get.diag.single(fit, "res.cy")
-        if(fit$conf$use.effort) ret$ctags.t <- get.diag.single(fit, "res.ct")
+        ret$ctags.x <- get.diag.single(fit, "resid.ctags", select = 1)
+        ret$ctags.y <- get.diag.single(fit, "resid.ctags", select = 2)
+        if(fit$conf$use.effort){
+            ret$ctags.t <- get.diag.single(fit, "resid.ctags", select = 4)
+        }
     }
     if(fit$conf$use.atags){
-        ret$atags.x <- get.diag.single(fit, "res.axy", TRUE, 1, TRUE)
-        ret$atags.y <- get.diag.single(fit, "res.axy", TRUE, 2, TRUE)
-        if(fit$conf$use.effort) ret$atags.t <- get.diag.single(fit, "res.at", TRUE)
+        ret$atags.x <- get.diag.single(fit, "resid.atags", select = 1)
+        ret$atags.y <- get.diag.single(fit, "resid.atags", select = 2)
+        if(fit$conf$use.effort){
+            ret$atags.t <- get.diag.single(fit, "resid.atags", select = 4)
+        }
     }
 
     if(length(ret) > 0){

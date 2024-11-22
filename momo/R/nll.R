@@ -87,7 +87,7 @@ nll <- function(par, dat){
         if(dat$use.ctags){
 
             nctags <- nrow(dat$ctags)
-            res.cx <- res.cy <- res.ct <- rep(NA, nctags)
+            resid.ctags <- matrix(NA, nctags, 4)
 
             mxy <- vxy <- c(0,0)
 
@@ -144,24 +144,44 @@ nll <- function(par, dat){
 
                         if(!is.na(dat$ctags$x1[i])){
 
+                            ## Likelihood
                             loglik.ctags <- loglik.ctags +
                                 dnorm(dat$ctags$x1[i], mxy[1], sqrt(vxy[1]), TRUE)
-                            res.cx[i] <- (dat$ctags$x1[i] - mxy[1])/sqrt(vxy[1])
                             loglik.ctags <- loglik.ctags +
                                 dnorm(dat$ctags$y1[i], mxy[2], sqrt(vxy[2]), TRUE)
-                            res.cy[i] <- (dat$ctags$y1[i] - mxy[2])/sqrt(vxy[2])
-
                             if(flag.effort){
                                 loglik.ctags <- loglik.ctags + lpC[t+1]
-                                if(!RTMB:::ad_context()){
-                                    res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t]),
-                                                             exp(lpC.cum[t+1])))
-                                }
                             }
-                        }else if(flag.effort){
-                            loglik.ctags <- loglik.ctags + log1p(-exp(lpC.cum[t+1]))
+
+                            ## Residuals
                             if(!RTMB:::ad_context()){
-                                res.ct[i] <- qnorm(runif(1, exp(lpC.cum[t+1]), 1))
+
+                                resid.ctags[i,1] <- (dat$ctags$x1[i] - mxy[1]) /
+                                    sqrt(vxy[1])
+                                resid.ctags[i,2] <- (dat$ctags$y1[i] - mxy[2]) /
+                                    sqrt(vxy[2])
+                                resid.ctags[i,3] <- sqrt((dat$ctags$x1[i] - mxy[1])^2 +
+                                                         (dat$ctags$y1[i] - mxy[2])^2) /
+                                    sqrt((vxy[1] + vxy[2])/2)
+
+                                if(flag.effort){
+                                    resid.ctags[i,4] <- qnorm(runif(1, exp(lpC.cum[t]),
+                                                                    exp(lpC.cum[t+1])))
+                                }
+
+                            }
+
+
+
+                        }else if(flag.effort){
+
+                            ## Likelihood
+                            loglik.ctags <- loglik.ctags + log1p(-exp(lpC.cum[t+1]))
+
+                            ## Residuals
+                            if(!RTMB:::ad_context()){
+                                resid.ctags[i,4] <- qnorm(runif(1,
+                                                                exp(lpC.cum[t+1]), 1))
                             }
                         }
                     }
@@ -170,9 +190,7 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.ctags
 
-            REPORT(res.cx)
-            REPORT(res.cy)
-            REPORT(res.ct)
+            REPORT(resid.ctags)
         }
 
         ## Archival tags
@@ -180,59 +198,68 @@ nll <- function(par, dat){
 
             natags <- length(dat$atags)
 
-            res.axy <- vector("list", natags)
-            res.at <- rep(NA, natags)
+            resid.atags.fine <- vector("list", natags)
+            resid.atags <- matrix(NA, natags, 4)
 
-            for(at in 1:natags){
+            for(a in 1:natags){
 
-                thisAT <- dat$atags[[at]]
+                tag <- dat$atags[[a]]
 
-                res.axy[[at]] <- matrix(NA, nrow(thisAT), 2)
+                resid.atags.fine[[a]] <- matrix(NA, nrow(tag), 3)
 
                 ## Use tag?
-                if(nrow(thisAT) > 3 && all(thisAT$use == 1)){
+                if(nrow(tag) > 3 && all(tag$use == 1)){
 
                     obsvar <- exp(2 * par$logSdObsATS)
-                    lastt <- as.numeric(thisAT[1,1])
-                    lastxy <- as.numeric(thisAT[1,2:3])
+                    lastt <- as.numeric(tag[1,1])
+                    lastxy <- as.numeric(tag[1,2:3])
                     P <- D <- A <- c(0,0)
 
-                    lpS <- lpC <- lpC.cum <- rep(0, nrow(thisAT))
+                    lpS <- lpC <- lpC.cum <- rep(0, nrow(tag))
 
-                    for(r in 2:nrow(thisAT)){
+                    for(r in 2:nrow(tag)){
                         move <- c(0,0)
-                        thist <- thisAT[r,1]
+                        thist <- tag[r,1]
                         dt <- (thist - lastt)
                         if(dat$use.taxis){
-                            move <- move + habitat.tax$grad(lastxy, thisAT[r,1]) * dt
+                            move <- move + habitat.tax$grad(lastxy, tag[r,1]) * dt
                         }
                         if(dat$use.advection){
-                            move <- move + c(habitat.adv.x$val(lastxy, thisAT[r,1]),
-                                             habitat.adv.y$val(lastxy, thisAT[r,1])) * dt
+                            move <- move + c(habitat.adv.x$val(lastxy, tag[r,1]),
+                                             habitat.adv.y$val(lastxy, tag[r,1])) * dt
                         }
                         if(dat$use.boundaries){
-                            move <- move * bound$val(lastxy, thisAT[r,1])
+                            move <- move * bound$val(lastxy, tag[r,1])
                         }
-                        dif <- exp(habitat.dif$val(lastxy, thisAT[r,1]))
+                        dif <- exp(habitat.dif$val(lastxy, tag[r,1]))
                         if(dat$use.boundaries){
-                            dif <- dif * bound$val(lastxy, thisAT[r,1])
+                            dif <- dif * bound$val(lastxy, tag[r,1])
                         }
                         predxy <- lastxy + move
                         PP <- P + 2 * dif * dt
-                        if(r == nrow(thisAT)){
+                        if(r == nrow(tag)){
                             F <- PP
                         }else{
                             F <- PP + obsvar
                         }
-                        thisxy <- as.numeric(thisAT[r,2:3])
+                        thisxy <- as.numeric(tag[r,2:3])
                         w <- thisxy - predxy
                         lastxy <- predxy + PP / F * w
                         P <- PP - PP / F * PP
                         lastt <- thist
                         loglik.atags <- loglik.atags + dnorm(w[1], 0, sqrt(F[1]), TRUE)
                         loglik.atags <- loglik.atags + dnorm(w[2], 0, sqrt(F[2]), TRUE)
-                        res.axy[[at]][r,1] <- w[1] / sqrt(F[1])
-                        res.axy[[at]][r,2] <- w[2] / sqrt(F[2])
+
+
+                        if(!RTMB:::ad_context()){
+                            resid.atags.fine[[a]][r,1] <- w[1] / sqrt(F[1])
+                            resid.atags.fine[[a]][r,2] <- w[2] / sqrt(F[2])
+                            resid.atags.fine[[a]][r,3] <- sqrt((thisxy[1] -
+                                                                predxy[1])^2 +
+                                                               (thisxy[2] -
+                                                                predxy[2])^2) /
+                                sqrt((F[1] + F[2])/2)
+                        }
 
                         if(flag.effort){
                             e <- 1 ## fleet LATER:
@@ -245,14 +272,24 @@ nll <- function(par, dat){
                                                                         lpC[r])
                         } ## end effort
                     }
+
+                    if(!RTMB:::ad_context()){
+                        resid.atags[r,1] <- resid.atags.fine[[a]][nrow(tag),1]
+                        resid.atags[r,2] <- resid.atags.fine[[a]][nrow(tag),2]
+                        resid.atags[r,3] <- resid.atags.fine[[a]][nrow(tag),3]
+                    }
+
                     if(flag.effort){
+                        ## Likelihood
                         loglik.atags <- loglik.atags + lpC[r]
+
+                        ## Residuals
                         if(!RTMB:::ad_context()){
-                            res.at[at] <- qnorm(runif(1,
-                                                      exp(lpC.cum[r-1]),
-                                                      exp(lpC.cum[r-1]) +
-                                                      fish.mort / tot.mort *
-                                                      (1 - exp(-tot.mort * dt))))
+                            resid.atags[a,4] <- qnorm(runif(1,
+                                                             exp(lpC.cum[r-1]),
+                                                             exp(lpC.cum[r-1]) +
+                                                             fish.mort / tot.mort *
+                                                             (1 - exp(-tot.mort * dt))))
                         }
                     }
                 }
@@ -260,8 +297,8 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.atags
 
-            REPORT(res.axy)
-            REPORT(res.at)
+            REPORT(resid.atags)
+            REPORT(resid.atags.fine)
         }
 
     }else{
@@ -272,7 +309,7 @@ nll <- function(par, dat){
         if(dat$use.ctags){
 
             nctags <- nrow(dat$ctags)
-            res.cx <- res.cy <- res.ct <- rep(NA, nctags)
+            resid.ctags <- matrix(NA, nctags, 4)
 
             ## Loop over release events
             for(r in 1:nr){
@@ -437,19 +474,19 @@ nll <- function(par, dat){
                                     }
                                     xres.cum <- c(0, cumsum(xres))
                                     xres.cum <- xres.cum / xres.cum[length(xres.cum)]
-                                    res.cx[ind.tag] <- qnorm(runif(1,
+                                    resid.ctags[ind.tag,1] <- qnorm(runif(1,
                                                                    xres.cum[dat$igrid$idx[recapLoc]],
                                                                    xres.cum[dat$igrid$idx[recapLoc]+1]))
                                     yres.cum <- c(0, cumsum(dist.prob[recapTime+1, dat$igrid$idx == dat$igrid$idx[recapLoc]]))
                                     yres.cum <- yres.cum / yres.cum[length(yres.cum)]
-                                    res.cy[ind.tag] <- qnorm(runif(1,
+                                    resid.ctags[ind.tag,2] <- qnorm(runif(1,
                                                                    yres.cum[dat$igrid$idy[recapLoc]],
                                                                    yres.cum[dat$igrid$idy[recapLoc]+1]))
 
                                     if(flag.effort){
-                                        res.ct[ind.tag] <- qnorm(runif(1,
-                                                                       exp(lpC.cum),
-                                                                       exp(lpC.cum) + exp(lpC[h])))
+                                        resid.ctags[ind.tag,4] <- qnorm(runif(1,
+                                                                              exp(lpC.cum),
+                                                                              exp(lpC.cum) + exp(lpC[h])))
                                         ## TODO: that should be the probability of t-1 and t
                                     }
                                 }
@@ -463,7 +500,7 @@ nll <- function(par, dat){
 
                                 ## Only time residual for non-recovered tags
                                 if(!RTMB:::ad_context()){
-                                    res.ct[ind.tag] <- qnorm(runif(1, exp(lpC.cum), 1))
+                                    resid.ctags[ind.tag,4] <- qnorm(runif(1, exp(lpC.cum), 1))
                                 }
 
                             }
@@ -478,18 +515,15 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.ctags
 
-            REPORT(res.cx)
-            REPORT(res.cy)
-            REPORT(res.ct)
-
+            REPORT(resid.ctags)
         }
 
         if(dat$use.atags){
 
             natags <- length(dat$atags)
 
-            res.axy <- vector("list", natags)
-            res.at <- rep(NA, natags)
+            resid.atags.fine <- vector("list", natags)
+            resid.atags <- matrix(NA, natags, 4)
 
             ## Loop over atags
             for(a in 1:natags){
@@ -500,7 +534,7 @@ nll <- function(par, dat){
                 itmax <- nrow(tag)
                 itrec <- tag$it[itmax]
 
-                res.axy[[a]] <- matrix(NA, itmax, 2)
+                resid.atags.fine[[a]] <- matrix(NA, itmax, 4)
 
                 ## Use tag?
                 if(itmax > 3 && all(tag$use == 1)){
@@ -621,7 +655,7 @@ nll <- function(par, dat){
                             }
                             xres.cum <- c(0, cumsum(xres))
                             xres.cum <- xres.cum / xres.cum[length(xres.cum)]
-                            res.axy[[a]][t,1] <- qnorm(runif(1,
+                            resid.atags.fine[[a]][t,1] <- qnorm(runif(1,
                                                              xres.cum[dat$igrid$idx[recapLoc]],
                                                              xres.cum[dat$igrid$idx[recapLoc] + 1]))
                             yres.cum <- c(0,
@@ -629,10 +663,12 @@ nll <- function(par, dat){
                                                            dat$igrid$idx ==
                                                            dat$igrid$idx[recapLoc]]))
                             yres.cum <- yres.cum / yres.cum[length(yres.cum)]
-                            res.axy[[a]][t,2] <- qnorm(runif(1,
+                            resid.atags.fine[[a]][t,2] <- qnorm(runif(1,
                                                              yres.cum[dat$igrid$idy[recapLoc]],
                                                              yres.cum[dat$igrid$idy[recapLoc] + 1]))
                         }
+                        resid.atags[r,1] <- resid.atags.fine[[a]][nrow(tag),1]
+                        resid.atags[r,2] <- resid.atags.fine[[a]][nrow(tag),2]
                     }
 
                     if(flag.effort){
@@ -650,9 +686,9 @@ nll <- function(par, dat){
                                     lpC.cum <- RTMBconvenience::logspace_add(lpC.cum, dist.prob[itmax, nc + e])
                                 }
                             }
-                            res.at[a] <- runif(1,
-                                               exp(lpC.cum),
-                                               exp(lpC.cum) + exp(lpC))
+                            resid.atags[a,4] <- runif(1,
+                                                      exp(lpC.cum),
+                                                      exp(lpC.cum) + exp(lpC))
                         }
                     }
 
@@ -661,8 +697,8 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.atags
 
-            REPORT(res.axy)
-            REPORT(res.at)
+            REPORT(resid.atags)
+            REPORT(resid.atags.fine)
 
         } ## use.atags
 

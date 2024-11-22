@@ -623,6 +623,7 @@ par <- get.sim.par(par)
 ##' Plot residuals
 ##' @export
 plotmomo.resid <- function(fit,
+                           add.dist = FALSE,
                            keep.par = FALSE,
                            ...){
 
@@ -640,17 +641,21 @@ plotmomo.resid <- function(fit,
 
     if(fit$conf$use.ctags && fit$conf$use.atags){
         if(fit$conf$use.effort){
-            layout(matrix(1:18,3,6))
+            nmati <- 18
         }else{
-            layout(matrix(1:12,3,4))
+            nmati <- 12
         }
     }else{
         if(fit$conf$use.effort){
-            layout(matrix(1:9,3,3))
+            nmati <- 9
         }else{
-            layout(matrix(1:6,3,2))
+            nmati <- 6
         }
     }
+    if(add.dist){
+        nmati <- nmati + 3
+    }
+    layout(matrix(1:nmati, 3))
     par(mar = c(4,4,3,2), oma = c(1,1,1,1))
 
     plot.resid.bias <- function(resid, x,
@@ -727,11 +732,12 @@ plotmomo.resid <- function(fit,
         ## }
     }
 
+
     if(fit$conf$use.ctags){
 
         ## x
         tmp <- data.frame(fit$dat$ctags,
-                          resid = fit$rep$res.cx)
+                          resid = fit$rep$resid.ctags[,1])
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
         plot.resid.bias(tmp$resid, tmp$t1,
@@ -747,7 +753,7 @@ plotmomo.resid <- function(fit,
 
         ## y
         tmp <- data.frame(fit$dat$ctags,
-                          resid = fit$rep$res.cy)
+                          resid = fit$rep$resid.ctags[,2])
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
         plot.resid.bias(tmp$resid, tmp$t1,
@@ -761,10 +767,29 @@ plotmomo.resid <- function(fit,
         plot.resid.normal(tmp$resid,
                           fit$diag$ctags.y$shapiro$p.value)
 
+        if(add.dist){
+            ## dist
+            tmp <- data.frame(fit$dat$ctags,
+                              resid = fit$rep$resid.ctags[,3])
+            tmp <- tmp[!is.na(tmp$resid),]
+            tmp <- tmp[order(tmp$t1),]
+            plot.resid.bias(tmp$resid, tmp$t1,
+                            fit$diag$ctags.x$ttest$p.value,
+                            ylab = expression("ctags dist residuals"))
+            ## hist(resi, main = "", xlab = "Residuals")
+            plot.resid.spatial(tmp$resid, tmp$x1, tmp$y1,
+                               fit$diag$ctags.x$moransI$p.value)
+            ## plot.resid.acf(tmp$resid,
+            ##                fit$diag$ctags.x$box$p.value)
+            plot.resid.normal(tmp$resid,
+                              fit$diag$ctags.x$shapiro$p.value)
+
+        }
+
         ## t
         if(fit$conf$use.effort){
             tmp <- data.frame(fit$dat$ctags,
-                              resid = fit$rep$res.ct)
+                              resid = fit$rep$resid.ctags[,4])
             tmp <- tmp[!is.na(tmp$resid),]
             tmp <- tmp[order(tmp$t0),]
             plot.resid.bias(tmp$resid, tmp$t0,
@@ -780,7 +805,7 @@ plotmomo.resid <- function(fit,
     }
     if(fit$conf$use.atags){
         ## x
-        resi <- lapply(fit$rep$res.axy, function(x) x[,1])
+        resi <- lapply(fit$rep$resid.atags.fine, function(x) x[,1])
         xlims <- c(0, max(sapply(resi,length)))
         ylims <- range(unlist(resi), na.rm = TRUE)
         plot(NA, ty = "n",
@@ -802,7 +827,7 @@ plotmomo.resid <- function(fit,
         qqnorm(unlist(resi), main = "")
         qqline(unlist(resi))
         ## y
-        resi <- lapply(fit$rep$res.axy, function(x) x[,2])
+        resi <- lapply(fit$rep$resid.atags.fine, function(x) x[,2])
         xlims <- c(0, max(sapply(resi,length)))
         ylims <- range(unlist(resi), na.rm = TRUE)
         plot(NA, ty = "n",
@@ -825,7 +850,7 @@ plotmomo.resid <- function(fit,
         qqline(unlist(resi))
         ## t
         if(fit$conf$use.effort){
-            resi <- fit$rep$res.at
+            resi <- fit$rep$resid.atags[,4]
             plot(resi,
              xlab = "Index", ylab = "Residuals")
             abline(h=0)
@@ -1025,7 +1050,7 @@ plotmomo.resid2 <- function(fit,
 
         ## x
         tmp <- data.frame(fit$dat$ctags,
-                          resid = fit$rep$res.cx)
+                          resid = fit$rep$resid.ctags[,1])
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
         tmp$tdiff <- tmp$t1 - tmp$t0
@@ -1057,7 +1082,7 @@ plotmomo.resid2 <- function(fit,
 
         ## y
         tmp <- data.frame(fit$dat$ctags,
-                          resid = fit$rep$res.cy)
+                          resid = fit$rep$resid.ctags[,2])
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
         tmp$tdiff <- tmp$t1 - tmp$t0
@@ -1090,7 +1115,7 @@ plotmomo.resid2 <- function(fit,
         ## t
         if(fit$conf$use.effort){
             tmp <- data.frame(fit$dat$ctags,
-                              resid = fit$rep$res.ct)
+                              resid = fit$rep$resid.ctags[,4])
             tmp <- tmp[!is.na(tmp$resid),]
             tmp <- tmp[order(tmp$t0),]
 
