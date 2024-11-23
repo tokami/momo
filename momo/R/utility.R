@@ -96,7 +96,7 @@ create.grid <- function(xrange = c(0,1),
 
     }
 
-    celltable[cbind(igrid$idy,igrid$idx)] <- 1:nrow(igrid)
+    celltable[cbind(igrid$idx,igrid$idy)] <- 1:nrow(igrid)
 
     grid <- list(xygrid = xygrid,
                  igrid = igrid,
@@ -184,11 +184,12 @@ get.neighbours <- function(celltable, diagonal = FALSE){
                       ## down
                       cbind(NA, celltable[,-ncol(celltable)]),
                       ## left
-                      rbind(celltable[-1,], NA),
+                      rbind(NA, celltable[-nrow(celltable),]),
                       ## right
-                      rbind(NA, celltable[-nrow(celltable),])),
+                      rbind(celltable[-1,], NA)
+                      ),
                     dim = c(nrow(celltable), ncol(celltable), 5))
-        labs <- c("c", "right", "left", "top", "down")
+        labs <- c("c", "top", "down", "left", "right")
     }
     nextTo <- apply(AT, 3, function(x) x)
     nextTo <- nextTo[!is.na(nextTo[,1]),]

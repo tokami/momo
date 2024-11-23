@@ -12,6 +12,7 @@ plotmomo.taxis(
   env = NULL,
   alpha = 0.5,
   main = "Taxis",
+  knots.tax = NULL,
   keep.par = FALSE,
   ...
 )

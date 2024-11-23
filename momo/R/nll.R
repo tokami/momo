@@ -356,8 +356,8 @@ nll <- function(par, dat){
                             move <- move * bound$val(dat$xygrid,
                                                      dat$time.cont[itabs])
                         }
-                        xyind <- c(1,1,2,2)
-                        posneg <- c(0.5,-0.5,0.5,-0.5)
+                        xyind <- c(2,2,1,1)
+                        posneg <- c(0.5,-0.5,-0.5,0.5)
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Astar[cbind(ind, dat$nextTo[ind,j])] <-
@@ -567,8 +567,8 @@ nll <- function(par, dat){
                                   habitat.adv.y$val(dat$xygrid,
                                                     dat$time.cont[itabs]))
                         }
-                        xyind <- c(1,1,2,2)
-                        posneg <- c(0.5,-0.5,0.5,-0.5)
+                        xyind <- c(2,2,1,1)
+                        posneg <- c(0.5,-0.5,-0.5,0.5)
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Astar[cbind(ind, dat$nextTo[ind,j])] <-

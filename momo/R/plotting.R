@@ -28,12 +28,12 @@ plotmomo.grid <- function(grid,
     c0[c0 > 0] <- 1
     image(attributes(grid)$xgr,
           attributes(grid)$ygr,
-          t(c0),
+          c0,
           col = adjustcolor("dodgerblue2",0.2),
           xlim = xlims,
           ylim = ylims,
           add = TRUE)
-    labs <- as.numeric(t(grid$celltable))
+    labs <- as.numeric(grid$celltable)
     labs <- labs[!is.na(labs)]
     if(labels) text(grid$xygrid[,1], grid$xygrid[,2], labs)
     abline(v = attributes(grid)$xgr)
@@ -433,6 +433,7 @@ plotmomo.taxis <- function(x,
                            env = NULL,
                            alpha = 0.5,
                            main = "Taxis",
+                           knots.tax = NULL,
                            keep.par = FALSE,
                            ...){
 
@@ -457,7 +458,9 @@ plotmomo.taxis <- function(x,
             dat <- x$dat
             dat$env <- env
             dat$env.pred <- NULL
-            conf <- def.conf(dat)
+            ## conf <- def.conf(dat)
+            conf <- x$conf
+            conf$knots.tax
             funcs <- get.sim.funcs(funcs, dat, conf, env, par)
             ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
             ##     funcs$tax(xy,NA)))
@@ -503,6 +506,7 @@ plotmomo.taxis <- function(x,
                                                      max(sapply(env,
                                                                 function(x) dim(x)[3]))))
         conf <- def.conf(dat)
+        conf$knots.tax <- knots.tax
         funcs <- get.sim.funcs(funcs, dat, conf, env, par)
         ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
         ##     funcs$tax(xy,NA)))
