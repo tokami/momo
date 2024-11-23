@@ -72,8 +72,6 @@ fit.momo <- function(dat,
                                  rel.tol = rel.tol),
                   lower = lower2,
                   upper = upper2)
-
-
     t2 <- Sys.time()
 
     if(verbose) writeLines(paste0("Minimization done (",

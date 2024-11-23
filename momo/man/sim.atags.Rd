@@ -14,6 +14,7 @@ sim.atags(
   trange.rel = NULL,
   xrange.rel = NULL,
   yrange.rel = NULL,
+  trange.rec = NULL,
   by = 0.01,
   knots.tax = NULL,
   knots.dif = NULL,

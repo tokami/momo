@@ -58,6 +58,7 @@ def.conf <- function(dat, const.dif = TRUE){
                           adv.y = ienv.adv.y)
     }
 
+
     ## Tags
     if(!is.null(dat$ctags)){
         itrec <- as.integer(cut(dat$ctags$t1, dat$time.cont,

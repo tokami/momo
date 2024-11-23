@@ -335,34 +335,25 @@ nll <- function(par, dat){
                         itabs <- itrel + t - 1
 
                         ## Set to zero
-                        Astar <- Dstar <-
+                        Zstar <- Dstar <- Astar <-
                             Cstar <- Ostar <- RTMB::matrix(0, ncem, ncem)
 
-                        ## Active & passive advection -----------------------
-                        move <- matrix(0, nc, 2)
+                        ## Taxis -----------------------
                         if(dat$use.taxis){
-                            move <- move +
-                                habitat.tax$grad(dat$xygrid,
+                            move <- habitat.tax$grad(dat$xygrid,
                                                  dat$time.cont[itabs])
-                        }
-                        if(dat$use.advection){ ## but matrix not mass-balanced
-                            move <- move +
-                                c(habitat.adv.x$val(dat$xygrid,
-                                                    dat$time.cont[itabs]),
-                                  habitat.adv.y$val(dat$xygrid,
-                                                    dat$time.cont[itabs]))
-                        }
-                        if(dat$use.boundaries){
-                            move <- move * bound$val(dat$xygrid,
-                                                     dat$time.cont[itabs])
-                        }
-                        xyind <- c(2,2,1,1)
-                        posneg <- c(0.5,-0.5,-0.5,0.5)
-                        for(j in 2:ncol(dat$nextTo)){
-                            ind <- which(!is.na(dat$nextTo[,j]))
-                            Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                                posneg[j-1] * move[ind,xyind[j-1]] /
-                                dat$next.dist[j-1] ## dat$nneigh[j-1]
+                            if(dat$use.boundaries){
+                                move <- move * bound$val(dat$xygrid,
+                                                         dat$time.cont[itabs])
+                            }
+                            xyind <- c(2,2,1,1)
+                            posneg <- c(0.5,-0.5,-0.5,0.5)
+                            for(j in 2:ncol(dat$nextTo)){
+                                ind <- which(!is.na(dat$nextTo[,j]))
+                                Zstar[cbind(ind, dat$nextTo[ind,j])] <-
+                                    posneg[j-1] * move[ind,xyind[j-1]] /
+                                    dat$next.dist[j-1]
+                            }
                         }
 
                         ## Diffusion rate --------------------
@@ -377,12 +368,32 @@ nll <- function(par, dat){
                                 exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
+                        ## Advection -----------------------
+                        if(dat$use.advection){
+                            move <- c(habitat.adv.x$val(dat$xygrid,
+                                                        dat$time.cont[itabs]),
+                                      habitat.adv.y$val(dat$xygrid,
+                                                        dat$time.cont[itabs]))
+                            if(dat$use.boundaries){
+                                move <- move * bound$val(dat$xygrid,
+                                                         dat$time.cont[itabs])
+                            }
+                            xyind <- c(2,2,1,1)
+                            posneg <- c(0.5,-0.5,-0.5,0.5)
+                            for(j in 2:ncol(dat$nextTo)){
+                                ind <- which(!is.na(dat$nextTo[,j]))
+                                Astar[cbind(ind, dat$nextTo[ind,j])] <-
+                                    posneg[j-1] * move[ind,xyind[j-1]] /
+                                    dat$next.dist[j-1]
+                            }
+                        }
+
                         ## Mass balance ---------------------------
-                        Astar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Astar)
+                        Zstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Zstar)
                         Dstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Dstar)
 
                         ## Movement rates ------------------------
-                        Mstar <- Astar + Dstar
+                        Mstar <- Zstar + Dstar + Astar
 
                         ## Add natural and fishing mortality
                         if(flag.effort){
@@ -550,46 +561,65 @@ nll <- function(par, dat){
                         dt.atags <- tag$t[t] - tag$t[t-1]
 
                         ## Set to zero
-                        Astar <- Dstar <-
+                        Zstar <- Dstar <- Astar <-
                             Cstar <- Ostar <- RTMB::matrix(0, ncem, ncem)
 
-                        ## Active & passive advection -----------------------
-                        move <- matrix(0, nc, 2)
+                        ## Taxis -----------------------
                         if(dat$use.taxis){
-                            move <- move +
-                                habitat.tax$grad(dat$xygrid,
+                            move <- habitat.tax$grad(dat$xygrid,
                                                  dat$time.cont[itabs])
-                        }
-                        if(dat$use.advection){
-                            move <- move +
-                                c(habitat.adv.x$val(dat$xygrid,
-                                                    dat$time.cont[itabs]),
-                                  habitat.adv.y$val(dat$xygrid,
-                                                    dat$time.cont[itabs]))
-                        }
-                        xyind <- c(2,2,1,1)
-                        posneg <- c(0.5,-0.5,-0.5,0.5)
-                        for(j in 2:ncol(dat$nextTo)){
-                            ind <- which(!is.na(dat$nextTo[,j]))
-                            Astar[cbind(ind, dat$nextTo[ind,j])] <-
-                                posneg[j-1] * move[ind,xyind[j-1]] /
-                                dat$next.dist[j-1] ## dat$nneigh[j-1]
+                            if(dat$use.boundaries){
+                                move <- move * bound$val(dat$xygrid,
+                                                         dat$time.cont[itabs])
+                            }
+                            xyind <- c(2,2,1,1)
+                            posneg <- c(0.5,-0.5,-0.5,0.5)
+                            for(j in 2:ncol(dat$nextTo)){
+                                ind <- which(!is.na(dat$nextTo[,j]))
+                                Zstar[cbind(ind, dat$nextTo[ind,j])] <-
+                                    posneg[j-1] * move[ind,xyind[j-1]] /
+                                    dat$next.dist[j-1]
+                            }
                         }
 
-                        ## Diffusion rate ---------------------
+                        ## Diffusion rate --------------------
                         hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
+                        if(dat$use.boundaries){
+                            hD <- hD * bound$val(dat$xygrid,
+                                                 dat$time.cont[itabs])
+                        }
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
                                 exp(hD[ind]) / dat$next.dist[j-1]^2
                         }
 
-                        ## Mass balance ----------------------
-                        Astar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Astar)
+                        ## Advection -----------------------
+                        if(dat$use.advection){
+                            move <- c(habitat.adv.x$val(dat$xygrid,
+                                                        dat$time.cont[itabs]),
+                                      habitat.adv.y$val(dat$xygrid,
+                                                        dat$time.cont[itabs]))
+                            if(dat$use.boundaries){
+                                move <- move * bound$val(dat$xygrid,
+                                                         dat$time.cont[itabs])
+                            }
+                            xyind <- c(2,2,1,1)
+                            posneg <- c(0.5,-0.5,-0.5,0.5)
+                            for(j in 2:ncol(dat$nextTo)){
+                                ind <- which(!is.na(dat$nextTo[,j]))
+                                Astar[cbind(ind, dat$nextTo[ind,j])] <-
+                                    posneg[j-1] * move[ind,xyind[j-1]] /
+                                    dat$next.dist[j-1]
+                            }
+                        }
+
+                        ## Mass balance ---------------------------
+                        Zstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Zstar)
                         Dstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Dstar)
 
-                        ## Movement rates ------------------
-                        Mstar <- Astar + Dstar
+                        ## Movement rates ------------------------
+                        Mstar <- Zstar + Dstar + Astar
 
                         ## Add natural and fishing mortality
                         if(flag.effort){
@@ -667,8 +697,8 @@ nll <- function(par, dat){
                                                              yres.cum[dat$igrid$idy[recapLoc]],
                                                              yres.cum[dat$igrid$idy[recapLoc] + 1]))
                         }
-                        resid.atags[r,1] <- resid.atags.fine[[a]][nrow(tag),1]
-                        resid.atags[r,2] <- resid.atags.fine[[a]][nrow(tag),2]
+                        resid.atags[a,1] <- resid.atags.fine[[a]][nrow(tag),1]
+                        resid.atags[a,2] <- resid.atags.fine[[a]][nrow(tag),2]
                     }
 
                     if(flag.effort){

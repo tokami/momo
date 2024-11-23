@@ -259,6 +259,7 @@ sim.atags <- function(grid,
                       trange.rel = NULL,
                       xrange.rel = NULL,
                       yrange.rel = NULL,
+                      trange.rec = NULL,
                       by = 0.01,
                       knots.tax = NULL,
                       knots.dif = NULL,
@@ -270,13 +271,19 @@ sim.atags <- function(grid,
 
     env <- check.that.list(env)
 
+    ## Dimensions
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
-    }else if(!is.null(env)){
-        trange <- c(0,max(sapply(env, function(x) dim(x)[3])))
+    }
+    if(!is.null(env)){
+        trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
     }
     if(is.null(trange.rel)){
         trange.rel <- trange
+    }
+    if(trange.rel[2] > trange[2]) stop("trange.rel[2] > trange[2]!")
+    if(is.null(trange.rec)){
+        trange.rec <- trange
     }
 
     xrange <- attributes(grid)$xrange
@@ -306,11 +313,16 @@ sim.atags <- function(grid,
     funcs <- get.sim.funcs(funcs, dat, conf, env, par)
 
     dooneAT <- function(by = 0.01, sdObs = 0.05){
-        t0 <- round(runif(1, trange.rel[1], trange.rel[2])/by) * by
+        t0 <- round(runif(1, trange.rel[1],
+                          ifelse(trange.rel[2]-by < trange.rel[1],
+                                 trange.rel[1], trange.rel[2]-by))/by) * by
         if(!flag.effort){
-            t1 <- round(runif(1, t0, trange[2])/by) * by
+            trec1 <- ifelse(trange.rec[1] < t0, t0, trange.rec[1])
+            t1 <- round(runif(1, trec1,
+                              ifelse(trange.rec[2]-by < trec1,
+                                 trec1, trange.rec[2]-by))/by) * by
         }else{
-            t1 <- trange[2]
+            t1 <- trange[2]-by
         }
         x0 <- runif(1, xrange.rel[1], xrange.rel[2])
         y0 <- runif(1, yrange.rel[1], yrange.rel[2])
@@ -318,7 +330,7 @@ sim.atags <- function(grid,
         ret <- matrix(NA, nrow = 1, ncol = 3)
         ret[1,] <- c(t0, x0, y0)
         t <- t0 + by
-        state <- 1
+        state <- ifelse(flag.effort, 1, 2)
         while(t < t1){
             move <- c(0,0)
             if(conf$use.taxis){
@@ -327,17 +339,22 @@ sim.atags <- function(grid,
             if(conf$use.advection){
                 move <- move + funcs$adv(xy, t) * by
             }
+            ## Diffusion
+            move <- move + rnorm(2, mean = 0,
+                                 sd = sqrt(2 * exp(funcs$dif(xy, t)) * by))
             if(conf$use.boundaries){
-                move <- move * funcs$bound(xy + move, t)
+                move <- move * funcs$bound(xy, t)
             }
-            xy <- xy + move + rnorm(2, mean = 0,
-                                    sd = sqrt(2 * exp(funcs$dif(xy, t)) * by))
-            FF <- funcs$fish.mort(xy, t)
-            M <- funcs$nat.mort(xy, t)
-            psurv <- exp(-(FF + M) * by)
-            state <- sample(1:3, 1, prob = c(psurv,
-                                           FF/(FF+M)*(1-psurv),
-                                           M/(FF+M)*(1-psurv)))
+            ## Move
+            xy <- xy + move
+            if(flag.effort){
+                FF <- funcs$fish.mort(xy, t)
+                M <- funcs$nat.mort(xy, t)
+                psurv <- exp(-(FF + M) * by)
+                state <- sample(1:3, 1, prob = c(psurv,
+                                                 FF/(FF+M)*(1-psurv),
+                                                 M/(FF+M)*(1-psurv)))
+            }
             ret <- rbind(ret, c(t, xy[1], xy[2]))
             if(flag.effort && state != 1) break
             t <- t + by
