@@ -25,7 +25,7 @@ def.conf <- function(dat, const.dif = TRUE){
     conf$est.var.atags <- FALSE
     conf$est.n <- FALSE
     conf$pred.move <- TRUE
-    conf$use.boundaries <- TRUE
+    conf$use.boundaries <- FALSE
 
     ## Env
     if(!is.null(dat$env)){
