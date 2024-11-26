@@ -177,6 +177,7 @@ plotmomo.ctags <- function(ctags,
                            keep.par = FALSE,
                            xlim = NULL,
                            ylim = NULL,
+                           add = FALSE,
                            ...){
 
     if(is.null(xlim)){
@@ -190,28 +191,32 @@ plotmomo.ctags <- function(ctags,
         ylims <- ylim
     }
 
-    if(!keep.par){
+    if(!keep.par & !add){
         opar <- par(no.readonly = TRUE)
         on.exit(par(opar))
         par(mfrow = c(1,1))
     }
 
+    if(!add){
     plot(0, 0, ty = "n", main = main,
          xlim = xlims,
          ylim = ylims,
          xlab = "x", ylab = "y")
+    }
     arrows(ctags$x0, ctags$y0, ctags$x1, ctags$y1,
            col = adjustcolor("grey60",0.4),
            length = 0.1)
     points(ctags$x0, ctags$y0, pch = 16, col = "grey30", cex = 0.8)
-    if(plot.land){
+    if(plot.land && !add){
         maps::map("world",
                   xlim = xlims,
                   ylim = ylims,
                   fill = TRUE, plot = TRUE, add = TRUE,
                   col = grey(0.95), border = grey(0.5))
     }
-    box(lwd = 1.5)
+    if(!add){
+        box(lwd = 1.5)
+    }
 
     return(invisible(NULL))
 }

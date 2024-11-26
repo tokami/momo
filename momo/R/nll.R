@@ -341,7 +341,7 @@ nll <- function(par, dat){
                         ## Taxis -----------------------
                         if(dat$use.taxis){
                             move <- habitat.tax$grad(dat$xygrid,
-                                                 dat$time.cont[itabs])
+                                                     dat$time.cont[itabs]) * dt.ctags
                             if(dat$use.boundaries){
                                 move <- move * bound$val(dat$xygrid,
                                                          dat$time.cont[itabs])
@@ -357,7 +357,8 @@ nll <- function(par, dat){
                         }
 
                         ## Diffusion rate --------------------
-                        hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
+                        hD <- exp(habitat.dif$val(dat$xygrid,
+                                                  dat$time.cont[itabs])) * dt.ctags
                         if(dat$use.boundaries){
                             hD <- hD * bound$val(dat$xygrid,
                                                  dat$time.cont[itabs])
@@ -365,7 +366,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                exp(hD[ind]) / dat$next.dist[j-1]^2
+                                2 * hD[ind] / dat$next.dist[j-1]^2
                         }
 
                         ## Advection -----------------------
@@ -373,7 +374,7 @@ nll <- function(par, dat){
                             move <- c(habitat.adv.x$val(dat$xygrid,
                                                         dat$time.cont[itabs]),
                                       habitat.adv.y$val(dat$xygrid,
-                                                        dat$time.cont[itabs]))
+                                                        dat$time.cont[itabs])) * dt.ctags
                             if(dat$use.boundaries){
                                 move <- move * bound$val(dat$xygrid,
                                                          dat$time.cont[itabs])
@@ -403,15 +404,13 @@ nll <- function(par, dat){
                             ## Instantaneous fishing mortality rate
                             for(e in 1:ne){
                                 fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * dat$time.cont[itabs]) *
-                                    effort$val(dat$xygrid, dat$time.cont[itabs]) ## how does this work with multiple fleets?
+                                    effort$val(dat$xygrid, dat$time.cont[itabs]) * dt.ctags
+                                ## how does this work with multiple fleets?
                                 Cstar[1:nc,nc+e] <- fish.mort
                             }
 
                             ## Instantaneous natural mortality rate
-                            Ostar[1:nc,ncem] <- rep(nat.mort, nc)
-
-                            Cstar <- Cstar * dt.ctags
-                            Ostar <- Ostar * dt.ctags
+                            Ostar[1:nc,ncem] <- rep(nat.mort, nc) * dt.ctags
 
                             ## Mass balance
                             Cstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Cstar)
@@ -420,9 +419,6 @@ nll <- function(par, dat){
                             ## Movement rates
                             Mstar <- Mstar + Cstar + Ostar
                         }
-
-                        ## Account for time step
-                        Mstar <- Mstar * dt.ctags
 
                         ## Matrix exponential
                         M <- matexpo(Mstar, dat$log2steps)
@@ -567,7 +563,7 @@ nll <- function(par, dat){
                         ## Taxis -----------------------
                         if(dat$use.taxis){
                             move <- habitat.tax$grad(dat$xygrid,
-                                                 dat$time.cont[itabs])
+                                                 dat$time.cont[itabs]) * dt.atags
                             if(dat$use.boundaries){
                                 move <- move * bound$val(dat$xygrid,
                                                          dat$time.cont[itabs])
@@ -583,7 +579,8 @@ nll <- function(par, dat){
                         }
 
                         ## Diffusion rate --------------------
-                        hD <- habitat.dif$val(dat$xygrid, dat$time.cont[itabs])
+                        hD <- exp(habitat.dif$val(dat$xygrid,
+                                                  dat$time.cont[itabs])) * dt.atags
                         if(dat$use.boundaries){
                             hD <- hD * bound$val(dat$xygrid,
                                                  dat$time.cont[itabs])
@@ -591,7 +588,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                exp(hD[ind]) / dat$next.dist[j-1]^2
+                                2 * hD[ind] / dat$next.dist[j-1]^2
                         }
 
                         ## Advection -----------------------
@@ -599,7 +596,7 @@ nll <- function(par, dat){
                             move <- c(habitat.adv.x$val(dat$xygrid,
                                                         dat$time.cont[itabs]),
                                       habitat.adv.y$val(dat$xygrid,
-                                                        dat$time.cont[itabs]))
+                                                        dat$time.cont[itabs])) * dt.atags
                             if(dat$use.boundaries){
                                 move <- move * bound$val(dat$xygrid,
                                                          dat$time.cont[itabs])
@@ -629,12 +626,13 @@ nll <- function(par, dat){
                             ## Instantaneous fishing mortality rate
                             for(e in 1:ne){
                                 fish.mort <- (lambda[1,e] + par$lambdaEC[1,e] * dat$time.cont[itabs]) *
-                                    effort$val(dat$xygrid, dat$time.cont[itabs]) ## how does this work with multiple fleets?
+                                    effort$val(dat$xygrid, dat$time.cont[itabs]) * dt.atags
+                                ## how does this work with multiple fleets?
                                 Cstar[1:nc,nc+e] <- fish.mort
                             }
 
                             ## Instantaneous natural mortality rate
-                            Ostar[1:nc,ncem] <- rep(nat.mort, nc)
+                            Ostar[1:nc,ncem] <- rep(nat.mort, nc) * dt.atags
 
                             ## Mass balance
                             Cstar[cbind(1:ncem,1:ncem)] <- - RTMB::rowSums(Cstar)
@@ -643,9 +641,6 @@ nll <- function(par, dat){
                             ## Movement rates
                             Mstar <- Mstar + Cstar + Ostar
                         }
-
-                        ## Account for time step
-                        Mstar <- Mstar * dt.atags
 
                         ## Matrix exponential
                         M <- matexpo(Mstar, dat$log2steps)
@@ -658,20 +653,17 @@ nll <- function(par, dat){
 
                     ## Likelihood contribution -----------------------------
                     for(t in 2:(itmax-1)){
-                        oprob <- dnorm(dat$xygrid[,1], tag$x[t], sdObsATS) *
-                            dnorm(dat$xygrid[,2], tag$y[t], sdObsATS)
-                        ## oprob <- (pnorm(dat$xgr[dat$igrid$idx+1], tag$x[t], sdObsATS) -
-                        ##          pnorm(dat$xgr[dat$igrid$idx], tag$x[t], sdObsATS)) *
-                        ##         (pnorm(dat$ygr[dat$igrid$idy+1], tag$y[t], sdObsATS) -
-                        ##          pnorm(dat$ygr[dat$igrid$idy], tag$y[t], sdObsATS))
-                        oprob <- oprob / sum(oprob) * prod(dat$dxdy)
-                        tmp <- log(sum(dist.prob[t,1:nc] * oprob))
-                        ## tmp <- log(dist.prob[t, tag$ic[t]])
-                        loglik.atags <- loglik.atags + tmp
+                        oprob <- dnorm(dat$xygrid[,1], tag$x[t],
+                                       sdObsATS / dat$dxdy[1]) *
+                            dnorm(dat$xygrid[,2], tag$y[t],
+                                  sdObsATS/ dat$dxdy[2])
+                        ## oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
+                        oprob <- oprob / sum(oprob)
+                        loglik.atags <- loglik.atags +
+                            log(sum(dist.prob[t,1:nc] * oprob))
                     }
                     loglik.atags <- loglik.atags +
                         log(dist.prob[itmax,tag$ic[itmax]])
-
 
                     if(!RTMB:::ad_context()){
 
