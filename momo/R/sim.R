@@ -196,7 +196,8 @@ sim.ctags <- function(grid,
         xy <- c(x0, y0)
         t <- t0
         state <- ifelse(flag.effort, 1, 2)
-        while(t < t1){
+        while((t + by) < t1){
+            t <- t + by
             move <- c(0,0)
             if(conf$use.taxis){
                 move <- move + funcs$tax(xy, t) * by
@@ -221,7 +222,6 @@ sim.ctags <- function(grid,
                                                M/(FF+M)*(1-psurv)))
                 if(state != 1) break
             }
-            t <- t + by
         }
         if(!flag.effort || state == 2){
             t1 <- t
@@ -329,9 +329,10 @@ sim.atags <- function(grid,
         xy <- c(x0, y0)
         ret <- matrix(NA, nrow = 1, ncol = 3)
         ret[1,] <- c(t0, x0, y0)
-        t <- t0 + by
+        t <- t0
         state <- ifelse(flag.effort, 1, 2)
-        while(t < t1){
+        while((t + by) < t1){
+            t <- t + by
             move <- c(0,0)
             if(conf$use.taxis){
                 move <- move + funcs$tax(xy, t) * by
@@ -357,7 +358,6 @@ sim.atags <- function(grid,
             }
             ret <- rbind(ret, c(t, xy[1], xy[2]))
             if(flag.effort && state != 1) break
-            t <- t + by
         }
         if(nrow(ret) >= 3){
             ret[-c(1,nrow(ret)),c(2,3)] <- ret[-c(1,nrow(ret)),c(2,3)] +

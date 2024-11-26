@@ -366,7 +366,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                2 * hD[ind] / dat$next.dist[j-1]^2
+                                hD[ind] / dat$next.dist[j-1]^2
                         }
 
                         ## Advection -----------------------
@@ -588,7 +588,7 @@ nll <- function(par, dat){
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
-                                2 * hD[ind] / dat$next.dist[j-1]^2
+                                hD[ind] / dat$next.dist[j-1]^2
                         }
 
                         ## Advection -----------------------
@@ -657,8 +657,7 @@ nll <- function(par, dat){
                                        sdObsATS / dat$dxdy[1]) *
                             dnorm(dat$xygrid[,2], tag$y[t],
                                   sdObsATS/ dat$dxdy[2])
-                        ## oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
-                        oprob <- oprob / sum(oprob)
+                        oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
                         loglik.atags <- loglik.atags +
                             log(sum(dist.prob[t,1:nc] * oprob))
                     }
