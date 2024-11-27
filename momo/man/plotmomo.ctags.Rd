@@ -11,6 +11,7 @@ plotmomo.ctags(
   keep.par = FALSE,
   xlim = NULL,
   ylim = NULL,
+  add = FALSE,
   ...
 )
 }
