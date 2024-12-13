@@ -653,13 +653,34 @@ nll <- function(par, dat){
 
                     ## Likelihood contribution -----------------------------
                     for(t in 2:(itmax-1)){
-                        oprob <- dnorm(dat$xygrid[,1], tag$x[t],
-                                       sdObsATS / dat$dxdy[1]) *
-                            dnorm(dat$xygrid[,2], tag$y[t],
-                                  sdObsATS/ dat$dxdy[2])
-                        oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
+
+                        oprob <- (pnorm(dat$xygrid[,1] + dat$dxdy/2,
+                                       tag$x[t], sdObsATS) -
+                            pnorm(dat$xygrid[,1] - dat$dxdy/2,
+                                  tag$x[t], sdObsATS)) *
+                            (pnorm(dat$xygrid[,2] + dat$dxdy/2,
+                                       tag$y[t], sdObsATS) -
+                            pnorm(dat$xygrid[,2] - dat$dxdy/2,
+                                  tag$y[t], sdObsATS))
+
+                        ## works
+                        ## oprob <- dnorm(dat$xygrid[,1], tag$x[t],
+                        ##                sdObsATS / dat$dxdy[1]) *
+                        ##     dnorm(dat$xygrid[,2], tag$y[t],
+                        ##           sdObsATS / dat$dxdy[2])
+                        ## oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
+
+                        ## ALT: TRY:
+                        ## oprob2 <- (dnorm(dat$xygrid[,1], tag$x[t],
+                        ##                 sdObsATS) * dat$dxdy[1]) *
+                        ##     (dnorm(dat$xygrid[,2], tag$y[t],
+                        ##            sdObsATS) * dat$dxdy[2])
+                        ## oprob2 <- oprob2 / sum(oprob2)
+
+                        ## cbind(oprob, oprob2)
+
                         loglik.atags <- loglik.atags +
-                            log(sum(dist.prob[t,1:nc] * oprob))
+                            log(sum(dist.prob[t,1:nc] * oprob)) ## tag$ic[t]
                     }
                     loglik.atags <- loglik.atags +
                         log(dist.prob[itmax,tag$ic[itmax]])
