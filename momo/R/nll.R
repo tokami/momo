@@ -680,7 +680,7 @@ nll <- function(par, dat){
                         ## cbind(oprob, oprob2)
 
                         loglik.atags <- loglik.atags +
-                            log(sum(dist.prob[t,tag$ic[t]] * oprob)) ## 1:nc
+                            log(sum(dist.prob[t,tag$ic[t]] * oprob[tag$ic[t]])) ## 1:nc
                     }
                     loglik.atags <- loglik.atags +
                         log(dist.prob[itmax,tag$ic[itmax]])
