@@ -692,28 +692,34 @@ get.env <- function(dat, conf){
 
     nenv <- length(dat$env)
 
-    xind <- yind <- tind <- NULL
-    if(!is.null(dat$ctags)){
-        xind <- c(xind, as.integer(cut(c(dat$ctags$x0,dat$ctags$x1), dat$xgr,
-                               include.lowest = TRUE)))
-        yind <- c(yind, as.integer(cut(c(dat$ctags$y0,dat$ctags$y1), dat$ygr,
-                               include.lowest = TRUE)))
-        tind <- c(tind, as.integer(cut(c(dat$ctags$t0,dat$ctags$t1), dat$time.cont, include.lowest = TRUE)))
-    }
-
-    if(!is.null(dat$atags)){
-        xind <- c(xind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$x)),
-                                       dat$xgr,
-                               include.lowest = TRUE)))
-        yind <- c(yind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$y)),
-                                       dat$ygr,
-                               include.lowest = TRUE)))
-        tind <- c(tind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$t)),
-                                       dat$time.cont, include.lowest = TRUE)))
-    }
-
     env.obs <- vector("list", nenv)
     for(i in 1:nenv){
+
+        envi <- dat$env[[i]]
+        xgr <- as.numeric(attributes(envi)$dimnames[[1]])
+        ygr <- as.numeric(attributes(envi)$dimnames[[2]])
+
+        xind <- yind <- tind <- NULL
+        if(!is.null(dat$ctags)){
+            xind <- c(xind, as.integer(cut(c(dat$ctags$x0,dat$ctags$x1), xgr,
+                                           include.lowest = TRUE)))
+            yind <- c(yind, as.integer(cut(c(dat$ctags$y0,dat$ctags$y1), ygr,
+                                           include.lowest = TRUE)))
+            tind <- c(tind, as.integer(cut(c(dat$ctags$t0,dat$ctags$t1),
+                                           dat$time.cont, include.lowest = TRUE)))
+        }
+
+        if(!is.null(dat$atags)){
+            xind <- c(xind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$x)),
+                                           xgr,
+                                           include.lowest = TRUE)))
+            yind <- c(yind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$y)),
+                                           ygr,
+                                           include.lowest = TRUE)))
+            tind <- c(tind, as.integer(cut(unlist(sapply(dat$atags, function(x) x$t)),
+                                           dat$time.cont, include.lowest = TRUE)))
+        }
+
         env.obs[[i]] <- dat$env[[i]][cbind(xind,yind,conf$ienv$tax[i,tind])]
     }
 
