@@ -677,10 +677,8 @@ nll <- function(par, dat){
                                    sdObsATS) * dat$dxdy[2])
                         oprob <- oprob / sum(oprob)
 
-                        ## cbind(oprob, oprob2)
-
                         loglik.atags <- loglik.atags +
-                            log(sum(dist.prob[t,tag$ic[t]] * oprob[tag$ic[t]])) ## 1:nc
+                            log(sum(dist.prob[t,1:nc] * oprob)) ## 1:nc tag$ic[t]
                     }
                     loglik.atags <- loglik.atags +
                         log(dist.prob[itmax,tag$ic[itmax]])
