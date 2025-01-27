@@ -305,14 +305,12 @@ sim.ctags <- function(grid,
     }
 
     ## Setup default data and conf
-    dat <- setup.momo.data(grid, env, trange = trange)
+    dat <- setup.momo.data(grid, env,
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif,
+                           trange = trange)
+
     conf <- def.conf(dat)
-    if(!is.null(knots.tax)){
-        conf$knots.tax <- knots.tax
-    }
-    if(!is.null(knots.dif)){
-        conf$knots.dif <- knots.dif
-    }
 
     ## Parameters
     par <- get.sim.par(par)
