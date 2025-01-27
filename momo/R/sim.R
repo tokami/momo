@@ -92,7 +92,7 @@ sim.momo <- function(fit = NULL,
             peclet <- get.peclet(grid, env, par,
                                  knots.tax = knots.tax,
                                  knots.dif = knots.dif)
-            quant <- quantile(abs(unlist(peclet)), 0.99)
+            quant <- quantile(abs(unlist(peclet)), 0.95)
             ## qaunt <- max(abs(peclet))
             ## print(quant)
             maxi <- maxi + 1

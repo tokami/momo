@@ -4,7 +4,7 @@
 \alias{get.peclet}
 \title{Get peclet number}
 \usage{
-get.peclet(grid, env, par)
+get.peclet(grid, env, par, knots.tax = NULL, knots.dif = NULL)
 }
 \arguments{
 \item{grid}{grid}
