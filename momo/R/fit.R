@@ -39,6 +39,9 @@ fit.momo <- function(dat,
     if(sim.flag){
         sim <- dat
         dat <- sim$dat
+        conf <- sim$conf
+        par <- sim$par
+        map <- sim$map
     }
 
     if(is.null(conf)) conf <- def.conf(dat)

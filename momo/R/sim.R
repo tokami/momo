@@ -61,11 +61,11 @@ sim.momo <- function(fit = NULL,
                    diagonal = diagonal)
 
 
-    par <- list(alpha = matrix(sim.alpha(0.01, 0.03, n.alpha), n.alpha, 1))
+    par <- list(alpha = array(sim.alpha(0.01, 0.03, n.alpha), dim = c(n.alpha,1,1)))
     if(const.dif){
-        par$beta <- matrix(log(runif(1, 0.0001, 0.001)), 1, 1)
+        par$beta <- array(log(runif(1, 0.0001, 0.001)), dim = c(1,1,1))
     }else{
-        par$beta <- matrix(log(runif(3, 0.0001, 0.001)), 3, 1)
+        par$beta <- array(log(runif(3, 0.0001, 0.001)), dim = c(3,1,1))
     }
     par$logSdObsATS <- log(runif(1, 0.01, 0.1))
 
@@ -124,11 +124,15 @@ sim.momo <- function(fit = NULL,
     res <- list()
     res$grid <- grid
     res$env <- env
-    res$par <- par
+    res$par.sim <- par
     res$knots <- knots
     res$ctags <- ctags
     res$atags <- atags
     res$dat <- dat
+
+    res$conf <- def.conf(dat)
+    res$par <- def.par(dat, res$conf)
+    res$map <- def.map(dat, res$conf, res$par)
 
     res <- add.class(res, "momo.sim")
 

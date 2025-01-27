@@ -335,7 +335,7 @@ plotmomo.pref <- function(x,
 
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefT.pred")
-                par.est <- x$pl$alpha[,i]
+                par.est <- x$pl$alpha[,i,]
             }else{
                 ind <- which(names(x$rep) == "prefT.pred")
                 par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
@@ -395,7 +395,7 @@ plotmomo.pref <- function(x,
 
         grid <- x$grid
         env <- x$env
-        par <- x$par
+        par <- x$par.sim
         dat <- x$dat
         funcs <- NULL
 
@@ -419,7 +419,7 @@ plotmomo.pref <- function(x,
 
         if(type == "taxis"){
             knots <- dat$knots.tax[,i]
-            par <- par$alpha[,i]
+            par <- par$alpha[,i,]
         }else if(type == "diffusion"){
             knots <- dat$knots.dif[,i]
             par <- par$beta[,i]
@@ -487,13 +487,13 @@ plotmomo.pref.spatial <- function(x,
 
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefT.pred")
-                par.est <- x$pl$alpha[,i]
+                par.est <- x$pl$alpha[,i,]
             }else{
                 ind <- which(names(x$rep) == "prefT.pred")
                 par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
             }
             knots <- x$dat$knots.tax[,i]
-            if(!is.null(par)) par.true <- par$alpha[,i]
+            if(!is.null(par)) par.true <- par$alpha[,i,]
 
 
         }else if(type == "diffusion"){
@@ -698,7 +698,7 @@ plotmomo.taxis <- function(x,
 
         grid <- x$grid
         env <- x$env
-        par <- x$par
+        par <- x$par.sim
         dat <- x$dat
         funcs <- NULL
 
@@ -798,7 +798,7 @@ plotmomo.dif <- function(x,
 
         grid <- x$grid
         env <- x$env
-        par <- x$par
+        par <- x$par.sim
         dat <- x$dat
         funcs <- NULL
 
@@ -1559,16 +1559,14 @@ plotmomo.compare.one <- function(fit, ...,
 
     if(quantity == "par"){
 
-        x <- fitlist[[1]]
-
         tmp <- lapply(fitlist, function(x){
             if(inherits(x, "momo.sim")){
-                nam <- names(x$par)
+                nam <- names(x$par.sim)
                 map <- names(x$map)[match(nam,names(x$map))]
                 map <- map[!is.na(map)]
                 mapped <- unlist(x$map[map])
                 mapped <- is.na(mapped)
-                pars <- unlist(x$par)
+                pars <- unlist(x$par.sim)
                 pars <- pars[!names(pars) %in% names(mapped)[mapped]]
                 ind <- which(names(pars) %in% c("beta","logSdObsATS"))
                 if(length(ind) > 0){
@@ -1600,19 +1598,20 @@ plotmomo.compare.one <- function(fit, ...,
         })
 
         ylim <- range(unlist(tmp))
-        xlim <- c(1,unique(unlist(lapply(tmp, function(x) length(unique(names(x))))))) + 0.5 * c(-1,1)
+        xlim <- c(1, unique(unlist(lapply(tmp, function(x)
+            length(unique(names(x))))))) + 0.5 * c(-1,1)
 
         i = 1
         if(inherits(fitlist[[i]], "momo.sim")){
 
-            nam <- names(fitlist[[i]]$par)
+            nam <- names(fitlist[[i]]$par.sim)
 
             map <- names(fitlist[[i]]$map)[match(nam,names(fitlist[[i]]$map))]
             map <- map[!is.na(map)]
             mapped <- unlist(fitlist[[i]]$map[map])
             mapped <- is.na(mapped)
 
-            pars <- unlist(fitlist[[i]]$par[nam])
+            pars <- unlist(fitlist[[i]]$par.sim[nam])
             pars <- pars[!names(pars) %in% names(mapped)[mapped]]
 
             ind <- which(names(pars) %in% c("beta","logSdObsATS"))
@@ -1668,7 +1667,7 @@ plotmomo.compare.one <- function(fit, ...,
         if(n > 1){
             for(i in 2:n){
                 if(inherits(fitlist[[i]], "momo.sim")){
-                    pars <- unlist(fitlist[[i]]$par)
+                    pars <- unlist(fitlist[[i]]$par.sim)
                     ind <- which(names(pars) %in% c("beta","logSdObsATS"))
                     if(length(ind) > 0){
                         pars[ind] <- exp(pars[ind])
