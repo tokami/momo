@@ -1,4 +1,7 @@
 ##' Plot momo grid
+##'
+##' @param grid grid
+##'
 ##' @export
 plotmomo.grid <- function(grid,
                           main = "Grid",
@@ -6,7 +9,6 @@ plotmomo.grid <- function(grid,
                           plot.land = FALSE,
                           keep.par = FALSE,
                           ...){
-
 
     xlims <- attributes(grid)$xrange
     ylims <- attributes(grid)$yrange
@@ -24,20 +26,15 @@ plotmomo.grid <- function(grid,
          ty = "n",
          xaxs = "i", yaxs = "i",
          xlab = "x", ylab = "y")
-    c0 <- grid$celltable
+    c0 <- t(grid$celltable)
     c0[c0 > 0] <- 1
     image(attributes(grid)$xgr,
           attributes(grid)$ygr,
-          c0,
+          t(c0),
           col = adjustcolor("dodgerblue2",0.2),
           xlim = xlims,
           ylim = ylims,
           add = TRUE)
-    labs <- as.numeric(grid$celltable)
-    labs <- labs[!is.na(labs)]
-    if(labels) text(grid$xygrid[,1], grid$xygrid[,2], labs)
-    abline(v = attributes(grid)$xgr)
-    abline(h = attributes(grid)$ygr)
     if(plot.land){
         maps::map("world",
                   xlim = xlims,
@@ -45,6 +42,11 @@ plotmomo.grid <- function(grid,
                   fill = TRUE, plot = TRUE, add = TRUE,
                   col = grey(0.95), border = grey(0.5))
     }
+    labs <- as.numeric(grid$celltable)
+    labs <- labs[!is.na(labs)]
+    if(labels) text(grid$xygrid[,1], grid$xygrid[,2], labs)
+    abline(v = attributes(grid)$xgr)
+    abline(h = attributes(grid)$ygr)
     box(lwd = 1.5)
 
     return(invisible(NULL))
@@ -53,7 +55,8 @@ plotmomo.grid <- function(grid,
 
 ##' Plot momo env
 ##' @export
-plotmomo.env <- function(env,
+plotmomo.env <- function(x,
+                         select = NULL,
                          main = "Environmental fields",
                          labels = TRUE,
                          keep.par = FALSE,
@@ -61,6 +64,20 @@ plotmomo.env <- function(env,
                          xlab = "x",
                          ylab = "y",
                          ...){
+
+    if(inherits(x, "momo.sim")){
+        env <- x$env
+    }else{
+        env <- x
+    }
+
+    if(inherits(env, "list")){
+        stop("Not implemented yet for lists, plot one list element after the other!")
+    }
+
+    if(!is.null(select)){
+        env <- env[,,select]
+    }
 
     nt <- dim(env)[3]
 
@@ -75,9 +92,9 @@ plotmomo.env <- function(env,
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
         on.exit(par(opar))
-        par(mfrow = n2mfrow(nt),
+        par(mfrow = n2mfrow(nt, asp = 2),
             mar = c(1.5,1.5,1.5,1.5),
-            oma = c(3,3,1.5,0))
+            oma = c(3,3,ifelse(main == "", 0, 1.5),0))
     }
     for(i in 1:nt){
         x <- as.numeric(rownames(env[,,i]))
@@ -89,22 +106,23 @@ plotmomo.env <- function(env,
              xlab = "",
              ylab = "")
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
-        contour(x, y, env[,,i], add = TRUE)
-        if(nt > 1) legend("topleft", legend = paste0("Field ", i),
-               bg = "white", pch = NA)
         if(plot.land){
             maps::map("world",
                       xlim = xlims,
                       ylim = ylims,
                       fill = TRUE, plot = TRUE, add = TRUE,
-                      col = grey(0.95), border = grey(0.5))
+                      col = adjustcolor(grey(0.7),0.5),
+                      border = grey(0.5))
         }
+        contour(x, y, env[,,i], add = TRUE)
+        if(nt > 1) legend("topleft", legend = paste0("Field ", i),
+                          bg = "white", pch = NA)
         box(lwd = 1.5)
     }
     if(!keep.par){
-        mtext(xlab, 1, 1, outer = TRUE)
-        mtext(ylab, 2, 1, outer = TRUE)
         mtext(main, 3, 0, outer = TRUE)
+        mtext(xlab, 1, 1, outer = TRUE)
+        mtext(ylab, 2, 1.5, outer = TRUE)
     }
 
 
@@ -114,13 +132,13 @@ plotmomo.env <- function(env,
 ##' Plot momo effort
 ##' @export
 plotmomo.effort <- function(effort,
-                         main = "Effort fields",
-                         labels = TRUE,
-                         keep.par = FALSE,
-                         plot.land = FALSE,
-                         xlab = "x",
-                         ylab = "y",
-                         ...){
+                            main = "Effort fields",
+                            labels = TRUE,
+                            keep.par = FALSE,
+                            plot.land = FALSE,
+                            xlab = "x",
+                            ylab = "y",
+                            ...){
 
     nt <- dim(effort)[3]
 
@@ -198,10 +216,10 @@ plotmomo.ctags <- function(ctags,
     }
 
     if(!add){
-    plot(0, 0, ty = "n", main = main,
-         xlim = xlims,
-         ylim = ylims,
-         xlab = "x", ylab = "y")
+        plot(0, 0, ty = "n", main = main,
+             xlim = xlims,
+             ylim = ylims,
+             xlab = "x", ylab = "y")
     }
     arrows(ctags$x0, ctags$y0, ctags$x1, ctags$y1,
            col = adjustcolor("grey60",0.4),
@@ -227,8 +245,12 @@ plotmomo.ctags <- function(ctags,
 plotmomo.atags <- function(atags,
                            main = "Archival tags",
                            keep.par = FALSE,
+                           plot.land = FALSE,
                            xlim = NULL,
                            ylim = NULL,
+                           xlab = "x",
+                           ylab = "y",
+                           leg.pos = "topright",
                            ...){
 
     if(is.null(xlim)){
@@ -253,14 +275,21 @@ plotmomo.atags <- function(atags,
     plot(0,0, ty = "n", main = main,
          xlim = xlims,
          ylim = ylims,
-         xlab = "x", ylab = "y")
+         xlab = xlab, ylab = ylab)
+    if(plot.land){
+        maps::map("world",
+                  xlim = xlims,
+                  ylim = ylims,
+                  fill = TRUE, plot = TRUE, add = TRUE,
+                  col = grey(0.95), border = grey(0.5))
+    }
     for(i in 1:length(atags)){
         points(atags[[i]][1,2], atags[[i]][1,3], col = cols[1], pch = 1)
         lines(atags[[i]][,2], atags[[i]][,3], col = adjustcolor("grey60",0.3))
         points(atags[[i]][nrow(atags[[i]]),2], atags[[i]][nrow(atags[[i]]),3],
                col = cols[2], pch = 0)
     }
-    legend("topright", legend = c("release", "recapture"),
+    legend(leg.pos, legend = c("Release", "Recapture"),
            pch = c(1,0),
            col = cols,
            bg = "white")
@@ -274,12 +303,168 @@ plotmomo.atags <- function(atags,
 ##' @export
 plotmomo.pref <- function(x,
                           type = "taxis",
+                          col = "black",
+                          lwd = 1,
                           ci = 0.95,
                           par = NULL,
                           funcs = NULL,
                           env = NULL,
                           keep.par = FALSE,
+                          add = FALSE,
                           ...){
+
+    if(!keep.par){
+        opar <- par(no.readonly = TRUE)
+        on.exit(par(opar))
+        par(mfrow = c(1,1))
+    }
+
+
+    if(inherits(x, "momo.fit")){
+
+        sdr <- x$sdr
+        env.pred <- x$dat$env.pred
+
+        ## TODO: make matrices if more than one env field!
+        ## improve this code, convert sdr$values into matrices!
+        ## TODO: make polygon and CI plotting conditional if fit was run with sdreport=TRUE!
+
+        i = 1
+
+        if(type == "taxis"){
+
+            if(!is.null(sdr)){
+                ind <- which(names(sdr$value) == "prefT.pred")
+                par.est <- x$pl$alpha[,i]
+            }else{
+                ind <- which(names(x$rep) == "prefT.pred")
+                par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
+            }
+            knots <- x$dat$knots.tax[,i]
+
+
+        }else if(type == "diffusion"){
+
+            if(!is.null(sdr)){
+                ind <- which(names(sdr$value) == "prefD.pred")
+                par.est <- x$pl$beta[,i]
+            }else{
+                ind <- which(names(x$rep) == "prefD.pred")
+                par.est <- x$opt$par[names(x$opt$par) == "beta"]
+            }
+            knots <- x$dat$knots.dif[,i]
+
+        }else stop("only taxis and diffusion implemented yet.")
+
+        if(!is.null(sdr)){
+            pref <- sdr$value[ind]
+            prefsd <- sdr$sd[ind]
+            preflow <- pref - qnorm(ci + (1 - ci)/2) * prefsd
+            prefup <- pref + qnorm(ci + (1 - ci)/2) * prefsd
+        }else{
+            pref <- x$rep[[ind]]
+            prefsd <- preflow <- prefup <- NULL
+        }
+
+        xlims <- apply(env.pred, 2, range)
+
+        ylims <- range(pref, preflow, prefup) ## if more env fields this should be matrices
+        alpha <- 0.3
+
+        if(!add){
+            plot(NA, ty = 'n',
+                 xlim = xlims,
+                 ylim = ylims,
+                 ylab = "Preference",
+                 xlab = "Covariate")
+        }
+        polygon(c(env.pred[,i], rev(env.pred[,i])),
+                c(preflow, rev(prefup)),
+                border = NA,
+                col = rgb(t(col2rgb(col))/255, alpha=alpha))
+        ## rug(x$dat$env$env.obs[,inp$env$var[i]]) ## TODO:
+
+        points(knots, par.est, pch = 16, cex = 1.2, col = col)
+        lines(env.pred[,i], pref, col = col, lwd = lwd)
+
+        if(!add) box(lwd = 1.5)
+
+    }else if(inherits(x, "momo.sim")){
+
+        i = 1
+
+        grid <- x$grid
+        env <- x$env
+        par <- x$par
+        dat <- x$dat
+        funcs <- NULL
+
+        if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
+
+        par <- get.sim.par(par)
+        env <- check.that.list(env)
+        dat <- setup.momo.data(grid,
+                               env,
+                               trange = c(0,
+                                          max(sapply(env,
+                                                     function(x) dim(x)[3]))),
+                               knots.tax = dat$knots.tax,
+                               knots.dif = dat$knots.dif)
+        conf <- def.conf(dat)
+        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
+
+        env.pred <- dat$env.pred
+
+        xlims <- apply(dat$env.pred, 2, range)
+
+        if(type == "taxis"){
+            knots <- dat$knots.tax[,i]
+            par <- par$alpha[,i]
+        }else if(type == "diffusion"){
+            knots <- dat$knots.dif[,i]
+            par <- par$beta[,i]
+        }
+
+        get.true.pref <- momo:::poly.fun(as.numeric(knots),
+                                         as.numeric(par))
+
+        pref <- get.true.pref(dat$env.pred[,i])
+
+        ylims <- range(pref, par)
+
+        alpha <- 0.3
+
+        if(!add){
+            plot(NA, ty = 'n',
+                 xlim = xlims,
+                 ylim = ylims,
+                 ylab = "Preference",
+                 xlab = "Covariate")
+        }
+        lines(env.pred[,i], pref,
+              col = col,
+              lwd = lwd)
+        points(knots, par,
+               col = col,
+               pch = 15, cex = 1.2)
+        if(!add) box(lwd = 1.5)
+    }
+}
+
+
+##' Plot spatial preference
+##' @export
+plotmomo.pref.spatial <- function(x,
+                                  type = "taxis",
+                                  col = hcl.colors(14, "YlOrRd", rev = TRUE),
+                                  ci = 0.95,
+                                  par = NULL,
+                                  funcs = NULL,
+                                  env = NULL,
+                                  keep.par = FALSE,
+                                  knots.tax = NULL,
+                                  add = FALSE,
+                                  ...){
 
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
@@ -298,7 +483,6 @@ plotmomo.pref <- function(x,
 
         i = 1
 
-
         if(type == "taxis"){
 
             if(!is.null(sdr)){
@@ -308,7 +492,7 @@ plotmomo.pref <- function(x,
                 ind <- which(names(x$rep) == "prefT.pred")
                 par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
             }
-            knots <- x$conf$knots.tax[,i]
+            knots <- x$dat$knots.tax[,i]
             if(!is.null(par)) par.true <- par$alpha[,i]
 
 
@@ -321,7 +505,7 @@ plotmomo.pref <- function(x,
                 ind <- which(names(x$rep) == "prefD.pred")
                 par.est <- x$opt$par[names(x$opt$par) == "beta"]
             }
-            knots <- x$conf$knots.dif[,i]
+            knots <- x$dat$knots.dif[,i]
             if(!is.null(par)) par.true <- par$beta[,i]
 
         }else stop("only taxis and diffusion implemented yet.")
@@ -378,8 +562,22 @@ plotmomo.pref <- function(x,
 
     }else{
 
-        i = 1
+        grid <- x$grid
+        env <- x$env
+        par <- x$par
+        dat <- x$dat
+        knots.tax <- x$knots
+        funcs <- NULL
 
+        if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
+
+        if(!add){
+            plot(NA,
+                 xlim = attr(grid,"xrange"),
+                 ylim = attr(grid,"yrange"),
+                 xlab = "x",
+                 ylab = "y")
+        }
 
         par <- get.sim.par(par)
         env <- check.that.list(env)
@@ -389,129 +587,142 @@ plotmomo.pref <- function(x,
         conf <- def.conf(dat)
         funcs <- get.sim.funcs(funcs, dat, conf, env, par)
 
-        env.pred <- dat$env.pred
+        ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
+        ##     funcs$tax(xy,NA)))
 
-        xlims <- apply(dat$env.pred, 2, range)
+        get.true.pref <- momo:::poly.fun(as.numeric(x$knots),
+                                         as.numeric(x$par$alpha))
 
-        if(!is.null(par)) par.true <- par$alpha[,i]
+        i = 1
+        pref.pred <- get.true.pref(as.numeric(env[[i]]))
 
-        knots <- conf$knots.tax[,i]
+        image(
+            matrix(pref.pred, attr(grid, "nx"),
+                   attr(grid,"ny")),
+            xlim = attr(grid,"xrange"),
+            ylim = attr(grid,"yrange"),
+            add = TRUE)
 
-        get.true.pref <- momo:::poly.fun(knots,  par.true)
-
-        pref <- get.true.pref(dat$env.pred[,i])
-
-        ylims <- range(pref)
-
-        if(!is.null(par)) ylims <- range(ylims, par.true)
-
-        cols <- get.momo.cols(2)
-        alpha <- 0.3
-
-        plot(NA, ty = 'n',
-             xlim = xlims,
-             ylim = ylims,
-             ylab = "",
-             xlab = "")
-
-        lines(env.pred[,i], pref,
-              col = get.momo.cols(1, 0.7, type = "true"), lwd = 3)
-        points(knots, par.true,
-               col = get.momo.cols(1, 0.7, type = "true"),
-               pch = 15, cex = 1.2)
-        legend("topright",
-               legend = c("est.", "true"),
-               col = c(cols[i], get.momo.cols(1, 0.7, type = "true")),
-               pch = c(16,15), bg = "white")
-        box(lwd=1.5)
+        if(!add) box(lwd = 1.5)
 
     }
 }
 
 
+
 ##' Plot taxis
 ##' @export
 plotmomo.taxis <- function(x,
-                           cor = 1,
-                           par = NULL,
-                           funcs = NULL,
-                           env = NULL,
+                           select = NULL,
+                           average = TRUE,
+                           cor = 0.1,
+                           col = "black",
                            alpha = 0.5,
+                           lwd = 1,
                            main = "Taxis",
-                           knots.tax = NULL,
+                           xlab = "x",
+                           ylab = "y",
+                           xaxt = "s",
+                           yaxt = "s",
+                           plot.land = FALSE,
                            keep.par = FALSE,
+                           add = FALSE,
                            ...){
+
+    if(is.null(select)) select <- 1:length(x$dat$time.cont.pred)
 
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
         on.exit(par(opar))
-        par(mfrow = c(1,1))
+        if(average || length(select) == 1){
+            par(mfrow = c(1,1))
+        }else{
+            par(mfrow = n2mfrow(length(select), asp = 2))
+        }
     }
 
     if(inherits(x, "momo.fit")){
 
-        plot(NA,
-         xlim = x$dat$xrange,
-         ylim = x$dat$yrange,
-         xlab = "x",
-         ylab = "y",
-         main = "")
-
-        if(!is.null(par)){
-            par <- get.sim.par(par)
-            env <- check.that.list(env)
-            dat <- x$dat
-            dat$env <- env
-            dat$env.pred <- NULL
-            ## conf <- def.conf(dat)
-            conf <- x$conf
-            conf$knots.tax
-            funcs <- get.sim.funcs(funcs, dat, conf, env, par)
-            ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
-            ##     funcs$tax(xy,NA)))
-            hTdx.true <- sapply(dat$time.cont.pred,
-                                function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[1]))
-            hTdy.true <- sapply(dat$time.cont.pred,
-                                function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[2]))
-            uv.true <- matrix(NA, nrow(dat$xygrid), 2)
-            uv.true[,1] <- rowMeans(hTdx.true)
-            uv.true[,2] <- rowMeans(hTdy.true)
-            arrows(x$dat$xygrid[,1],
-                   x$dat$xygrid[,2],
-                   x$dat$xygrid[,1] + uv.true[,1] * cor,
-                   x$dat$xygrid[,2] + uv.true[,2] * cor,
-                   col = get.momo.cols(1, alpha, type = "true"),
-                   length = .1)
+        if(average){
+            if(length(select) > 1){
+                tax.x <- apply(x$rep$hTdx.pred[,select], 1, mean, na.rm = TRUE)
+                tax.y <- apply(x$rep$hTdy.pred[,select], 1, mean, na.rm = TRUE)
+            }else{
+                tax.x <- x$rep$hTdx.pred[,select]
+                tax.y <- x$rep$hTdy.pred[,select]
+            }
+        }else{
+            tax.x <- x$rep$hTdx.pred[,select]
+            tax.y <- x$rep$hTdy.pred[,select]
         }
 
-        tax.x <- apply(x$rep$hTdx.pred, 1, mean, na.rm = TRUE)
-        tax.y <- apply(x$rep$hTdy.pred, 1, mean, na.rm = TRUE)
+        if(!inherits(tax.x, "matrix")){
+            tax.x <- as.matrix(tax.x)
+            tax.y <- as.matrix(tax.y)
+        }
 
-        arrows(x$dat$xygrid[,1],
-               x$dat$xygrid[,2],
-               x$dat$xygrid[,1] + tax.x * cor,
-               x$dat$xygrid[,2] + tax.y * cor,
-                              col = get.momo.cols(1),
-               length = .1)
+        for(i in 1:ncol(tax.x)){
 
-        box(lwd = 1.5)
+            if(!add){
+                plot(NA,
+                     xlim = x$dat$xrange,
+                     ylim = x$dat$yrange,
+                     xlab = xlab,
+                     ylab = ylab,
+                     xaxt = xaxt,
+                     yaxt = yaxt,
+                     main = "")
+            }
+            if(plot.land){
+                maps::map("world",
+                     xlim = x$dat$xrange,
+                     ylim = x$dat$yrange,
+                          fill = TRUE, plot = TRUE, add = TRUE,
+                     col = adjustcolor(grey(0.95),0.5),
+                     border = grey(0.7))
+            }
 
-    }else{
+            arrows(x$dat$xygrid.pred[,1],
+                   x$dat$xygrid.pred[,2],
+                   x$dat$xygrid.pred[,1] + tax.x[,i] * cor,
+                   x$dat$xygrid.pred[,2] + tax.y[,i] * cor,
+                   col = col,
+                   lwd = lwd,
+                   length = .1)
+
+            if(!add) box(lwd = 1.5)
+
+        }
+
+    }else if(inherits(x, "momo.sim")){
+
+        grid <- x$grid
+        env <- x$env
+        par <- x$par
+        dat <- x$dat
+        funcs <- NULL
 
         if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
-        plot(NA,
-         xlim = attr(x,"xrange"),
-         ylim = attr(x,"yrange"),
-         xlab = "x",
-         ylab = "y",
-         main = main)
+
+        if(!add){
+            plot(NA,
+                 xlim = attr(grid,"xrange"),
+                 ylim = attr(grid,"yrange"),
+                 xlab = "x",
+                 ylab = "y",
+                 main = main)
+        }
+
         par <- get.sim.par(par)
         env <- check.that.list(env)
-        dat <- setup.momo.data(grid, env, trange = c(0,
-                                                     max(sapply(env,
-                                                                function(x) dim(x)[3]))))
+        dat <- setup.momo.data(grid, env,
+                               trange = c(0,
+                                          max(sapply(env,
+                                                     function(x) dim(x)[3]))),
+                               knots.tax = dat$knots.tax,
+                               knots.dif = dat$knots.dif)
+
         conf <- def.conf(dat)
-        conf$knots.tax <- knots.tax
         funcs <- get.sim.funcs(funcs, dat, conf, env, par)
         ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
         ##     funcs$tax(xy,NA)))
@@ -522,11 +733,13 @@ plotmomo.taxis <- function(x,
         uv.true <- matrix(NA, nrow(dat$xygrid), 2)
         uv.true[,1] <- rowMeans(hTdx.true)
         uv.true[,2] <- rowMeans(hTdy.true)
-        arrows(x$xygrid[,1],
-               x$xygrid[,2],
-               x$xygrid[,1]+uv.true[,1] * cor,
-               x$xygrid[,2]+uv.true[,2] * cor,
-                   col = get.momo.cols(1, alpha, type = "true"),
+        arrows(grid$xygrid[,1],
+               grid$xygrid[,2],
+               grid$xygrid[,1]+uv.true[,1] * cor,
+               grid$xygrid[,2]+uv.true[,2] * cor,
+               ## col = get.momo.cols(1, alpha, type = "true"),
+               col = col,
+               lwd = lwd,
                length = .1)
         ## uv.true <- t(apply(x$xygrid, 1, function(xy)
         ##     taxis.fun(xy,1)))
@@ -536,7 +749,7 @@ plotmomo.taxis <- function(x,
         ##        x$xygrid[,2]+uv.true[,2],
         ##        length=.1)
 
-        box(lwd = 1.5)
+        if(!add) box(lwd = 1.5)
     }
 }
 
@@ -545,12 +758,12 @@ plotmomo.taxis <- function(x,
 ##' @export
 plotmomo.dif <- function(x,
                          cor = 20,
-                         par = NULL,
-                         funcs = NULL,
-                         env = NULL,
                          main = "Diffusion",
+                         col = "black",
                          alpha = 0.5,
+                         lwd = 1,
                          keep.par = FALSE,
+                         add = FALSE,
                          ...){
 
     if(!keep.par){
@@ -561,32 +774,13 @@ plotmomo.dif <- function(x,
 
     if(inherits(x, "momo.fit")){
 
-        plot(NA,
-         xlim = x$dat$xrange,
-         ylim = x$dat$yrange,
-         xlab = "x",
-         ylab = "y",
-         main = "")
-
-        if(!is.null(par)){
-
-par <- get.sim.par(par)
-        env <- check.that.list(env)
-        dat <- setup.momo.data(grid, env, trange = c(0,
-                                                     max(sapply(env,
-                                                                function(x) dim(x)[3]))))
-        conf <- def.conf(dat)
-        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
-
-        D.true <- sapply(dat$time.cont.pred,
-                         function(t) apply(dat$xygrid.pred, 1,
-                                           function(x) exp(funcs$dif(x,t)[1])))
-
-
-            points(x$dat$xygrid[,1],
-                   x$dat$xygrid[,2],
-                   col = get.momo.cols(1, 0.3, type = "true"),
-                   cex = sqrt(D.true) * cor)
+        if(!add){
+            plot(NA,
+                 xlim = x$dat$xrange,
+                 ylim = x$dat$yrange,
+                 xlab = "x",
+                 ylab = "y",
+                 main = "")
         }
 
         dif.est <- exp(apply(x$rep$hD.pred, 1, mean))
@@ -594,26 +788,40 @@ par <- get.sim.par(par)
 
         points(x$dat$xygrid[,1],
                x$dat$xygrid[,2],
-               col = get.momo.cols(1),
+               col = col,
+               lwd = lwd,
                cex = sqrt(dif.est) * cor)
 
 
 
-    }else{
+    }else if(inherits(x, "momo.sim")){
+
+        grid <- x$grid
+        env <- x$env
+        par <- x$par
+        dat <- x$dat
+        funcs <- NULL
 
         if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
-        plot(NA,
-         xlim = attr(x,"xrange"),
-         ylim = attr(x,"yrange"),
-         xlab = "x",
-         ylab = "y",
-         main = main)
+
+        if(!add){
+            plot(NA,
+                 xlim = attr(grid,"xrange"),
+                 ylim = attr(grid,"yrange"),
+                 xlab = "x",
+                 ylab = "y",
+                 main = main)
+        }
 
         par <- get.sim.par(par)
         env <- check.that.list(env)
-        dat <- setup.momo.data(grid, env, trange = c(0,
-                                                     max(sapply(env,
-                                                                function(x) dim(x)[3]))))
+        dat <- setup.momo.data(grid, env,
+                               trange = c(0,
+                                          max(sapply(env,
+                                                     function(x) dim(x)[3]))),
+                               knots.tax = dat$knots.tax,
+                               knots.dif = dat$knots.dif)
+
         conf <- def.conf(dat)
         funcs <- get.sim.funcs(funcs, dat, conf, env, par)
 
@@ -623,8 +831,12 @@ par <- get.sim.par(par)
 
         points(dat$xygrid[,1],
                dat$xygrid[,2],
-                   col = get.momo.cols(1, alpha, type = "true"),
+               ## col = get.momo.cols(1, alpha, type = "true"),
+               col = col,
+               lwd = lwd,
                cex = sqrt(rowMeans(D.true)) * cor)
+
+        if(!add) box(lwd = 1.5)
     }
 }
 
@@ -680,8 +892,8 @@ plotmomo.resid <- function(fit,
         if(!is.null(pval) && !is.na(pval)){
             title(paste0("Bias p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
-                               get.momo.cols(1, type = "notsig"),
-                               get.momo.cols(1, type = "sig")))
+                                    get.momo.cols(1, type = "notsig"),
+                                    get.momo.cols(1, type = "sig")))
         }
     }
 
@@ -713,8 +925,8 @@ plotmomo.resid <- function(fit,
         if(!is.null(pval) && !is.na(pval)){
             title(paste0("Shapiro p-val: ", signif(pval,5)),
                   col.main = ifelse(pval >= 0.05,
-                               get.momo.cols(1, type = "notsig"),
-                               get.momo.cols(1, type = "sig")))
+                                    get.momo.cols(1, type = "notsig"),
+                                    get.momo.cols(1, type = "sig")))
         }
     }
 
@@ -729,8 +941,8 @@ plotmomo.resid <- function(fit,
              ylab = ylab)
         points(x, y, cex = abs(resid) * cor,
                col = ifelse(resid > 0,
-                               get.momo.cols(1, type = "pos"),
-                               get.momo.cols(1, type = "neg")))
+                            get.momo.cols(1, type = "pos"),
+                            get.momo.cols(1, type = "neg")))
         box(lwd = 1.5)
         ## if(!is.null(pval)){
         ##     coli <- ifelse(pval >= 0.05,
@@ -766,7 +978,7 @@ plotmomo.resid <- function(fit,
         tmp <- tmp[!is.na(tmp$resid),]
         tmp <- tmp[order(tmp$t1),]
         plot.resid.bias(tmp$resid, tmp$t1,
-                       fit$diag$ctags.y$ttest$p.value,
+                        fit$diag$ctags.y$ttest$p.value,
                         ylab = expression("ctags y residuals"))
         ## hist(resi, main = "", xlab = "Residuals")
         plot.resid.spatial(tmp$resid, tmp$x1, tmp$y1,
@@ -861,12 +1073,12 @@ plotmomo.resid <- function(fit,
         if(fit$conf$use.effort){
             resi <- fit$rep$resid.atags[,4]
             plot(resi,
-             xlab = "Index", ylab = "Residuals")
+                 xlab = "Index", ylab = "Residuals")
             abline(h=0)
             mtext("Archival tags: t", 3, 0.5, font = 2)
             ## Histogram
             hist(resi, 30, main = "",
-             xlab = "Residuals")
+                 xlab = "Residuals")
             ## QQplot
             qqnorm(resi, main = "")
             qqline(resi)
@@ -878,7 +1090,7 @@ plotmomo.resid <- function(fit,
 ##' Plot taxis2
 ##' @export
 plotmomo.taxis2 <- function(x,
-                            cor = 1,
+                            cor = 0.1,
                             par = NULL,
                             funcs = NULL,
                             env = NULL,
@@ -1009,8 +1221,8 @@ plotmomo.taxis2 <- function(x,
 ##' Plot residuals2
 ##' @export
 plotmomo.resid2 <- function(fit,
-                           keep.par = FALSE,
-                           ...){
+                            keep.par = FALSE,
+                            ...){
 
     if(!keep.par){
         opar <- par(no.readonly = TRUE)
@@ -1180,15 +1392,401 @@ plotmomo.resid2 <- function(fit,
         if(fit$conf$use.effort){
             resi <- fit$rep$res.at
             plot(resi,
-             xlab = "Index", ylab = "Residuals")
+                 xlab = "Index", ylab = "Residuals")
             abline(h=0)
             mtext("Archival tags: t", 3, 0.5, font = 2)
             ## Histogram
             hist(resi, 30, main = "",
-             xlab = "Residuals")
+                 xlab = "Residuals")
             ## QQplot
             qqnorm(resi, main = "")
             qqline(resi)
         }
+    }
+}
+
+
+##' Plot simulated data
+##' @export
+plotmomo.sim <- function(x,
+                         keep.par = FALSE,
+                         ...){
+
+    if(!keep.par){
+        opar <- par(no.readonly = TRUE)
+        on.exit(par(opar))
+        par(mfrow = c(2,3), mar = c(4,4,1,1), oma = c(1,1,1,1))
+    }
+
+
+    i = 1
+    plotmomo.env(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    plotmomo.pref(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    ## plotmomo.pref.spatial(x, keep.par = TRUE, main = "")
+    plotmomo.taxis(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    plotmomo.dif(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    if(!is.null(x$ctags)){
+        plotmomo.ctags(x$ctags, keep.par = TRUE, main = "")
+        add.lab(LETTERS[i])
+        i = i + 1
+    }
+    if(!is.null(x$atags)){
+        plotmomo.atags(x$atags, keep.par = TRUE, main = "")
+        add.lab(LETTERS[i])
+        i = i + 1
+    }
+
+}
+
+##' Plot data
+##' @export
+plotmomo.data <- function(x,
+                         keep.par = FALSE,
+                         ...){
+
+    if(!keep.par){
+        opar <- par(no.readonly = TRUE)
+        on.exit(par(opar))
+        par(mfrow = c(2,3), mar = c(4,4,1,1), oma = c(1,1,1,1))
+    }
+
+    i = 1
+    plotmomo.env(x$env, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    plotmomo.pref(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    ## plotmomo.pref.spatial(x, keep.par = TRUE, main = "")
+    plotmomo.taxis(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    plotmomo.dif(x, keep.par = TRUE, main = "")
+    add.lab(LETTERS[i])
+    i = i + 1
+    if(!is.null(x$ctags)){
+        plotmomo.ctags(x$ctags, keep.par = TRUE, main = "")
+        add.lab(LETTERS[i])
+        i = i + 1
+    }
+    if(!is.null(x$atags)){
+        plotmomo.atags(x$atags, keep.par = TRUE, main = "")
+        add.lab(LETTERS[i])
+        i = i + 1
+    }
+
+}
+
+
+##' Plot to compare single quantity
+##'
+##' @param fit A result report as generated by running \code{\link{fit.momo}} or
+##'     a list containing objects fitted with spict.
+##' @param ... Optional additional momo fits.
+##' @param quantity Quantities that can be compared. The following options are
+#'     currently implemented: \code{"taxis"} for the taxis, \code{"dif"} for the
+#'     diffusion, \code{"par"} for the parameters.
+##' @param asp Positive number deining the target aspect ratio (columns / rows)
+##'     of the plot arrangement.
+plotmomo.compare.one <- function(fit, ...,
+                                 quantity = c("pref","taxis",
+                                              "dif","par"),
+                                 keep.par = FALSE,
+                                 asp = 2,
+                                 col = momo:::get.momo.cols(10),
+                                 lty = 1:10,
+                                 plot.legend = 1
+                                 ){
+
+    if("momo.fit" %in% class(fit) || "momo.sim" %in% class(fit)){
+        fitlist <- list(fit, ...)
+    }else if(inherits(fit, "list")){
+        fitlist <- c(fit, ...)
+    }else stop("Please provide fitted momo objects either individually or as list.")
+
+    sim.ind <- lapply(fitlist, function(x) inherits(x, "momo.sim"))
+
+    quantity <- match.arg(quantity)
+    n <- length(fitlist)
+
+    if(quantity == "pref"){
+        plotmomo.pref(fitlist[[1]], col = col[1],
+                       main = "",
+                       keep.par = TRUE)
+        if(n > 1){
+            for(i in 2:n){
+                plotmomo.pref(fitlist[[i]], add = TRUE,
+                               col = col[i], lty = lty[i],
+                               keep.par = TRUE)
+            }
+        }
+    }
+
+    if(quantity == "taxis"){
+        plotmomo.taxis(fitlist[[1]], col = col[1],
+                       main = "",
+                       keep.par = TRUE)
+        if(n > 1){
+            for(i in 2:n){
+                plotmomo.taxis(fitlist[[i]], add = TRUE,
+                               col = col[i], lty = lty[i],
+                               keep.par = TRUE)
+            }
+        }
+    }
+
+    if(quantity == "dif"){
+        plotmomo.dif(fitlist[[1]],
+                     col = col[1], lty = lty[1],
+                     main = "",
+                     keep.par = TRUE)
+        if(n > 1){
+            for(i in 2:n){
+                plotmomo.dif(fitlist[[i]], add = TRUE,
+                             col = col[i], lty = lty[i],
+                             keep.par = TRUE)
+            }
+        }
+    }
+
+    if(quantity == "par"){
+
+        x <- fitlist[[1]]
+
+        tmp <- lapply(fitlist, function(x){
+            if(inherits(x, "momo.sim")){
+                nam <- names(x$par)
+                map <- names(x$map)[match(nam,names(x$map))]
+                map <- map[!is.na(map)]
+                mapped <- unlist(x$map[map])
+                mapped <- is.na(mapped)
+                pars <- unlist(x$par)
+                pars <- pars[!names(pars) %in% names(mapped)[mapped]]
+                ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                if(length(ind) > 0){
+                    pars[ind] <- exp(pars[ind])
+                }
+                lo <- pars
+                hi <- pars
+            }else if(inherits(x, "momo.fit")){
+                ## TODO: make a get.par function!
+                nam <- unique(names(x$opt$par))
+                map <- names(x$map)[match(nam,names(x$map))]
+                map <- map[!is.na(map)]
+                mapped <- unlist(x$map[map])
+                mapped <- is.na(mapped)
+                pars <- unlist(x$pl[nam])
+                pars <- pars[!names(pars) %in% names(mapped)[mapped]]
+                sds <- unlist(x$plsd[nam])
+                sds <- sds[!names(sds) %in% names(mapped)[mapped]]
+                lo <- pars - 1.96 * sds
+                hi <- pars + 1.96 * sds
+                ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                if(length(ind) > 0){
+                    lo[ind] <- exp(pars[ind] - 1.96 * sds[ind])
+                    hi[ind] <- exp(pars[ind] + 1.96 * sds[ind])
+                    pars[ind] <- exp(pars[ind])
+                }
+            }
+            return(c(pars,lo,hi))
+        })
+
+        ylim <- range(unlist(tmp))
+        xlim <- c(1,unique(unlist(lapply(tmp, function(x) length(unique(names(x))))))) + 0.5 * c(-1,1)
+
+        i = 1
+        if(inherits(fitlist[[i]], "momo.sim")){
+
+            nam <- names(fitlist[[i]]$par)
+
+            map <- names(fitlist[[i]]$map)[match(nam,names(fitlist[[i]]$map))]
+            map <- map[!is.na(map)]
+            mapped <- unlist(fitlist[[i]]$map[map])
+            mapped <- is.na(mapped)
+
+            pars <- unlist(fitlist[[i]]$par[nam])
+            pars <- pars[!names(pars) %in% names(mapped)[mapped]]
+
+            ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+            if(length(ind) > 0){
+                pars[ind] <- exp(pars[ind])
+            }
+
+        }else if(inherits(fitlist[[i]], "momo.fit")){
+
+            ## TODO: make a get.par function!
+            nam <- unique(names(fitlist[[i]]$opt$par))
+
+            map <- names(fitlist[[i]]$map)[match(nam,names(fitlist[[i]]$map))]
+            map <- map[!is.na(map)]
+            mapped <- unlist(fitlist[[i]]$map[map])
+            mapped <- is.na(mapped)
+
+            pars <- unlist(fitlist[[i]]$pl[nam])
+            pars <- pars[!names(pars) %in% names(mapped)[mapped]]
+            sds <- unlist(fitlist[[i]]$plsd[nam])
+            sds <- sds[!names(sds) %in% names(mapped)[mapped]]
+            lo <- pars - 1.96 * sds
+            hi <- pars + 1.96 * sds
+            ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+            if(length(ind) > 0){
+                lo[ind] <- exp(pars[ind] - 1.96 * sds[ind])
+                hi[ind] <- exp(pars[ind] + 1.96 * sds[ind])
+                pars[ind] <- exp(pars[ind])
+            }
+        }
+
+        plot(seq(pars), pars,
+             ty = "n",
+             xlim = xlim,
+             xaxt = "n",
+             ylim = ylim,
+             xlab = "Parameter",
+             ylab = "Value")
+        axis(1, at = seq(pars), labels = names(pars))
+
+        addi <- seq(-0.1, 0.1, length.out = n)
+
+        if(inherits(fitlist[[i]], "momo.fit")){
+            arrows(seq(pars) + addi[i], lo,
+                   seq(pars) + addi[i], hi,
+                   length = 0.1,
+                   angle = 90,
+                   code = 3,
+                   col = col[i])
+        }
+        points(seq(pars) + addi[i], pars, col = col[i])
+
+        if(n > 1){
+            for(i in 2:n){
+                if(inherits(fitlist[[i]], "momo.sim")){
+                    pars <- unlist(fitlist[[i]]$par)
+                    ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                    if(length(ind) > 0){
+                        pars[ind] <- exp(pars[ind])
+                    }
+                }else if(inherits(fitlist[[i]], "momo.fit")){
+
+                    ## TODO: make a get.par function!
+                    nam <- unique(names(fitlist[[i]]$opt$par))
+
+                    map <- names(fitlist[[i]]$map)[match(nam,names(fitlist[[i]]$map))]
+                    map <- map[!is.na(map)]
+                    mapped <- unlist(fitlist[[i]]$map[map])
+                    mapped <- is.na(mapped)
+
+                    pars <- unlist(fitlist[[i]]$pl[nam])
+                    pars <- pars[!names(pars) %in% names(mapped)[mapped]]
+                    sds <- unlist(fitlist[[i]]$plsd[nam])
+                    sds <- sds[!names(sds) %in% names(mapped)[mapped]]
+                    lo <- pars - 1.96 * sds
+                    hi <- pars + 1.96 * sds
+                    ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                    if(length(ind) > 0){
+                        lo[ind] <- exp(pars[ind] - 1.96 * sds[ind])
+                        hi[ind] <- exp(pars[ind] + 1.96 * sds[ind])
+                        pars[ind] <- exp(pars[ind])
+                    }
+                    arrows(seq(pars) + addi[i], lo,
+                           seq(pars) + addi[i], hi,
+                           length = 0.1,
+                           angle = 90,
+                           code = 3,
+                           col = col[i])
+                }
+                points(seq(pars) + addi[i], pars, col = col[i])
+            }
+        }
+        box(lwd = 1.5)
+    }
+}
+
+##' Plot simulated data
+##'
+##' @param fit A result report as generated by running \code{\link{fit.momo}} or
+##'     a list containing objects fitted with spict.
+##' @param ... Optional additional momo fits.
+##' @param quantity Quantities that can be compared. The following options are
+#'     currently implemented: \code{"taxis"} for the taxis, \code{"dif"} for the
+#'     diffusion, \code{"par"} for the parameters.
+##' @param asp Positive number deining the target aspect ratio (columns / rows)
+##'     of the plot arrangement.
+##'
+##' @export
+plotmomo.compare <- function(fit, ...,
+                             quantity = c("pref","taxis",
+                                          "dif","par"),
+                             keep.par = FALSE,
+                             col = momo:::get.momo.cols(10),
+                             asp = 2,
+                             plot.legend = 1
+                             ){
+
+    if("momo.fit" %in% class(fit) || "momo.sim" %in% class(fit)){
+        fitlist <- list(fit, ...)
+    }else if(inherits(fit, "list")){
+        fitlist <- c(fit, ...)
+    }else stop("Please provide fitted momo objects either individually or as list.")
+
+    sim.ind <- lapply(fitlist, function(x) inherits(x, "momo.sim"))
+
+    quantity <- match.arg(quantity, several.ok = TRUE)
+    nq <- length(quantity)
+
+    if(!keep.par){
+        opar <- par(no.readonly = TRUE)
+        on.exit(par(opar))
+        mfrow <- n2mfrow(nq, asp = asp)
+        par(mar = c(4.5,4,1,1)+0.1, oma = c(1,1,1,1))
+        if(as.integer(plot.legend) == 1){
+            layout(rbind(matrix(1:max(nq,prod(mfrow)),
+                                nrow = mfrow[1],
+                                ncol = mfrow[2],
+                                byrow = TRUE),
+                         rep(nq+1, mfrow[2])),
+                   heights = c(rep(1, mfrow[1]), 0.15))
+        }else{
+            layout(matrix(1:nq,
+                          nrow = mfrow[1],
+                          ncol = mfrow[2],
+                          byrow = TRUE))
+        }
+    }
+
+    for(i in 1:nq){
+        plotmomo.compare.one(fitlist,
+                             quantity = quantity[i],
+                             col = col,
+                             plot.legend = as.integer(plot.legend) == 2 && i == nq,
+                             keep.par = TRUE)
+        add.lab(LETTERS[i])
+    }
+
+    if(as.integer(plot.legend) == 1){
+        nfit <- sum(!unlist(sim.ind))
+        if(is.null(names(fitlist))){
+            leg.text <- ifelse(unlist(sim.ind), "Sim",
+                               paste0("Fit ",
+                                      cumsum(!unlist(sim.ind))))
+        }else{
+            leg.text <- names(fitlist)
+        }
+        par(mar = c(1,5,0,0))
+        plot.new()
+        legend("center", legend = leg.text,
+               lwd = 2,
+               horiz = TRUE,
+               bty = "s",
+               box.lwd = 1.5,
+               col = col[1:length(fitlist)],
+               bg = "white")
     }
 }

@@ -213,6 +213,9 @@ setup.momo.data <- function(grid,
                             ctags = NULL,
                             atags = NULL,
                             effort = NULL,
+                            knots.tax = NULL,
+                            knots.dif = NULL,
+                            const.dif = TRUE,
                             trange = NULL){
 
     res <- list()
@@ -375,6 +378,40 @@ setup.momo.data <- function(grid,
     res$ieff <- matrix(ieff, length(res$effort), length(res$time.cont))
 
     res$log2steps <- 0
+
+
+    res$const.dif <- const.dif
+
+    ## Knots
+    res$knots.tax <- knots.tax
+    res$knots.dif <- knots.dif
+    ## env.obs <- get.env(dat, conf)
+    ## if(is.null(env.obs)){
+    ##     env.obs <- dat$env
+    ## }
+    env.obs <- env
+    if(is.null(res$knots.tax)){
+        res$knots.tax <- sapply(env.obs,
+                                 function(x)
+                                     quantile(as.numeric(x),
+                                              c(0.05, 0.5, 0.95), na.rm = TRUE))
+    }
+
+    if(any(apply(res$knots.tax,2,duplicated))) warning("Some knots are the same! This will likely give an error!")
+
+    if(is.null(res$knots.dif)){
+        if(const.dif){
+            res$knots.dif <- matrix(0,
+                                     1, ## constant diffusion by default
+                                     length(env))
+        }else{
+            res$knots.dif <- sapply(env,
+                                     function(x)
+                                         quantile(as.numeric(x),
+                                                  c(0.05, 0.5, 0.95), na.rm = TRUE))
+        }
+    }
+
 
     ## Prediction
     res$xygrid.pred <- res$xygrid

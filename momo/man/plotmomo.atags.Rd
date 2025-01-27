@@ -8,8 +8,12 @@ plotmomo.atags(
   atags,
   main = "Archival tags",
   keep.par = FALSE,
+  plot.land = FALSE,
   xlim = NULL,
   ylim = NULL,
+  xlab = "x",
+  ylab = "y",
+  leg.pos = "topright",
   ...
 )
 }

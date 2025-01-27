@@ -8,7 +8,7 @@ sim.ctags(
   grid,
   par = NULL,
   env = NULL,
-  n = 100,
+  n = 300,
   effort = NULL,
   trange = NULL,
   trange.rel = NULL,

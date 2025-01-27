@@ -11,7 +11,8 @@ create.grid(
   select = FALSE,
   plot.land = FALSE,
   keep.par = FALSE,
-  verbose = TRUE
+  verbose = TRUE,
+  fit = NULL
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ create.grid(
 \item{plot.land}{Optional plot land (only when select.cells = TRUE)}
 
 \item{verbose}{Print messages?}
+
+\item{fit}{Default: NULL. If fit provided, grid is extracted from fit}
 
 \item{select.cells}{Select cells}
 }

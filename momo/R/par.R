@@ -10,19 +10,37 @@ def.par <- function(dat, conf){
     par <- list()
 
     ## Taxis
-    par$alpha <- matrix(rep(0, length(conf$knots.tax)),
-                        nrow(conf$knots.tax),
-                        ncol(conf$knots.tax))
+    ## par$alpha <- matrix(rep(0, length(dat$knots.tax)),
+    ##                     nrow(dat$knots.tax),
+    ##                     ncol(dat$knots.tax))
+
+    ## TRY:
+    par$alpha <- array(rep(0, length(dat$knots.tax)),
+                       dim = c(nrow(dat$knots.tax),
+                               ncol(dat$knots.tax),
+                               max(conf$ienvS$tax)))
 
     ## Diffusion
-    par$beta <- matrix(rep(log(0.01), length(conf$knots.dif)),
-                        nrow(conf$knots.dif),
-                       ncol(conf$knots.dif))
+    ## par$beta <- matrix(rep(log(0.01), length(dat$knots.dif)),
+    ##                     nrow(dat$knots.dif),
+    ##                    ncol(dat$knots.dif))
+
+    ## TRY:
+    par$beta <- array(rep(log(0.01), length(dat$knots.dif)),
+                        dim = c(nrow(dat$knots.dif),
+                                ncol(dat$knots.dif),
+                                max(conf$ienvS$dif)))
 
     ## Advection
-    par$gamma <- matrix(rep(0, length(dat$env)),
-                        2,  ## 1: x direction; 2: y direction
-                        length(dat$env))
+    ## par$gamma <- matrix(rep(0, length(dat$env)),
+    ##                     2,  ## 1: x direction; 2: y direction
+    ##                     length(dat$env))
+
+    ## TRY:
+    par$gamma <- array(rep(0, length(dat$env)),
+                        dim = c(2,  ## 1: x direction; 2: y direction
+                                length(dat$env),
+                                max(conf$ienvS$adv)))
 
     ## Observation uncertainty
     par$logSdObsATS <- log(0.01)

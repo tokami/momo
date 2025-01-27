@@ -4,7 +4,7 @@
 ##' @param const.dif Constant diffusion? logical
 ##'
 ##' @export
-def.conf <- function(dat, const.dif = TRUE){
+def.conf <- function(dat){
 
     ## TODO: for user choices, manipulate,
     ## flags to turn stuff on, off, couple parameters, etc.
@@ -15,7 +15,7 @@ def.conf <- function(dat, const.dif = TRUE){
     ## Flags
     conf$use.ctags <- ifelse(!is.null(dat$ctags), TRUE, FALSE)
     conf$use.atags <- ifelse(!is.null(dat$atags), TRUE, FALSE)
-    conf$use.kf <- TRUE
+    conf$use.expm <- FALSE
     conf$use.effort <- ifelse(!is.null(dat$effort), TRUE, FALSE)
     conf$use.catch <- FALSE
     conf$use.taxis <- TRUE
@@ -44,7 +44,7 @@ def.conf <- function(dat, const.dif = TRUE){
         })
         ienv.tax <- matrix(ienv, nenv, length(dat$time.cont))
 
-        if(const.dif){
+        if(dat$const.dif){
             ienv.dif <- matrix(1, nenv, length(dat$time.cont))
         }else{
             ienv.dif <- matrix(ienv, nenv, length(dat$time.cont))
@@ -56,6 +56,18 @@ def.conf <- function(dat, const.dif = TRUE){
                           dif   = ienv.dif,
                           adv.x = ienv.adv.x,
                           adv.y = ienv.adv.y)
+    }
+
+
+    ## TRY:
+    if(!is.null(dat$env)){
+
+        nenv <- length(dat$env)
+        ienvS <- matrix(1, nenv, length(dat$time.cont))
+
+        conf$ienvS <- list(tax   = ienvS,
+                           dif   = ienvS,
+                           adv = ienvS)
     }
 
 
@@ -93,7 +105,6 @@ def.conf <- function(dat, const.dif = TRUE){
     conf$rel.events <- rel.events
     conf$irel.event <- irel.event
 
-
     if(!is.null(dat$ctags)){
         excl.ctags <- rep(0, nrow(dat$ctags))
         excl.ctags[(itrec - itrel) <= 0] <- 1
@@ -108,30 +119,6 @@ def.conf <- function(dat, const.dif = TRUE){
         rec <- NULL
     }
     conf$rec <- rec
-
-
-    ## Knots
-    env.obs <- get.env(dat, conf)
-    if(is.null(env.obs)){
-        env.obs <- dat$env
-    }
-    conf$knots.tax <- sapply(env.obs,
-                             function(x)
-                                 quantile(as.numeric(x),
-                                          c(0.05, 0.5, 0.95), na.rm = TRUE))
-
-    if(any(apply(conf$knots.tax,2,duplicated))) warning("Some knots are the same! This will likely give an error!")
-
-    if(const.dif){
-        conf$knots.dif <- matrix(0,
-                                 1, ## constant diffusion by default
-                                 length(dat$env))
-    }else{
-        conf$knots.dif <- sapply(dat$env,
-                                 function(x)
-                                     quantile(as.numeric(x),
-                                              c(0.05, 0.5, 0.95), na.rm = TRUE))
-    }
 
 
     ## Boundaries

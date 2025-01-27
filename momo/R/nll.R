@@ -40,31 +40,70 @@ nll <- function(par, dat){
 
 
     ## Setup environmental functions --------------------------
+    ## env.func.tax <- env.func.dif <-
+    ##     env.func.adv.x <- env.func.adv.y <-
+    ##         env.dfunc.tax <- env.dfunc.dif <-
+    ##             env.dfunc.adv <- vector("list", nenv)
+    ## for(i in 1:nenv){
+    ##     env.func.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i])
+    ##     env.dfunc.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i], deriv = TRUE)
+    ##     env.func.dif[[i]] <- poly.fun(dat$knots.dif[,i], par$beta[,i])
+    ##     env.func.adv.x[[i]] <- poly.fun(NULL, par$gamma[1,i], adv = TRUE)
+    ##     env.func.adv.y[[i]] <- poly.fun(NULL, par$gamma[2,i], adv = TRUE)
+    ## }
+
+
+    ## TRY:
     env.func.tax <- env.func.dif <-
         env.func.adv.x <- env.func.adv.y <-
             env.dfunc.tax <- env.dfunc.dif <-
                 env.dfunc.adv <- vector("list", nenv)
     for(i in 1:nenv){
-        env.func.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i])
-        env.dfunc.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i], deriv = TRUE)
-        env.func.dif[[i]] <- poly.fun(dat$knots.dif[,i], par$beta[,i])
-        env.func.adv.x[[i]] <- poly.fun(NULL, par$gamma[1,i], adv = TRUE)
-        env.func.adv.y[[i]] <- poly.fun(NULL, par$gamma[2,i], adv = TRUE)
+        env.func.tax[[i]] <- env.dfunc.tax[[i]] <- vector("list", dim(par$alpha)[3])
+        for(j in 1:dim(par$alpha)[3]){
+            env.func.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j])
+            env.dfunc.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j], deriv = TRUE)
+        }
+
+        env.func.dif[[i]] <- env.dfunc.dif[[i]] <- vector("list", dim(par$beta)[3])
+        for(j in 1:dim(par$beta)[3]){
+            env.func.dif[[i]][[j]] <- poly.fun(dat$knots.dif[,i], par$beta[,i,j])
+        }
+
+        env.func.adv.x[[i]] <- env.func.adv.y[[i]] <- env.dfunc.adv[[i]] <- vector("list", dim(par$gamma)[3])
+        for(j in 1:dim(par$gamma)[3]){
+            env.func.adv.x[[i]][[j]] <- poly.fun(NULL, par$gamma[1,i,j], adv = TRUE)
+            env.func.adv.y[[i]][[j]] <- poly.fun(NULL, par$gamma[2,i,j], adv = TRUE)
+        }
     }
 
     ## Setup habitat objects ---------------------------------
+    ## habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                          dat$ienv$tax, dat$time.cont,
+    ##                          env.func.tax, env.dfunc.tax)
+    ## habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                          dat$ienv$dif, dat$time.cont,
+    ##                          env.func.dif, env.dfunc.dif)
+    ## habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                            dat$ienv$adv.x, dat$time.cont,
+    ##                            env.func.adv.x, env.dfunc.adv)
+    ## habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                            dat$ienv$adv.y, dat$time.cont,
+    ##                            env.func.adv.y, env.dfunc.adv)
+
+    ## TRY:
     habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
                              dat$ienv$tax, dat$time.cont,
-                             env.func.tax, env.dfunc.tax)
+                             env.func.tax, env.dfunc.tax, dat$ienvS$tax)
     habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
                              dat$ienv$dif, dat$time.cont,
-                             env.func.dif, env.dfunc.dif)
+                             env.func.dif, env.dfunc.dif, dat$ienvS$dif)
     habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
                                dat$ienv$adv.x, dat$time.cont,
-                               env.func.adv.x, env.dfunc.adv)
+                               env.func.adv.x, env.dfunc.adv, dat$ienvS$adv)
     habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
                                dat$ienv$adv.y, dat$time.cont,
-                               env.func.adv.y, env.dfunc.adv)
+                               env.func.adv.y, env.dfunc.adv, dat$ienvS$adv)
 
     if(flag.effort){
         effort <- habi.light(dat$effort, dat$xranges.eff, dat$yranges.eff,
@@ -79,7 +118,7 @@ nll <- function(par, dat){
     }
 
 
-    if(dat$use.kf){
+    if(!dat$use.expm){
 
         ## Kalman filter  ---------------------------------
 
@@ -274,9 +313,9 @@ nll <- function(par, dat){
                     }
 
                     if(!RTMB:::ad_context()){
-                        resid.atags[r,1] <- resid.atags.fine[[a]][nrow(tag),1]
-                        resid.atags[r,2] <- resid.atags.fine[[a]][nrow(tag),2]
-                        resid.atags[r,3] <- resid.atags.fine[[a]][nrow(tag),3]
+                        resid.atags[a,1] <- resid.atags.fine[[a]][nrow(tag),1]
+                        resid.atags[a,2] <- resid.atags.fine[[a]][nrow(tag),2]
+                        resid.atags[a,3] <- resid.atags.fine[[a]][nrow(tag),3]
                     }
 
                     if(flag.effort){
@@ -663,14 +702,6 @@ nll <- function(par, dat){
                         ##     pnorm(dat$xygrid[,2] - dat$dxdy/2,
                         ##           tag$y[t], sdObsATS))
 
-                        ## works
-                        ## oprob <- dnorm(dat$xygrid[,1], tag$x[t],
-                        ##                sdObsATS / dat$dxdy[1]) *
-                        ##     dnorm(dat$xygrid[,2], tag$y[t],
-                        ##           sdObsATS / dat$dxdy[2])
-                        ## oprob <- oprob / (sum(oprob) * prod(dat$dxdy))
-
-                        ## ALT: TRY:
                         oprob <- (dnorm(dat$xygrid[,1], tag$x[t],
                                         sdObsATS) * dat$dxdy[1]) *
                             (dnorm(dat$xygrid[,2], tag$y[t],
@@ -678,7 +709,7 @@ nll <- function(par, dat){
                         oprob <- oprob / sum(oprob)
 
                         loglik.atags <- loglik.atags +
-                            log(sum(dist.prob[t,1:nc] * oprob)) ## 1:nc tag$ic[t]
+                            log(sum(dist.prob[t,1:nc] * oprob)) ## tag$ic[t]
                     }
                     loglik.atags <- loglik.atags +
                         log(dist.prob[itmax,tag$ic[itmax]])

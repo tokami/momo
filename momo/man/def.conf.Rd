@@ -4,7 +4,7 @@
 \alias{def.conf}
 \title{def.conf}
 \usage{
-def.conf(dat, const.dif = TRUE)
+def.conf(dat)
 }
 \arguments{
 \item{dat}{Dat frame with required information created by function \code{\link{check.momo.data}}}

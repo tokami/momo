@@ -5,7 +5,8 @@
 \title{Plot momo env}
 \usage{
 plotmomo.env(
-  env,
+  x,
+  select = NULL,
   main = "Environmental fields",
   labels = TRUE,
   keep.par = FALSE,

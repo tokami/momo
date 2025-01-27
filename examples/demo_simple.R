@@ -63,7 +63,7 @@ plotmomo.pref(fit1, par = par.true)
 
 
 ## Run matrix exponential approach on same data
-conf$use.kf <- FALSE
+conf$use.expm <- TRUE
 
 
 ## Get default parameters and inital values

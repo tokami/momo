@@ -6,14 +6,20 @@
 \usage{
 plotmomo.taxis(
   x,
-  cor = 1,
-  par = NULL,
-  funcs = NULL,
-  env = NULL,
+  select = NULL,
+  average = TRUE,
+  cor = 0.1,
+  col = "black",
   alpha = 0.5,
+  lwd = 1,
   main = "Taxis",
-  knots.tax = NULL,
+  xlab = "x",
+  ylab = "y",
+  xaxt = "s",
+  yaxt = "s",
+  plot.land = FALSE,
   keep.par = FALSE,
+  add = FALSE,
   ...
 )
 }

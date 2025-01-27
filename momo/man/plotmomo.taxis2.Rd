@@ -6,7 +6,7 @@
 \usage{
 plotmomo.taxis2(
   x,
-  cor = 1,
+  cor = 0.1,
   par = NULL,
   funcs = NULL,
   env = NULL,

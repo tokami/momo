@@ -1,3 +1,140 @@
+##' Simulate alpha
+##'
+##' @param ll ll
+##'
+sim.alpha <- function(ll, ul, n = 3, digits = 2){
+    alphas <- rep(NA, n)
+    alphas[1] <- 0
+    if(n > 1){
+        for(i in 2:n){
+            alphas[i] <- alphas[i-1] + sample(c(-1,1), 1) * runif(1, ll, ul)
+        }
+    }
+    return(signif(alphas, digits))
+}
+
+
+
+##' Simulate all data needed for fit.momo
+##'
+##' @param fit optional. momo fit
+##'
+##' @export
+sim.momo <- function(fit = NULL,
+                     xrange = c(0, 1),
+                     yrange = c(0, 1),
+                     dxdy = c(0.1, 0.1),
+                     select = FALSE,
+                     plot.land = FALSE,
+                     keep.par = FALSE,
+                     nt = 1,
+                     rho_t = 0.85, sd = 2, h = 0.2, nu = 2,
+                     rho_s = 0.8, delta = 0.1,
+                     zrange = c(20, 28), matern = TRUE,
+                     diagonal = TRUE,
+                     n.alpha = 3,
+                     const.dif = TRUE,
+                     correct.peclet = TRUE,
+                     use.ctags = TRUE,
+                     n.ctags = 300,
+                     use.atags = TRUE,
+                     n.atags = 30,
+                     xrange.rel = c(0.4,0.6),
+                     yrange.rel = c(0.4,0.6),
+                     verbose = TRUE){
+
+
+    grid <- create.grid(xrange = xrange,
+                        yrange = yrange,
+                        dxdy = dxdy,
+                        select = FALSE,
+                        plot.land = FALSE,
+                        keep.par = FALSE,
+                        verbose = verbose,
+                        fit = fit)
+
+    env <- sim.env(grid, nt = nt,
+                   rho_t = rho_t, sd = sd, h = h, nu = nu,
+                   rho_s = rho_s, delta = delta,
+                   zrange = zrange,
+                   matern = matern,
+                   diagonal = diagonal)
+
+
+    par <- list(alpha = matrix(sim.alpha(0.01, 0.03, n.alpha), n.alpha, 1))
+    if(const.dif){
+        par$beta <- matrix(log(runif(1, 0.0001, 0.001)), 1, 1)
+    }else{
+        par$beta <- matrix(log(runif(3, 0.0001, 0.001)), 3, 1)
+    }
+    par$logSdObsATS <- log(runif(1, 0.01, 0.1))
+
+    ## Peclet number criterion
+    if(correct.peclet){
+        peclet <- get.peclet(grid, env, par)
+        quant <- quantile(abs(unlist(peclet)), 0.95)
+        ## qaunt <- max(abs(peclet))
+        ## print(quant)
+        maxi <- 1
+        while(quant > 2 && maxi < 20){
+            par$beta <- par$beta + log(1.5)
+            peclet <- get.peclet(grid, env, par)
+            quant <- quantile(abs(unlist(peclet)), 0.95)
+            ## qaunt <- max(abs(peclet))
+            ## print(quant)
+            maxi <- maxi + 1
+        }
+    }
+
+    env.vals <- as.numeric(env[as.integer(cut(0.3,attr(grid,"xgr"))):
+                               as.integer(cut(0.7,attr(grid,"xgr"))),
+                               as.integer(cut(0.3,attr(grid,"ygr"))):
+                               as.integer(cut(0.7,attr(grid,"ygr"))),1])
+    knots <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
+
+    if(use.ctags){
+        ctags <- sim.ctags(grid, par, env, n.ctags,
+                           xrange.rel = xrange.rel,
+                           yrange.rel = yrange.rel,
+                           knots.tax = knots,
+                           )
+    }else{
+        ctags <- NULL
+    }
+
+    if(use.atags){
+        atags <- sim.atags(grid, par, env, n.atags,
+                           xrange.rel = xrange.rel,
+                           yrange.rel = yrange.rel,
+                           knots.tax = knots,
+                           )
+    }else{
+        atags <- NULL
+    }
+
+    effort <- NULL
+
+    dat <- setup.momo.data(grid = grid,
+                           env = env,
+                           ctags = ctags,
+                           atags = atags,
+                           effort = effort,
+                           knots.tax = knots)
+
+    res <- list()
+    res$grid <- grid
+    res$env <- env
+    res$par <- par
+    res$knots <- knots
+    res$ctags <- ctags
+    res$atags <- atags
+    res$dat <- dat
+
+    res <- add.class(res, "momo.sim")
+
+    return(res)
+}
+
 
 ##' Simulate environmental fields
 ##' @export
@@ -121,7 +258,7 @@ sim.effort <- function(grid,
 sim.ctags <- function(grid,
                       par = NULL,
                       env = NULL,
-                      n = 100,
+                      n = 300,
                       effort = NULL,
                       trange = NULL,
                       trange.rel = NULL,
@@ -297,14 +434,12 @@ sim.atags <- function(grid,
     }
 
     ## Setup default data and conf
-    dat <- setup.momo.data(grid, env, trange = trange)
+    dat <- setup.momo.data(grid, env,
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif,
+                           trange = trange)
     conf <- def.conf(dat)
-    if(!is.null(knots.tax)){
-        conf$knots.tax <- knots.tax
-    }
-    if(!is.null(knots.dif)){
-        conf$knots.dif <- knots.dif
-    }
+
 
     ## Parameters
     par <- get.sim.par(par)

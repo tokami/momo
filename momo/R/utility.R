@@ -6,6 +6,7 @@
 ##' @param select.cells Select cells
 ##' @param plot.land Optional plot land (only when select.cells = TRUE)
 ##' @param verbose Print messages?
+##' @param fit Default: NULL. If fit provided, grid is extracted from fit
 ##'
 ##' @export
 create.grid <- function(xrange = c(0,1),
@@ -14,7 +15,29 @@ create.grid <- function(xrange = c(0,1),
                         select = FALSE,
                         plot.land = FALSE,
                         keep.par = FALSE,
-                        verbose = TRUE){
+                        verbose = TRUE,
+                        fit = NULL){
+
+    if(!is.null(fit)){
+
+        grid <- list(xygrid = fit$dat$xygrid,
+                     igrid = fit$dat$igrid,
+                     celltable = fit$dat$celltable)
+        attributes(grid) <- list(names = attributes(grid)$names,
+                                 xrange = range(grid$xygrid[,1]) +
+                                     c(-1,1) * fit$dat$dxdy[1]/2,
+                                 yrange = range(grid$xygrid[,2]) +
+                                     c(-1,1) * fit$dat$dxdy[2]/2,
+                                 dxdy = fit$dat$dxdy,
+                                 xgr = fit$dat$xgr,
+                                 ygr = fit$dat$ygr,
+                                 xcen = unique(grid$xygrid[,1]),
+                                 ycen = unique(grid$xygrid[,2]),
+                                 nx = fit$dat$nx,
+                                 ny = fit$dat$ny)
+
+        return(grid)
+    }
 
     if(length(dxdy) == 1) dxdy <- rep(dxdy, 2)
 
@@ -29,7 +52,7 @@ create.grid <- function(xrange = c(0,1),
     xygrid <- expand.grid(xcen, ycen)
     igrid <- expand.grid(idx = 1:length(xcen), idy = 1:length(ycen))
     celltable <- matrix(rep(NA, ((length(xgr)-1)*(length(ygr)-1))),
-                        ncol = (length(xgr)-1))
+                        nrow = (length(xgr)-1))
 
     if(as.integer(select) != 0){
         opts <- options()
@@ -114,6 +137,8 @@ create.grid <- function(xrange = c(0,1),
 
     return(grid)
 }
+
+
 
 ##' Get dimensions from tagging data
 ##'
@@ -410,32 +435,72 @@ get.env.funcs <- function(dat, conf, par){
     nenv <- length(dat$env)
 
     ## Setup environmental functions --------------------------
+    ## env.func.tax <- env.func.dif <-
+    ##     env.func.adv.x <- env.func.adv.y <-
+    ##         env.dfunc.tax <- env.dfunc.dif <-
+    ##             env.dfunc.adv <- vector("list", nenv)
+    ## for(i in 1:nenv){
+    ##     env.func.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i])
+    ##     env.dfunc.tax[[i]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i],
+    ##                                    deriv = TRUE)
+    ##     env.func.dif[[i]] <- poly.fun(dat$knots.dif[,i], par$beta[,i])
+    ##     env.func.adv.x[[i]] <- poly.fun(NULL, par$gamma[1,i], adv = TRUE)
+    ##     env.func.adv.y[[i]] <- poly.fun(NULL, par$gamma[2,i], adv = TRUE)
+    ## }
+
+    ## TRY:
     env.func.tax <- env.func.dif <-
         env.func.adv.x <- env.func.adv.y <-
             env.dfunc.tax <- env.dfunc.dif <-
                 env.dfunc.adv <- vector("list", nenv)
     for(i in 1:nenv){
-        env.func.tax[[i]] <- poly.fun(conf$knots.tax[,i], par$alpha[,i])
-        env.dfunc.tax[[i]] <- poly.fun(conf$knots.tax[,i], par$alpha[,i],
-                                       deriv = TRUE)
-        env.func.dif[[i]] <- poly.fun(conf$knots.dif[,i], par$beta[,i])
-        env.func.adv.x[[i]] <- poly.fun(NULL, par$gamma[1,i], adv = TRUE)
-        env.func.adv.y[[i]] <- poly.fun(NULL, par$gamma[2,i], adv = TRUE)
+        env.func.tax[[i]] <- env.dfunc.tax[[i]] <- vector("list", dim(par$alpha)[3])
+        for(j in 1:dim(par$alpha)[3]){
+            env.func.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j])
+            env.dfunc.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j], deriv = TRUE)
+        }
+
+        env.func.dif[[i]] <- env.dfunc.dif[[i]] <- vector("list", dim(par$beta)[3])
+        for(j in 1:dim(par$beta)[3]){
+            env.func.dif[[i]][[j]] <- poly.fun(dat$knots.dif[,i], par$beta[,i,j])
+        }
+
+        env.func.adv.x[[i]] <- env.func.adv.y[[i]] <- env.dfunc.adv[[i]] <- vector("list", dim(par$gamma)[3])
+        for(j in 1:dim(par$gamma)[3]){
+            env.func.adv.x[[i]][[j]] <- poly.fun(NULL, par$gamma[1,i,j], adv = TRUE)
+            env.func.adv.y[[i]][[j]] <- poly.fun(NULL, par$gamma[2,i,j], adv = TRUE)
+        }
     }
 
+
     ## Setup habitat objects ---------------------------------
+    ## habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                          conf$ienv$tax, dat$time.cont,
+    ##                          env.func.tax, env.dfunc.tax)
+    ## habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                          conf$ienv$dif, dat$time.cont,
+    ##                          env.func.dif, env.dfunc.dif)
+    ## habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                            conf$ienv$adv.x, dat$time.cont,
+    ##                            env.func.adv.x, env.dfunc.adv)
+    ## habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
+    ##                            conf$ienv$adv.y, dat$time.cont,
+    ##                            env.func.adv.y, env.dfunc.adv)
+
+    ## TRY:
     habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
                              conf$ienv$tax, dat$time.cont,
-                             env.func.tax, env.dfunc.tax)
+                             env.func.tax, env.dfunc.tax, conf$ienvS$tax)
     habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
                              conf$ienv$dif, dat$time.cont,
-                             env.func.dif, env.dfunc.dif)
+                             env.func.dif, env.dfunc.dif, conf$ienvS$dif)
     habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
                                conf$ienv$adv.x, dat$time.cont,
-                               env.func.adv.x, env.dfunc.adv)
+                               env.func.adv.x, env.dfunc.adv, confienvS$adv)
     habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
                                conf$ienv$adv.y, dat$time.cont,
-                               env.func.adv.y, env.dfunc.adv)
+                               env.func.adv.y, env.dfunc.adv, conf$ienvS$adv)
+
 
     if(conf$use.effort){
         effort <- habi.light(dat$effort, dat$xranges.eff, dat$yranges.eff,
@@ -474,9 +539,9 @@ get.env.funcs <- function(dat, conf, par){
 
 get.sim.par <- function(par = NULL){
 
-    par.out <- list(alpha = matrix(c(0, 0.1, 0.001), 3, 1),
-                    beta = matrix(log(0.02), 1, 1),
-                    gamma = matrix(0, 2, 1),
+    par.out <- list(alpha = array(c(0, 0.1, 0.001), dim = c(3,1,1)),
+                    beta = array(log(0.02), dim = c(1,1,1)),
+                    gamma = array(0, dim = c(2,1,1)),
                     logLambda = matrix(log(0.5), 1, 1),
                     logM = log(0.3),
                     logSdObsATS = log(0.05))
@@ -724,4 +789,16 @@ get.env <- function(dat, conf){
     }
 
     return(env.obs)
+}
+
+
+##' Add a label to a plot
+##'
+##' @param lab label
+##'
+##' @export
+add.lab <- function(lab){
+    legend("topleft", legend = lab,
+           bg = "white", x.intersp = -0.4,
+           cex = 1.8, text.font = 2)
 }

@@ -13,6 +13,9 @@ plotmomo.grid(
   ...
 )
 }
+\arguments{
+\item{grid}{grid}
+}
 \description{
 Plot momo grid
 }

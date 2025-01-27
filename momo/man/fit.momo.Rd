@@ -6,8 +6,8 @@
 \usage{
 fit.momo(
   dat,
-  conf,
-  par,
+  conf = NULL,
+  par = NULL,
   map = NULL,
   newtonsteps = 3,
   rm.unidentified = FALSE,
@@ -20,6 +20,7 @@ fit.momo(
   verbose = TRUE,
   do.sdreport = TRUE,
   do.report = TRUE,
+  use.expm = NULL,
   ...
 )
 }

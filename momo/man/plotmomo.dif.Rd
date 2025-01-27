@@ -7,12 +7,12 @@
 plotmomo.dif(
   x,
   cor = 20,
-  par = NULL,
-  funcs = NULL,
-  env = NULL,
   main = "Diffusion",
+  col = "black",
   alpha = 0.5,
+  lwd = 1,
   keep.par = FALSE,
+  add = FALSE,
   ...
 )
 }

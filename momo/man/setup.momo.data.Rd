@@ -10,6 +10,9 @@ setup.momo.data(
   ctags = NULL,
   atags = NULL,
   effort = NULL,
+  knots.tax = NULL,
+  knots.dif = NULL,
+  const.dif = TRUE,
   trange = NULL
 )
 }

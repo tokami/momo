@@ -13,8 +13,8 @@
 ##' @examples
 ##' 3 + 3
 fit.momo <- function(dat,
-                     conf,
-                     par,
+                     conf = NULL,
+                     par = NULL,
                      map = NULL,
                      newtonsteps = 3,
                      rm.unidentified = FALSE,
@@ -27,17 +27,31 @@ fit.momo <- function(dat,
                      verbose = TRUE,
                      do.sdreport = TRUE,
                      do.report = TRUE,
+                     use.expm = NULL,
                      ...){
+
+    ## Flags
+    sim.flag <- ifelse(inherits(dat, "momo.sim"), TRUE, FALSE)
 
     ## RTMB does not allow you to pass the dat to MakeADFun
     cmb <- function(f, d) function(p) f(p, d)
 
+    if(sim.flag){
+        sim <- dat
+        dat <- sim$dat
+    }
+
+    if(is.null(conf)) conf <- def.conf(dat)
+    if(!is.null(use.expm)) conf$use.expm <- use.expm
+    if(is.null(par)) par <- def.par(dat, conf)
     if(is.null(map)) map <- def.map(dat, conf, par)
+
 
     ## Combine conf and dat
     tmb.all <- c(dat, conf)
 
     if(verbose) writeLines("Building the model, that can take a few minutes.")
+
 
     t1 <- Sys.time()
     obj <- RTMB::MakeADFun(func = cmb(nll, tmb.all),
@@ -62,7 +76,7 @@ fit.momo <- function(dat,
     if(verbose) writeLines(paste0("Model built (",
                                   signif(as.numeric(difftime(t2, t1,
                                                              units = "mins")),2),
-                                  "mins). Minimizing neg. loglik."))
+                                  "min). Minimizing neg. loglik."))
 
     t1 <- Sys.time()
     opt <- nlminb(obj$par, obj$fn, obj$gr,
@@ -77,11 +91,12 @@ fit.momo <- function(dat,
     if(verbose) writeLines(paste0("Minimization done (",
                                   signif(as.numeric(difftime(t2, t1,
                                                              units = "mins")),2),
-                                  "mins). Model ", "not "[opt$convergence],
+                                  "min). Model ", "not "[opt$convergence],
                                   "converged. Estimating uncertainty."))
 
     res <- list(dat = dat,
                 conf = conf,
+                map = map,
                 opt = opt,
                 obj = obj,
                 low = lower,
@@ -92,7 +107,6 @@ fit.momo <- function(dat,
         res$rep <- rep
     }
 
-
     if(do.sdreport){
         sdrep <- sdreport(obj = obj,
                           par.fixed = opt$par,
@@ -101,6 +115,7 @@ fit.momo <- function(dat,
         pl <- as.list(sdrep, "Est")
         plsd <- as.list(sdrep, "Std")
 
+        ## TODO: make optional
         sdrep$cov <- NULL ## save memory
 
         res <- c(list(sdrep = sdrep,
