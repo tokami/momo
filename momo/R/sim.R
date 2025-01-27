@@ -73,7 +73,12 @@ sim.momo <- function(fit = NULL,
                                as.integer(cut(0.7,attr(grid,"xgr"))),
                                as.integer(cut(0.3,attr(grid,"ygr"))):
                                as.integer(cut(0.7,attr(grid,"ygr"))),1])
-    knots <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
+    knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
+    if(const.dif){
+        knots.dif <- NULL
+    }else{
+        knots.dif <- knots.tax
+    }
 
     ## Peclet number criterion
     if(correct.peclet){
@@ -85,8 +90,8 @@ sim.momo <- function(fit = NULL,
         while(quant > 2 && maxi < 20){
             par$beta <- par$beta + log(1.5)
             peclet <- get.peclet(grid, env, par,
-                                 knots.tax = knots,
-                                 knots.dif = knots)
+                                 knots.tax = knots.tax,
+                                 knots.dif = knots.dif)
             quant <- quantile(abs(unlist(peclet)), 0.99)
             ## qaunt <- max(abs(peclet))
             ## print(quant)
@@ -98,8 +103,8 @@ sim.momo <- function(fit = NULL,
         ctags <- sim.ctags(grid, par, env, n.ctags,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
-                           knots.tax = knots,
-                           knots.dif = knots
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif
                            )
     }else{
         ctags <- NULL
@@ -109,8 +114,8 @@ sim.momo <- function(fit = NULL,
         atags <- sim.atags(grid, par, env, n.atags,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
-                           knots.tax = knots,
-                           knots.dif = knots
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif
                            )
     }else{
         atags <- NULL
@@ -123,14 +128,15 @@ sim.momo <- function(fit = NULL,
                            ctags = ctags,
                            atags = atags,
                            effort = effort,
-                           knots.tax = knots,
-                           knots.dif = knots)
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif)
 
     res <- list()
     res$grid <- grid
     res$env <- env
     res$par.sim <- par
-    res$knots <- knots
+    res$knots.tax <- knots.tax
+    res$knots.dif <- knots.dif
     res$ctags <- ctags
     res$atags <- atags
     res$dat <- dat
