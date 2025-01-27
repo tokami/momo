@@ -703,10 +703,12 @@ get.adv <- function(dat, par, conf, funcs = NULL){
 ##' @param grid grid
 ##'
 ##' @export
-get.peclet <- function(grid, env, par){
+get.peclet <- function(grid, env, par, knots.tax = NULL, knots.dif = NULL){
 
     dat <- setup.momo.data(grid = grid,
-                           env = env)
+                           env = env,
+                           knots.tax = knots.tax,
+                           knots.dif = knots.dif)
     conf <- def.conf(dat)
 
     uv <- get.adv(dat, par, conf)
