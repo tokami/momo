@@ -128,14 +128,10 @@ nll <- function(par, dat){
             nctags <- nrow(dat$ctags)
             resid.ctags <- matrix(NA, nctags, 4)
 
-            mxy <- vxy <- c(0,0)
-
             for(i in 1:nctags){
 
-                mxy[1] <- dat$ctags$x0[i]
-                mxy[2] <- dat$ctags$y0[i]
-                vxy[1] <- 0
-                vxy[2] <- 0
+                mxy <- c(dat$ctags$x0[i], dat$ctags$y0[i])
+                vxy <- c(0,0)
 
                 ts <- seq(dat$ctags$t0[i], dat$ctags$t1[i], by = dat$ddt)
                 nts <- length(ts)

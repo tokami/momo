@@ -15,7 +15,7 @@ sim.env(
   delta = 0.1,
   zrange = c(20, 28),
   matern = TRUE,
-  diagonal = TRUE
+  diagonal = FALSE
 )
 }
 \description{

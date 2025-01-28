@@ -31,14 +31,18 @@ sim.momo <- function(fit = NULL,
                      rho_t = 0.85, sd = 2, h = 0.2, nu = 2,
                      rho_s = 0.8, delta = 0.1,
                      zrange = c(20, 28), matern = TRUE,
-                     diagonal = TRUE,
+                     diagonal = FALSE,
+                     par = NULL,
                      n.alpha = 3,
                      const.dif = TRUE,
-                     correct.peclet = TRUE,
+                     knots.tax = NULL,
+                     knots.dif = NULL,
+                     correct.peclet = FALSE,
                      use.ctags = TRUE,
                      n.ctags = 300,
                      use.atags = TRUE,
                      n.atags = 30,
+                     trange.rel = NULL,
                      xrange.rel = c(0.4,0.6),
                      yrange.rel = c(0.4,0.6),
                      verbose = TRUE){
@@ -53,6 +57,13 @@ sim.momo <- function(fit = NULL,
                         verbose = verbose,
                         fit = fit)
 
+    if(is.null(xrange.rel)){
+        xrange.rel <- attr(grid, "xrange")
+    }
+    if(is.null(yrange.rel)){
+        yrange.rel <- attr(grid, "yrange")
+    }
+
     env <- sim.env(grid, nt = nt,
                    rho_t = rho_t, sd = sd, h = h, nu = nu,
                    rho_s = rho_s, delta = delta,
@@ -61,46 +72,58 @@ sim.momo <- function(fit = NULL,
                    diagonal = diagonal)
 
 
-    par <- list(alpha = array(sim.alpha(0.01, 0.03, n.alpha), dim = c(n.alpha,1,1)))
+    par.out <- list(alpha = array(sim.alpha(0.01, 0.04, n.alpha),
+                              dim = c(n.alpha,1,1)))
     if(const.dif){
-        par$beta <- array(log(runif(1, 0.0001, 0.001)), dim = c(1,1,1))
+        par.out$beta <- array(log(runif(1, 0.001, 0.01)), dim = c(1,1,1))
     }else{
-        par$beta <- array(log(runif(3, 0.0001, 0.001)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.001, 0.01)), dim = c(3,1,1))
     }
-    par$logSdObsATS <- log(runif(1, 0.01, 0.1))
+    par.out$logSdObsATS <- log(runif(1, 0.001, 0.01))
+    if(!is.null(par)){
+        for(i in 1:length(par)){
+            par.out[names(par)[i]] <- par[names(par)[i]]
+        }
+    }
+    par <- par.out
 
-    env.vals <- as.numeric(env[as.integer(cut(0.3,attr(grid,"xgr"))):
-                               as.integer(cut(0.7,attr(grid,"xgr"))),
-                               as.integer(cut(0.3,attr(grid,"ygr"))):
-                               as.integer(cut(0.7,attr(grid,"ygr"))),1])
-    knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
-    if(const.dif){
-        knots.dif <- NULL
-    }else{
-        knots.dif <- knots.tax
+    if(is.null(knots.tax)){
+        env.vals <- as.numeric(env[as.integer(cut(xrange.rel[1],attr(grid,"xgr"))):
+                                   as.integer(cut(xrange.rel[2],attr(grid,"xgr"))),
+                                   as.integer(cut(yrange.rel[1],attr(grid,"ygr"))):
+                                   as.integer(cut(yrange.rel[2],attr(grid,"ygr"))),1])
+        knots.tax <- matrix(quantile(env.vals, probs = c(0.05,0.5,0.95)),3,1)
+    }
+    if(is.null(knots.dif)){
+        if(const.dif){
+            knots.dif <- NULL
+        }else{
+            knots.dif <- knots.tax
+        }
     }
 
     ## Peclet number criterion
     if(correct.peclet){
-        peclet <- get.peclet(grid, env, par)
-        quant <- quantile(abs(unlist(peclet)), 0.95)
-        ## qaunt <- max(abs(peclet))
-        ## print(quant)
+        peclet <- get.peclet(grid, env, par,
+                                 knots.tax = knots.tax,
+                                 knots.dif = knots.dif)
+        ## quant <- quantile(abs(unlist(peclet)), 0.9)
+        quant <- median(abs(unlist(peclet)))
         maxi <- 1
         while(quant > 2 && maxi < 20){
             par$beta <- par$beta + log(1.5)
             peclet <- get.peclet(grid, env, par,
                                  knots.tax = knots.tax,
                                  knots.dif = knots.dif)
-            quant <- quantile(abs(unlist(peclet)), 0.95)
-            ## qaunt <- max(abs(peclet))
-            ## print(quant)
+            ## quant <- quantile(abs(unlist(peclet)), 0.9)
+            quant <- median(abs(unlist(peclet)))
             maxi <- maxi + 1
         }
     }
 
     if(use.ctags){
         ctags <- sim.ctags(grid, par, env, n.ctags,
+                           trange.rel = trange.rel,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
                            knots.tax = knots.tax,
@@ -112,6 +135,7 @@ sim.momo <- function(fit = NULL,
 
     if(use.atags){
         atags <- sim.atags(grid, par, env, n.atags,
+                           trange.rel = trange.rel,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
                            knots.tax = knots.tax,
@@ -135,8 +159,6 @@ sim.momo <- function(fit = NULL,
     res$grid <- grid
     res$env <- env
     res$par.sim <- par
-    res$knots.tax <- knots.tax
-    res$knots.dif <- knots.dif
     res$ctags <- ctags
     res$atags <- atags
     res$dat <- dat
@@ -163,7 +185,7 @@ sim.env <- function(grid,
                     delta = 0.1,
                     zrange = c(20,28),
                     matern = TRUE,
-                    diagonal = TRUE){
+                    diagonal = FALSE){
 
     nx <- nrow(grid$celltable)
     ny <- ncol(grid$celltable)
@@ -222,7 +244,7 @@ sim.effort <- function(grid,
                        delta = 0.1,
                        zrange = c(20,28),
                        matern = TRUE,
-                       diagonal = TRUE){
+                       diagonal = FALSE){
 
     nx <- nrow(grid$celltable)
     ny <- ncol(grid$celltable)
@@ -347,7 +369,6 @@ sim.ctags <- function(grid,
         t <- t0
         state <- ifelse(flag.effort, 1, 2)
         while((t + by) < t1){
-            t <- t + by
             move <- c(0,0)
             if(conf$use.taxis){
                 move <- move + funcs$tax(xy, t) * by
@@ -372,6 +393,7 @@ sim.ctags <- function(grid,
                                                M/(FF+M)*(1-psurv)))
                 if(state != 1) break
             }
+            t <- t + by
         }
         if(!flag.effort || state == 2){
             t1 <- t
@@ -480,7 +502,6 @@ sim.atags <- function(grid,
         t <- t0
         state <- ifelse(flag.effort, 1, 2)
         while((t + by) < t1){
-            t <- t + by
             move <- c(0,0)
             if(conf$use.taxis){
                 move <- move + funcs$tax(xy, t) * by
@@ -504,6 +525,7 @@ sim.atags <- function(grid,
                                                  FF/(FF+M)*(1-psurv),
                                                  M/(FF+M)*(1-psurv)))
             }
+            t <- t + by
             ret <- rbind(ret, c(t, xy[1], xy[2]))
             if(flag.effort && state != 1) break
         }
