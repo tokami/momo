@@ -1559,6 +1559,8 @@ plotmomo.compare.one <- function(fit, ...,
 
     if(quantity == "par"){
 
+        browser()
+
         tmp <- lapply(fitlist, function(x){
             if(inherits(x, "momo.sim")){
                 nam <- names(x$par.sim)
@@ -1598,8 +1600,8 @@ plotmomo.compare.one <- function(fit, ...,
         })
 
         ylim <- range(unlist(tmp))
-        xlim <- c(1, unique(unlist(lapply(tmp, function(x)
-            length(unique(names(x))))))) + 0.5 * c(-1,1)
+        xlim <- c(1, max(unique(unlist(lapply(tmp, function(x)
+            length(unique(names(x)))))))) + 0.5 * c(-1,1)
 
         i = 1
         if(inherits(fitlist[[i]], "momo.sim")){

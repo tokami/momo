@@ -88,11 +88,11 @@ sim.momo <- function(fit = NULL,
     par <- par.out
 
     if(is.null(knots.tax)){
-        env.vals <- as.numeric(env[as.integer(cut(xrange.rel[1],attr(grid,"xgr"))):
-                                   as.integer(cut(xrange.rel[2],attr(grid,"xgr"))),
-                                   as.integer(cut(yrange.rel[1],attr(grid,"ygr"))):
-                                   as.integer(cut(yrange.rel[2],attr(grid,"ygr"))),1])
-        knots.tax <- matrix(quantile(env.vals, probs = c(0.05,0.5,0.95)),3,1)
+        env.vals <- as.numeric(env[as.integer(cut(0.3,attr(grid,"xgr"))):
+                                   as.integer(cut(0.7,attr(grid,"xgr"))),
+                                   as.integer(cut(0.3,attr(grid,"ygr"))):
+                                   as.integer(cut(0.7,attr(grid,"ygr"))),1])
+        knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
     }
     if(is.null(knots.dif)){
         if(const.dif){
@@ -356,7 +356,7 @@ sim.ctags <- function(grid,
                           ifelse(trange.rel[2]-by < trange.rel[1],
                                  trange.rel[1], trange.rel[2]-by))/by) * by
         if(!flag.effort){
-            trec1 <- ifelse(trange.rec[1] < t0, t0, trange.rec[1])
+            trec1 <- ifelse(trange.rec[1] < t0, t0+by, trange.rec[1])
             t1 <- round(runif(1, trec1,
                               ifelse(trange.rec[2]-by < trec1,
                                  trec1, trange.rec[2]-by))/by) * by
@@ -487,7 +487,7 @@ sim.atags <- function(grid,
                           ifelse(trange.rel[2]-by < trange.rel[1],
                                  trange.rel[1], trange.rel[2]-by))/by) * by
         if(!flag.effort){
-            trec1 <- ifelse(trange.rec[1] < t0, t0, trange.rec[1])
+            trec1 <- ifelse(trange.rec[1] < t0, t0+by, trange.rec[1])
             t1 <- round(runif(1, trec1,
                               ifelse(trange.rec[2]-by < trec1,
                                  trec1, trange.rec[2]-by))/by) * by
