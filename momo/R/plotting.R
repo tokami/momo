@@ -189,7 +189,7 @@ plotmomo.effort <- function(effort,
 
 ##' Plot momo ctags
 ##' @export
-plotmomo.ctags <- function(ctags,
+plotmomo.ctags <- function(x,
                            main = "Conventional tags",
                            plot.land = FALSE,
                            keep.par = FALSE,
@@ -197,6 +197,13 @@ plotmomo.ctags <- function(ctags,
                            ylim = NULL,
                            add = FALSE,
                            ...){
+
+    if(inherits(x, "momo.sim")){
+        ctags <- x$ctags
+    }else{
+        ctags <- x
+    }
+
 
     if(is.null(xlim)){
         xlims <- range(ctags$x0, ctags$x1, na.rm = TRUE)
@@ -242,7 +249,7 @@ plotmomo.ctags <- function(ctags,
 
 ##' Plot momo atags
 ##' @export
-plotmomo.atags <- function(atags,
+plotmomo.atags <- function(x,
                            main = "Archival tags",
                            keep.par = FALSE,
                            plot.land = FALSE,
@@ -252,6 +259,12 @@ plotmomo.atags <- function(atags,
                            ylab = "y",
                            leg.pos = "topright",
                            ...){
+
+    if(inherits(x, "momo.sim")){
+        atags <- x$atags
+    }else{
+        atags <- x
+    }
 
     if(is.null(xlim)){
         xlims <- range(sapply(atags, function(x) range(x[,2])))
@@ -1558,8 +1571,6 @@ plotmomo.compare.one <- function(fit, ...,
     }
 
     if(quantity == "par"){
-
-        browser()
 
         tmp <- lapply(fitlist, function(x){
             if(inherits(x, "momo.sim")){
