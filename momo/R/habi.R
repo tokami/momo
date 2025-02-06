@@ -1,4 +1,13 @@
-
+##' Habitat function
+##'
+##' @param FIELDS fields
+##'
+##' @details habitat function
+##'
+##' @return Different things
+##'
+##' @importFrom abind abind
+##'
 habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
 
     nenv <- length(FIELDS)
