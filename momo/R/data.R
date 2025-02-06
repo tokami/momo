@@ -216,7 +216,8 @@ setup.momo.data <- function(grid,
                             knots.tax = NULL,
                             knots.dif = NULL,
                             const.dif = TRUE,
-                            trange = NULL){
+                            trange = NULL,
+                            verbose = TRUE){
 
     res <- list()
 
@@ -269,51 +270,92 @@ setup.momo.data <- function(grid,
 
     if(!is.null(ctags)){
 
-        ## TODO: check which tags outside of spatial domain (grid)
-        ## ## Remove tags released outside of spatial domain
-        ## idx <- which(res$x0 < lon.range.mod[1] | res$x0 > lon.range.mod[2] |
-        ##              res$y0 < lat.range.mod[1] | res$y0 > lat.range.mod[2])
-        ## print(length(idx))
-        ## if(length(idx) > 0){
-        ##     writeLines(paste0("Tags released outside of spatial domain: ", length(idx)))
-        ##     res <- res[-idx,]
-        ## }
-
-        ## ## Remove tags recpatured outside of spatial domain
-        ## idx <- which(!is.na(res$x1) & (res$x1 < lon.range.mod[1] |
-        ##                                res$x1 > lon.range.mod[2]) |
-        ##              !is.na(res$y1) & (res$y1 < lat.range.mod[1] |
-        ##                                res$y1 > lat.range.mod[2]))
-        ## print(length(idx))
-        ## if(length(idx) > 0){
-        ##     writeLines(paste0("Tags recaptured outside of spatial domain: ", length(idx),". Removing them."))
-        ##     res <- res[-idx,]
-        ## }
-
         ## Checks
-        res$ctags <- res$ctags[res$ctags$x0 >= res$xrange[1] &
-                               res$ctags$x0 <= res$xrange[2],]
+        ## TODO: outsource in check function?
 
-        res$ctags <- res$ctags[is.na(res$ctags$x1) |
-                               (res$ctags$x1 >= res$xrange[1] &
-                               res$ctags$x1 <= res$xrange[2]),]
+        ## Remove tags released outside of spatial domain
+        idx <- which(res$ctags$x0 < res$xrange[1] |
+                     res$ctags$x0 > res$xrange[2] |
+                     res$ctags$y0 < res$yrange[1] |
+                     res$ctags$y0 > res$yrange[2])
+        if(length(idx) > 0){
+            if(verbose) writeLines(paste0("Tags released outside of spatial domain: ", length(idx), ". Removing them."))
+            res$ctags <- res$ctags[-idx,]
+        }
 
-        res$ctags <- res$ctags[res$ctags$y0 >= res$yrange[1] &
-                               res$ctags$y0 <= res$yrange[2],]
+        ## Remove tags recpatured outside of spatial domain
+        idx <- which(!is.na(res$ctags$x1) & (res$ctags$x1 < res$xrange[1] |
+                                             res$ctags$x1 > res$xrange[2]) |
+                     !is.na(res$ctags$y1) & (res$ctags$y1 < res$yrange[1] |
+                                             res$ctags$y1 > res$yrange[2]))
+        if(length(idx) > 0){
+            if(verbose) writeLines(paste0("Tags recaptured outside of spatial domain: ", length(idx),". Removing them."))
+            res$ctags <- res$ctags[-idx,]
+        }
 
-        res$ctags <- res$ctags[is.na(res$ctags$x1) |
-                               (res$ctags$y1 >= res$yrange[1] &
-                               res$ctags$y1 <= res$yrange[2]),]
+        ## Remove tags that are in grid = NA
+        idx <- which(is.na(res$celltable[cbind(cut(res$ctags$x0, res$xgr),
+                                               cut(res$ctags$y0, res$ygr))]))
+        if(length(idx) > 0){
+            if(verbose) writeLines(paste0("Tags released in grid cells that are NA: ", length(idx),". Removing them."))
+            res$ctags <- res$ctags[-idx,]
+        }
+        idx <- which(!is.na(res$ctags$x1) & !is.na(res$ctags$y1) &
+                     is.na(res$celltable[cbind(cut(res$ctags$x1, res$xgr),
+                                               cut(res$ctags$y1, res$ygr))]))
+        if(length(idx) > 0){
+            if(verbose) writeLines(paste0("Tags recaptured in grid cells that are NA: ", length(idx),". Removing them."))
+            res$ctags <- res$ctags[-idx,]
+        }
 
+        ## Remove tags outside of time period
+        idx <- which(res$ctags$t0 < res$trange[1] |
+                     res$ctags$t0 > res$trange[2] |
+                     (!is.na(res$ctags$t1) &
+                      (res$ctags$t1 < res$trange[1] |
+                       res$ctags$t1 > res$trange[2])))
+        if(length(idx) > 0){
+            if(verbose) writeLines(paste0("Tags released or recaptured before or after time period: ", length(idx),". Removing them."))
+            res$ctags <- res$ctags[-idx,]
+        }
 
         ## CHECK: same time step recovery allowed for expm?
         res$ctags <- res$ctags[is.na(res$ctags$t1) |
                                res$ctags$t0 != res$ctags$t1,]
         ## TODO: cut to time step than check if equal?
 
-        ## set t1 non-recpatured tags equal to trange[2]
-        ## later with recapture locations not needed anymore
-        res$ctags$t1[is.na(res$ctags$x1)] <- res$trange[2]
+        ## Remove all non recovered if effort is zero
+        if(is.null(effort)){
+            idx <- which(is.na(res$ctags$t1) |
+                         is.na(res$ctags$x1) |
+                         is.na(res$ctags$y1))
+            if(length(idx) > 0){
+                res$ctags <- res$ctags[-idx,]
+            }
+        }
+
+        ## Discretised
+        res$ctags$itrel <- as.integer(cut(res$ctags$t0, res$time.cont,
+                                          include.lowest = TRUE))
+        res$ctags$itrec <- as.integer(cut(res$ctags$t1, res$time.cont,
+                                          include.lowest = TRUE))
+        res$ctags$icrel <- res$celltable[cbind(as.integer(cut(res$ctags$x0, res$xgr)),
+                                               as.integer(cut(res$ctags$y0, res$ygr)))]
+        res$ctags$icrec <- res$celltable[cbind(as.integer(cut(res$ctags$x1, res$xgr)),
+                                               as.integer(cut(res$ctags$y1, res$ygr)))]
+
+        ## Remove tags recovered in same time step as released
+        ind <- which(res$ctags$itrec - res$ctags$itrel <= 0)
+        if(length(ind) > 0){
+            res$ctags <- res$ctags[-ind,]
+        }
+        ## FUTURE: not needed for KF, could remove quite a few tags!
+        ## make flag to swith this off, possible to have this later and only use when running expm?
+
+        ## Release events
+        tmp <- get.release.events(res)
+        res$rel.events <- tmp$rel.events
+        res$ctags$rel.event <- tmp$idx
 
     }
 
@@ -417,7 +459,9 @@ setup.momo.data <- function(grid,
     res$xygrid.pred <- res$xygrid
     res$igrid.pred <- res$igrid
     res$time.cont.pred <- res$time.cont
-    res$env.pred <- sapply(env, function(x) seq(min(x), max(x), length.out = 100))
+    res$env.pred <- sapply(env, function(x) seq(min(x, na.rm = TRUE),
+                                                max(x, na.rm = TRUE),
+                                                length.out = 100))
 
     res$ddt <- 0.01
     res$eps <- 0.000001

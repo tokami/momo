@@ -19,7 +19,7 @@ Depends:
     R (>= 4.4),
     RTMB (>= 1.0)
 Imports:
-    Matrix, RTMB, RTMBconvenience, spdep
+    Matrix, RTMB, spdep
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr, rmarkdown

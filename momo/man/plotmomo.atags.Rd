@@ -5,7 +5,7 @@
 \title{Plot momo atags}
 \usage{
 plotmomo.atags(
-  atags,
+  x,
   main = "Archival tags",
   keep.par = FALSE,
   plot.land = FALSE,

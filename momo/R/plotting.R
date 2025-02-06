@@ -198,7 +198,7 @@ plotmomo.ctags <- function(x,
                            add = FALSE,
                            ...){
 
-    if(inherits(x, "momo.sim")){
+    if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
         ctags <- x$ctags
     }else{
         ctags <- x
@@ -260,19 +260,19 @@ plotmomo.atags <- function(x,
                            leg.pos = "topright",
                            ...){
 
-    if(inherits(x, "momo.sim")){
+    if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
         atags <- x$atags
     }else{
         atags <- x
     }
 
     if(is.null(xlim)){
-        xlims <- range(sapply(atags, function(x) range(x[,2])))
+        xlims <- range(sapply(atags, function(x) range(x[,2], na.rm = TRUE)))
     }else{
         xlims <- xlim
     }
     if(is.null(ylim)){
-        ylims <- range(sapply(atags, function(x) range(x[,3])))
+        ylims <- range(sapply(atags, function(x) range(x[,3], na.rm = TRUE)))
     }else{
         ylims <- ylim
     }
@@ -381,7 +381,7 @@ plotmomo.pref <- function(x,
 
         xlims <- apply(env.pred, 2, range)
 
-        ylims <- range(pref, preflow, prefup) ## if more env fields this should be matrices
+        ylims <- range(pref, preflow, prefup, na.rm = TRUE) ## if more env fields this should be matrices
         alpha <- 0.3
 
         if(!add){
@@ -446,6 +446,7 @@ plotmomo.pref <- function(x,
         ylims <- range(pref, par)
 
         alpha <- 0.3
+
 
         if(!add){
             plot(NA, ty = 'n',
@@ -541,35 +542,29 @@ plotmomo.pref.spatial <- function(x,
         cols <- get.momo.cols(2)
         alpha <- 0.3
 
-        plot(NA, ty = 'n',
-             xlim = xlims,
-             ylim = ylims,
-             ylab = "",
-             xlab = "")
-        polygon(c(env.pred[,i], rev(env.pred[,i])),
-                c(preflow, rev(prefup)),
-                border = NA,
-                col = rgb(t(col2rgb(cols[i]))/255, alpha=alpha))
-        ## rug(x$dat$env$env.obs[,inp$env$var[i]]) ## TODO:
+        get.true.pref <- momo:::poly.fun(as.numeric(knots),
+                                         as.numeric(par.est))
 
-        if(!is.null(par)){
+        i = 1
+        pref.pred <- get.true.pref(as.numeric(x$dat$env[[i]][,,1]))
 
-            get.true.pref <- momo:::poly.fun(knots,  par.true)
+        mat <- x$dat$env[[i]][,,1]
+        mat[] <- pref.pred
 
-            lines(env.pred[,i], get.true.pref(env.pred[,i]),
-                  col = get.momo.cols(1, 0.7, type = "true"), lwd = 3)
-            points(knots, par.true,
-                   col = get.momo.cols(1, 0.7, type = "true"),
-                   pch = 15, cex = 1.2)
-            legend("topright",
-                   legend = c("est.", "true"),
-                   col = c(cols[i], get.momo.cols(1, 0.7, type = "true")),
-                   pch = c(16,15), bg = "white")
+        if(!add){
+            plot(NA,
+                 xlim = x$dat$xrange,
+                 ylim = x$dat$yrange,
+                 xlab = "x",
+                 ylab = "y")
         }
 
-        points(knots, par.est, pch = 16, cex = 1.2)
-        lines(env.pred[,i], pref, col = cols[i], lwd = 2)
-
+        image(as.numeric(rownames(mat)),
+              as.numeric(colnames(mat)),
+              mat,
+            xlim = x$dat$xrange,
+            ylim = x$dat$yrange,
+            add = TRUE)
 
         box(lwd=1.5)
 
@@ -1610,7 +1605,7 @@ plotmomo.compare.one <- function(fit, ...,
             return(c(pars,lo,hi))
         })
 
-        ylim <- range(unlist(tmp))
+        ylim <- range(unlist(tmp), na.rm = TRUE)
         xlim <- c(1, max(unique(unlist(lapply(tmp, function(x)
             length(unique(names(x)))))))) + 0.5 * c(-1,1)
 

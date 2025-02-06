@@ -26,6 +26,7 @@ def.conf <- function(dat){
     conf$est.n <- FALSE
     conf$pred.move <- TRUE
     conf$use.boundaries <- FALSE
+    conf$use.rel.events <- FALSE
 
     ## Env
     if(!is.null(dat$env)){
@@ -59,7 +60,7 @@ def.conf <- function(dat){
     }
 
 
-    ## TRY:
+    ## Seasonally varying prefs
     if(!is.null(dat$env)){
 
         nenv <- length(dat$env)
@@ -70,55 +71,13 @@ def.conf <- function(dat){
                            adv = ienvS)
     }
 
-
-    ## Tags
-    if(!is.null(dat$ctags)){
-        itrec <- as.integer(cut(dat$ctags$t1, dat$time.cont,
-                               include.lowest = TRUE))
-        icrec <- dat$celltable[cbind(as.integer(cut(dat$ctags$x1, dat$xgr)),
-                                     as.integer(cut(dat$ctags$y1, dat$ygr)))]
-
-    }else{
-        itrec <- NULL
-        icrec <- NULL
-    }
-    conf$itrec <- itrec
-    conf$icrec <- icrec
-
-    ## Release events
-    if(!is.null(dat$ctags)){
-        itrel <- as.integer(cut(dat$ctags$t0, dat$time.cont,
-                               include.lowest = TRUE))
-        icrel <- dat$celltable[cbind(as.integer(cut(dat$ctags$x0, dat$xgr)),
-                                     as.integer(cut(dat$ctags$y0, dat$ygr)))]
-        id <- paste0(itrel,":",icrel)
-        uni <- unique(id)
-        irel.event <- match(id, uni)
-        rel.events <- data.frame(itrel = as.numeric(sapply(strsplit(uni, ":"),"[[",1)),
-                                 icrel = as.numeric(sapply(strsplit(uni, ":"),"[[",2)),
-                                 itrec = as.numeric(by(itrec, irel.event, max)))
-        rownames(rel.events) <- NULL
-    }else{
-        rel.events <- NULL
-        irel.event <- NULL
-    }
-    conf$rel.events <- rel.events
-    conf$irel.event <- irel.event
-
-    if(!is.null(dat$ctags)){
-        excl.ctags <- rep(0, nrow(dat$ctags))
-        excl.ctags[(itrec - itrel) <= 0] <- 1
-    }else{
-        excl.ctags <- NULL
-    }
-    conf$excl.ctags <- excl.ctags
-
-    if(!is.null(dat$ctags)){
-        rec <- !is.na(dat$ctags$x1) & !is.na(dat$ctags$y1) & !is.na(dat$ctags$t1)
-    }else{
-        rec <- NULL
-    }
-    conf$rec <- rec
+    ## REMOVE:
+    ## if(!is.null(dat$ctags)){
+    ##     rec <- !is.na(dat$ctags$x1) & !is.na(dat$ctags$y1) & !is.na(dat$ctags$t1)
+    ## }else{
+    ##     rec <- NULL
+    ## }
+    ## conf$rec <- rec
 
 
     ## Boundaries

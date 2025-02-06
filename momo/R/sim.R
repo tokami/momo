@@ -39,9 +39,9 @@ sim.momo <- function(fit = NULL,
                      knots.dif = NULL,
                      correct.peclet = FALSE,
                      use.ctags = TRUE,
-                     n.ctags = 300,
+                     n.ctags = 500,
                      use.atags = TRUE,
-                     n.atags = 30,
+                     n.atags = 50,
                      trange.rel = NULL,
                      xrange.rel = c(0.4,0.6),
                      yrange.rel = c(0.4,0.6),
@@ -75,11 +75,11 @@ sim.momo <- function(fit = NULL,
     par.out <- list(alpha = array(sim.alpha(0.01, 0.04, n.alpha),
                               dim = c(n.alpha,1,1)))
     if(const.dif){
-        par.out$beta <- array(log(runif(1, 0.005, 0.05)), dim = c(1,1,1))
+        par.out$beta <- array(log(runif(1, 0.01, 0.04)), dim = c(1,1,1))
     }else{
-        par.out$beta <- array(log(runif(3, 0.005, 0.05)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.01, 0.04)), dim = c(3,1,1))
     }
-    par.out$logSdObsATS <- log(runif(1, 0.005, 0.05))
+    par.out$logSdObsATS <- log(runif(1, 0.01, 0.04))
     if(!is.null(par)){
         for(i in 1:length(par)){
             par.out[names(par)[i]] <- par[names(par)[i]]
@@ -92,7 +92,10 @@ sim.momo <- function(fit = NULL,
                                    as.integer(cut(0.7,attr(grid,"xgr"))),
                                    as.integer(cut(0.3,attr(grid,"ygr"))):
                                    as.integer(cut(0.7,attr(grid,"ygr"))),1])
-        knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
+        ## knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
+        knots.tax <- matrix(seq(min(env.vals, na.rm = TRUE),
+                                max(env.vals, na.rm = TRUE),
+                                length.out = 5)[-c(1,5)],3,1)
     }
     if(is.null(knots.dif)){
         if(const.dif){
@@ -181,7 +184,7 @@ sim.env <- function(grid,
                     sd = 2,
                     h = 0.2,
                     nu = 2,
-                    rho_s = 0.8,
+                    rho_s = NULL, ## 0.8,
                     delta = 0.1,
                     zrange = c(20,28),
                     matern = TRUE,
@@ -190,8 +193,12 @@ sim.env <- function(grid,
     nx <- nrow(grid$celltable)
     ny <- ncol(grid$celltable)
 
+    if(is.null(rho_s)){
+        rho_s <- mean(attr(grid,"dxdy")) / 0.125
+    }
+
     rescale.env <- function(env, zrange, i = NULL){
-        env.range <- range(unlist(env))
+        env.range <- range(unlist(env), na.rm = TRUE)
         envi <- if(!is.null(i)) env[[i]] else env
         res <- (envi - env.range[1]) /
             (env.range[2] - env.range[1]) * (zrange[2] - zrange[1]) + zrange[1]
@@ -201,13 +208,14 @@ sim.env <- function(grid,
     get.env <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
 
         ## Generate a random field
-        rf <- rnorm(nx * ny, 0, sd = sd)
+        rf <- rnorm(nrow(grid$xygrid), 0, sd = sd)
 
         ## GMRF
         Q <- get.precision.matrix(grid, h, nu, rho, delta, matern, diagonal)
         L <- chol(Q)
         S <- solve(L, rf)
-        rf.smooth <- matrix(S, nrow = nx, ncol = ny)
+        rf.smooth <- matrix(NA, nrow = nx, ncol = ny)
+        rf.smooth[!is.na(grid$celltable)] <- S
 
         return(rf.smooth)
     }
@@ -336,6 +344,12 @@ sim.ctags <- function(grid,
     if(is.null(yrange.rel)){
         yrange.rel <- yrange
     }
+
+    ## Checks
+    trange.rel <- sort(trange.rel)
+    trange.rec <- sort(trange.rec)
+    xrange.rel <- sort(xrange.rel)
+    yrange.rel <- sort(yrange.rel)
 
     ## Setup default data and conf
     dat <- setup.momo.data(grid, env,

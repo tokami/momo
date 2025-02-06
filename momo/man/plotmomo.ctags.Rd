@@ -5,7 +5,7 @@
 \title{Plot momo ctags}
 \usage{
 plotmomo.ctags(
-  ctags,
+  x,
   main = "Conventional tags",
   plot.land = FALSE,
   keep.par = FALSE,

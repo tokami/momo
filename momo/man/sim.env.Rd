@@ -11,7 +11,7 @@ sim.env(
   sd = 2,
   h = 0.2,
   nu = 2,
-  rho_s = 0.8,
+  rho_s = NULL,
   delta = 0.1,
   zrange = c(20, 28),
   matern = TRUE,

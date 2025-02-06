@@ -13,7 +13,8 @@ setup.momo.data(
   knots.tax = NULL,
   knots.dif = NULL,
   const.dif = TRUE,
-  trange = NULL
+  trange = NULL,
+  verbose = TRUE
 )
 }
 \description{

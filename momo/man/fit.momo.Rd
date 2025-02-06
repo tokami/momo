@@ -21,6 +21,7 @@ fit.momo(
   do.sdreport = TRUE,
   do.report = TRUE,
   use.expm = NULL,
+  use.rel.events = FALSE,
   ...
 )
 }

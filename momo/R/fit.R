@@ -28,6 +28,7 @@ fit.momo <- function(dat,
                      do.sdreport = TRUE,
                      do.report = TRUE,
                      use.expm = NULL,
+                     use.rel.events = FALSE,
                      ...){
 
     ## Flags
@@ -46,9 +47,15 @@ fit.momo <- function(dat,
 
     if(is.null(conf)) conf <- def.conf(dat)
     if(!is.null(use.expm)) conf$use.expm <- use.expm
+    if(!is.null(use.rel.events)) conf$use.rel.events <- use.rel.events
     if(is.null(par)) par <- def.par(dat, conf)
     if(is.null(map)) map <- def.map(dat, conf, par)
 
+    ## Do not use release events for KF
+    if(!conf$use.rel.events && !conf$use.expm){
+        dat$rel.events <- dat$ctags
+        dat$ctags$rel.event <- 1:nrow(dat$ctags)
+    }
 
     ## Combine conf and dat
     tmb.all <- c(dat, conf)
@@ -81,7 +88,6 @@ fit.momo <- function(dat,
                                                              units = "mins")),2),
                                   "min). Minimizing neg. loglik."))
 
-    t1 <- Sys.time()
     opt <- nlminb(obj$par, obj$fn, obj$gr,
                   control = list(trace = as.integer(verbose),
                                  eval.max = 2000,
@@ -89,10 +95,10 @@ fit.momo <- function(dat,
                                  rel.tol = rel.tol),
                   lower = lower2,
                   upper = upper2)
-    t2 <- Sys.time()
+    t3 <- Sys.time()
 
     if(verbose) writeLines(paste0("Minimization done (",
-                                  signif(as.numeric(difftime(t2, t1,
+                                  signif(as.numeric(difftime(t3, t2,
                                                              units = "mins")),2),
                                   "min). Model ", "not "[opt$convergence],
                                   "converged. Estimating uncertainty."))
@@ -105,6 +111,8 @@ fit.momo <- function(dat,
                 low = lower,
                 hig = upper)
 
+    times <- c(makeadfun = signif(as.numeric(difftime(t2, t1, units = "mins")),2), nlminb = signif(as.numeric(difftime(t3, t2, units = "mins")),2))
+
     if(do.report){
         rep <- obj$report()
         res$rep <- rep
@@ -114,6 +122,7 @@ fit.momo <- function(dat,
         sdrep <- sdreport(obj = obj,
                           par.fixed = opt$par,
                           ignore.parm.uncertainty = ignore.parm.uncertainty)
+        t4 <- Sys.time()
 
         pl <- as.list(sdrep, "Est")
         plsd <- as.list(sdrep, "Std")
@@ -125,7 +134,11 @@ fit.momo <- function(dat,
                       pl = pl,
                       plsd = plsd),
                  res)
+
+        times <- c(times, sdreport = signif(as.numeric(difftime(t4, t3, units = "mins")),2))
     }
+
+    res$times <- times
 
     attr(res, "RemoteSha") <- substr(packageDescription("momo")$RemoteSha, 1, 12)
     attr(res, "Version") <- packageDescription("momo")$Version

@@ -49,7 +49,7 @@ create.grid <- function(xrange = c(0,1),
     ygr <- seq(yrange[1], yrange[2], by = dxdy[2])
     ycen <- ygr[-1] - 0.5 * dxdy[2]
 
-    xygrid <- expand.grid(xcen, ycen)
+    xygrid <- expand.grid(x = xcen, y = ycen)
     igrid <- expand.grid(idx = 1:length(xcen), idy = 1:length(ycen))
     celltable <- matrix(rep(NA, ((length(xgr)-1)*(length(ygr)-1))),
                         nrow = (length(xgr)-1))
@@ -558,6 +558,7 @@ get.sim.par <- function(par = NULL){
 
 get.sim.funcs <- function(funcs = NULL, dat, conf, env, par){
 
+
     if(!is.null(env)){
         funcs <- c(funcs, get.env.funcs(dat, conf, par))
     }
@@ -803,4 +804,78 @@ add.lab <- function(lab){
     legend("topleft", legend = lab,
            bg = "white", x.intersp = -0.4,
            cex = 1.8, text.font = 2)
+}
+
+
+##' Get release events
+##'
+##' @param dat
+##'
+##' @export
+get.release.events <- function(dat,
+                               grid = NULL,
+                               time.cont = NULL,
+                               age.max = NULL){
+
+    ctags <- dat$ctags
+
+    ## Grid for aggregation
+    if(is.null(grid)){
+        celltable <- dat$celltable
+        xygrid <- dat$xygrid
+        xgr <- dat$xgr
+        ygr <- dat$ygr
+    }else{
+        celltable <- grid$celltable
+        xygrid <- grid$xygrid
+        xgr <- attr(grid, "xgr")
+        ygr <- attr(grid, "ygr")
+    }
+
+    ## TODO: make check if provided grid is not equal to model grid => problems for expm! but here we don't have expm=TRUE yet...
+
+    ## Time for aggregation
+    if(is.null(time.cont)){
+        time.cont <- dat$time.cont
+    }
+
+
+    idx.space <- celltable[cbind(cut(ctags$x0, xgr),
+                                 cut(ctags$y0, ygr))]
+
+    idx.time <- as.integer(cut(ctags$t0, time.cont, include.lowest = TRUE))
+
+    rel.all <- data.frame(xygrid[idx.space,],
+                          time.cont[idx.time])
+    colnames(rel.all) <- c("x0","y0","t0")
+
+    ## Unique release events
+    rel.events <- rel.all[!duplicated(rel.all),]
+    rownames(rel.events) <- NULL
+
+    ## Index to match tag to release event
+    idx.all <- apply(rel.all, 1, paste, collapse = ":")
+    idx.uni <- apply(rel.events, 1, paste, collapse = ":")
+    idx <- match(idx.all, idx.uni)
+
+    ## Maximum time for each release event
+    if(is.null(age.max)){
+        age.max <- ceiling(max(ctags$t1[!is.na(ctags$x0)] - ctags$t0[!is.na(ctags$x0)],
+                               na.rm = TRUE))
+    }
+    rel.events$t1 <- rel.events$t0 + age.max
+    rel.events$t1[rel.events$t1 > dat$trange[2]] <- dat$trange[2]
+
+    ## Discretisation for expm
+    rel.events$itrel <- as.integer(cut(rel.events$t0, time.cont,
+                                       include.lowest = TRUE))
+    rel.events$itrec <- as.integer(cut(rel.events$t1, time.cont,
+                                       include.lowest = TRUE))
+    rel.events$icrel <- dat$celltable[cbind(as.integer(cut(rel.events$x0, xgr)),
+                                            as.integer(cut(rel.events$y0, ygr)))]
+
+    res <- list(rel.events = rel.events,
+                idx = idx)
+
+    return(res)
 }
