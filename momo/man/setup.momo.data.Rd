@@ -14,6 +14,8 @@ setup.momo.data(
   knots.dif = NULL,
   const.dif = TRUE,
   trange = NULL,
+  dt = NULL,
+  time.cont = NULL,
   verbose = TRUE
 )
 }

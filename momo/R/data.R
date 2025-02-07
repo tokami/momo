@@ -217,6 +217,8 @@ setup.momo.data <- function(grid,
                             knots.dif = NULL,
                             const.dif = TRUE,
                             trange = NULL,
+                            dt = NULL,
+                            time.cont = NULL,
                             verbose = TRUE){
 
     res <- list()
@@ -234,10 +236,16 @@ setup.momo.data <- function(grid,
     }
     res$trange[1] <- floor(trange[1])
     res$trange[2] <- ceiling(trange[2])
-    res$dt <- 0.1
-    res$time.cont <- seq(res$trange[1],
-                         res$trange[2],
-                         res$dt)
+    res$dt <- ifelse(is.null(dt), 0.1, dt)
+    if(is.null(time.cont)){
+        res$time.cont <- seq(res$trange[1],
+                             res$trange[2],
+                             res$dt)
+    }else{
+        res$time.cont <- time.cont
+    }
+
+
     nt <- length(res$time.cont)
 
     ## Space

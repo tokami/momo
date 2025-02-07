@@ -11,6 +11,7 @@ sim.atags(
   n = 30,
   effort = NULL,
   trange = NULL,
+  dt = NULL,
   trange.rel = NULL,
   xrange.rel = NULL,
   yrange.rel = NULL,

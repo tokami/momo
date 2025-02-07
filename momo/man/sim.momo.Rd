@@ -12,6 +12,8 @@ sim.momo(
   select = FALSE,
   plot.land = FALSE,
   keep.par = FALSE,
+  trange = c(0, 1),
+  dt = 0.1,
   nt = 1,
   rho_t = 0.85,
   sd = 2,

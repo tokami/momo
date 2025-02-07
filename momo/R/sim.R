@@ -27,6 +27,8 @@ sim.momo <- function(fit = NULL,
                      select = FALSE,
                      plot.land = FALSE,
                      keep.par = FALSE,
+                     trange = c(0, 1),
+                     dt = 0.1,
                      nt = 1,
                      rho_t = 0.85, sd = 2, h = 0.2, nu = 2,
                      rho_s = 0.8, delta = 0.1,
@@ -88,14 +90,14 @@ sim.momo <- function(fit = NULL,
     par <- par.out
 
     if(is.null(knots.tax)){
-        env.vals <- as.numeric(env[as.integer(cut(0.3,attr(grid,"xgr"))):
-                                   as.integer(cut(0.7,attr(grid,"xgr"))),
-                                   as.integer(cut(0.3,attr(grid,"ygr"))):
-                                   as.integer(cut(0.7,attr(grid,"ygr"))),1])
+        env.vals <- as.numeric(env[as.integer(cut(0.2,attr(grid,"xgr"))):
+                                   as.integer(cut(0.8,attr(grid,"xgr"))),
+                                   as.integer(cut(0.2,attr(grid,"ygr"))):
+                                   as.integer(cut(0.8,attr(grid,"ygr"))),1])
         ## knots.tax <- matrix(quantile(env.vals, probs = c(0.1,0.5,0.9)),3,1)
         knots.tax <- matrix(seq(min(env.vals, na.rm = TRUE),
                                 max(env.vals, na.rm = TRUE),
-                                length.out = 5)[-c(1,5)],3,1)
+                                length.out = 7)[c(2,4,6)],3,1)
     }
     if(is.null(knots.dif)){
         if(const.dif){
@@ -126,6 +128,8 @@ sim.momo <- function(fit = NULL,
 
     if(use.ctags){
         ctags <- sim.ctags(grid, par, env, n.ctags,
+                           trange = trange,
+                           dt = dt,
                            trange.rel = trange.rel,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
@@ -138,6 +142,8 @@ sim.momo <- function(fit = NULL,
 
     if(use.atags){
         atags <- sim.atags(grid, par, env, n.atags,
+                           trange = trange,
+                           dt = dt,
                            trange.rel = trange.rel,
                            xrange.rel = xrange.rel,
                            yrange.rel = yrange.rel,
@@ -156,7 +162,9 @@ sim.momo <- function(fit = NULL,
                            atags = atags,
                            effort = effort,
                            knots.tax = knots.tax,
-                           knots.dif = knots.dif)
+                           knots.dif = knots.dif,
+                           trange = trange,
+                           dt = dt)
 
     res <- list()
     res$grid <- grid
@@ -306,6 +314,7 @@ sim.ctags <- function(grid,
                       n = 300,
                       effort = NULL,
                       trange = NULL,
+                      dt = NULL,
                       trange.rel = NULL,
                       xrange.rel = NULL,
                       yrange.rel = NULL,
@@ -323,10 +332,14 @@ sim.ctags <- function(grid,
     ## Dimensions
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
+    }else if(!is.null(env)){
+        if(!is.null(attributes(env)$dimnames[[3]])){
+            stop("Implement to simulate tags from dates in env, but dates could have any format.")
+        }else{
+            trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
+        }
     }
-    if(!is.null(env)){
-        trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
-    }
+
     if(is.null(trange.rel)){
         trange.rel <- trange
     }
@@ -355,7 +368,8 @@ sim.ctags <- function(grid,
     dat <- setup.momo.data(grid, env,
                            knots.tax = knots.tax,
                            knots.dif = knots.dif,
-                           trange = trange)
+                           trange = trange,
+                           dt = dt)
 
     conf <- def.conf(dat)
 
@@ -442,6 +456,7 @@ sim.atags <- function(grid,
                       n = 30,
                       effort = NULL,
                       trange = NULL,
+                      dt = NULL,
                       trange.rel = NULL,
                       xrange.rel = NULL,
                       yrange.rel = NULL,
@@ -486,7 +501,8 @@ sim.atags <- function(grid,
     dat <- setup.momo.data(grid, env,
                            knots.tax = knots.tax,
                            knots.dif = knots.dif,
-                           trange = trange)
+                           trange = trange,
+                           dt = dt)
     conf <- def.conf(dat)
 
 
