@@ -16,7 +16,7 @@ sim.ctags(
   xrange.rel = NULL,
   yrange.rel = NULL,
   trange.rec = NULL,
-  by = 0.01,
+  by = 0.1,
   knots.tax = NULL,
   knots.dif = NULL,
   funcs = NULL
