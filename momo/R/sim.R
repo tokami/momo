@@ -77,11 +77,11 @@ sim.momo <- function(fit = NULL,
     par.out <- list(alpha = array(sim.alpha(0.01, 0.04, n.alpha),
                               dim = c(n.alpha,1,1)))
     if(const.dif){
-        par.out$beta <- array(log(runif(1, 0.01, 0.04)), dim = c(1,1,1))
+        par.out$beta <- array(log(runif(1, 0.05, 0.15)), dim = c(1,1,1))
     }else{
-        par.out$beta <- array(log(runif(3, 0.01, 0.04)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.05, 0.15)), dim = c(3,1,1))
     }
-    par.out$logSdObsATS <- log(runif(1, 0.05, 0.2))
+    par.out$logSdObsATS <- log(runif(1, 0.05, 0.15))
     if(!is.null(par)){
         for(i in 1:length(par)){
             par.out[names(par)[i]] <- par[names(par)[i]]
