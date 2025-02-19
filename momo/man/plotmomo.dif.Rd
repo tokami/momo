@@ -6,7 +6,7 @@
 \usage{
 plotmomo.dif(
   x,
-  cor = 20,
+  cor = NULL,
   main = "Diffusion",
   col = "black",
   alpha = 0.5,

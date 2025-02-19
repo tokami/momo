@@ -16,7 +16,8 @@ create.grid <- function(xrange = c(0,1),
                         plot.land = FALSE,
                         keep.par = FALSE,
                         verbose = TRUE,
-                        fit = NULL){
+                        fit = NULL,
+                        grid = NULL){
 
     if(!is.null(fit)){
 
@@ -39,10 +40,17 @@ create.grid <- function(xrange = c(0,1),
         return(grid)
     }
 
+    if(!is.null(grid)){
+        xrange <- attr(grid, "xrange")
+        yrange <- attr(grid, "yrange")
+        idx <- which(is.na(grid$celltable), arr.ind = TRUE)
+    }else{
+        xrange <- sort(xrange)
+        yrange <- sort(yrange)
+    }
+
     if(length(dxdy) == 1) dxdy <- rep(dxdy, 2)
 
-    xrange <- sort(xrange)
-    yrange <- sort(yrange)
 
     xgr <- seq(xrange[1], xrange[2], by = dxdy[1])
     xcen <- xgr[-1] - 0.5 * dxdy[1]
@@ -117,6 +125,28 @@ create.grid <- function(xrange = c(0,1),
         xygrid <- xygrid[idx,]
         igrid <- igrid[idx,]
 
+    }
+
+    if(!is.null(grid)){
+        idx1 <- grid$celltable[cbind(cut(xygrid$x, attr(grid, "xgr")),
+                                    cut(xygrid$y, attr(grid, "ygr")))]
+        idx2 <- grid$celltable[cbind(cut(xygrid$x, attr(grid, "xgr"),
+                                         right = FALSE),
+                                     cut(xygrid$y, attr(grid, "ygr"),
+                                         right = FALSE))]
+        idx3 <- grid$celltable[cbind(cut(xygrid$x, attr(grid, "xgr")),
+                                     cut(xygrid$y, attr(grid, "ygr"),
+                                         right = FALSE))]
+        idx4 <- grid$celltable[cbind(cut(xygrid$x, attr(grid, "xgr"),
+                                         right = FALSE),
+                                     cut(xygrid$y, attr(grid, "ygr")))]
+        idx <- 1:nrow(xygrid)
+        idx[apply(cbind(idx1,idx2,idx3,idx4),1,function(x) sum(is.na(x)) > 2)] <- NA
+        idx <- which(!is.na(idx))
+        if(length(idx) > 0){
+            xygrid <- xygrid[idx,]
+            igrid <- igrid[idx,]
+        }
     }
 
     celltable[cbind(igrid$idx,igrid$idy)] <- 1:nrow(igrid)
@@ -313,8 +343,10 @@ is.empty <- function(x){
 }
 
 check.that.list <- function(x){
+    x0 <- x
     if(!is.null(x) && !inherits(x, "list")){
         x <- list(x)
+        attributes(x[[1]]) <- attributes(x0)
     }
     return(x)
 }
@@ -839,7 +871,6 @@ get.release.events <- function(dat,
         time.cont <- dat$time.cont
     }
 
-
     idx.space <- celltable[cbind(cut(ctags$x0, xgr),
                                  cut(ctags$y0, ygr))]
 
@@ -871,11 +902,19 @@ get.release.events <- function(dat,
                                        include.lowest = TRUE))
     rel.events$itrec <- as.integer(cut(rel.events$t1, time.cont,
                                        include.lowest = TRUE))
-    rel.events$icrel <- dat$celltable[cbind(as.integer(cut(rel.events$x0, xgr)),
-                                            as.integer(cut(rel.events$y0, ygr)))]
+    rel.events$icrel <- dat$celltable[cbind(as.integer(cut(rel.events$x0, dat$xgr)),
+                                            as.integer(cut(rel.events$y0, dat$ygr)))]
 
     res <- list(rel.events = rel.events,
                 idx = idx)
 
+    return(res)
+}
+
+
+
+get.par.names <- function(fit){
+    tab <- table(names(fit$opt$par))
+    res <- unlist(sapply(seq_along(tab), function(x) if(tab[x] > 1) paste0(names(tab)[x],1:tab[x]) else names(tab)[x]))
     return(res)
 }

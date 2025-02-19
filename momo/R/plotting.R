@@ -36,11 +36,11 @@ plotmomo.grid <- function(grid,
           ylim = ylims,
           add = TRUE)
     if(plot.land){
-        maps::map("world",
+        try(maps::map("world",
                   xlim = xlims,
                   ylim = ylims,
                   fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5))
+                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
     }
     labs <- as.numeric(grid$celltable)
     labs <- labs[!is.na(labs)]
@@ -107,12 +107,12 @@ plotmomo.env <- function(x,
              ylab = "")
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
         if(plot.land){
-            maps::map("world",
+            try(maps::map("world",
                       xlim = xlims,
                       ylim = ylims,
                       fill = TRUE, plot = TRUE, add = TRUE,
                       col = adjustcolor(grey(0.7),0.5),
-                      border = grey(0.5))
+                      border = grey(0.5)), silent = TRUE)
         }
         contour(x, y, env[,,i], add = TRUE)
         if(nt > 1) legend("topleft", legend = paste0("Field ", i),
@@ -171,11 +171,11 @@ plotmomo.effort <- function(effort,
         legend("topleft", legend = paste0("Field ", i),
                bg = "white", pch = NA)
         if(plot.land){
-            maps::map("world",
+            try(maps::map("world",
                       xlim = xlims,
                       ylim = ylims,
                       fill = TRUE, plot = TRUE, add = TRUE,
-                      col = grey(0.95), border = grey(0.5))
+                      col = grey(0.95), border = grey(0.5)), silent = TRUE)
         }
         box(lwd = 1.5)
     }
@@ -233,11 +233,11 @@ plotmomo.ctags <- function(x,
            length = 0.1)
     points(ctags$x0, ctags$y0, pch = 16, col = "grey30", cex = 0.8)
     if(plot.land && !add){
-        maps::map("world",
+        try(maps::map("world",
                   xlim = xlims,
                   ylim = ylims,
                   fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5))
+                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
     }
     if(!add){
         box(lwd = 1.5)
@@ -290,11 +290,11 @@ plotmomo.atags <- function(x,
          ylim = ylims,
          xlab = xlab, ylab = ylab)
     if(plot.land){
-        maps::map("world",
+        try(maps::map("world",
                   xlim = xlims,
                   ylim = ylims,
                   fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5))
+                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
     }
     for(i in 1:length(atags)){
         points(atags[[i]][1,2], atags[[i]][1,3], col = cols[1], pch = 1)
@@ -682,12 +682,12 @@ plotmomo.taxis <- function(x,
                      main = "")
             }
             if(plot.land){
-                maps::map("world",
+                try(maps::map("world",
                      xlim = x$dat$xrange,
                      ylim = x$dat$yrange,
                           fill = TRUE, plot = TRUE, add = TRUE,
                      col = adjustcolor(grey(0.95),0.5),
-                     border = grey(0.7))
+                     border = grey(0.7)), silent = TRUE)
             }
 
             arrows(x$dat$xygrid.pred[,1],
@@ -765,7 +765,7 @@ plotmomo.taxis <- function(x,
 ##' Plot diffusion
 ##' @export
 plotmomo.dif <- function(x,
-                         cor = 20,
+                         cor = NULL,
                          main = "Diffusion",
                          col = "black",
                          alpha = 0.5,
@@ -794,13 +794,16 @@ plotmomo.dif <- function(x,
         dif.est <- exp(apply(x$rep$hD.pred, 1, mean))
         dif.est * x$dat$dxdy[1]
 
+        if(is.null(cor)){
+            cor <- min(diff(x$dat$xrange)/2,
+                       diff(x$dat$yrange)/2) / max(sqrt(dif.est)) / 20
+        }
+
         points(x$dat$xygrid[,1],
                x$dat$xygrid[,2],
                col = col,
                lwd = lwd,
                cex = sqrt(dif.est) * cor)
-
-
 
     }else if(inherits(x, "momo.sim")){
 
@@ -837,6 +840,11 @@ plotmomo.dif <- function(x,
                          function(t) apply(dat$xygrid.pred, 1,
                                            function(x) exp(funcs$dif(x,t)[1])))
 
+     if(is.null(cor)){
+         cor <- min(diff(dat$xrange)/2,
+                    diff(dat$yrange)/2) / max(sqrt(rowMeans(D.true))) / 20
+        }
+
         points(dat$xygrid[,1],
                dat$xygrid[,2],
                ## col = get.momo.cols(1, alpha, type = "true"),
@@ -844,8 +852,8 @@ plotmomo.dif <- function(x,
                lwd = lwd,
                cex = sqrt(rowMeans(D.true)) * cor)
 
-        if(!add) box(lwd = 1.5)
     }
+    if(!add) box(lwd = 1.5)
 }
 
 
@@ -1567,6 +1575,11 @@ plotmomo.compare.one <- function(fit, ...,
 
     if(quantity == "par"){
 
+        idx <- which(sapply(fitlist, function(x) inherits(x, "momo.fit")))
+        if(length(idx) > 0){
+            pars <- unique(unlist(lapply(fitlist[idx], get.par.names)))
+        }
+
         tmp <- lapply(fitlist, function(x){
             if(inherits(x, "momo.sim")){
                 nam <- names(x$par.sim)
@@ -1576,7 +1589,8 @@ plotmomo.compare.one <- function(fit, ...,
                 mapped <- is.na(mapped)
                 pars <- unlist(x$par.sim)
                 pars <- pars[!names(pars) %in% names(mapped)[mapped]]
-                ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                ind <- unlist(sapply(c("beta","logSdObsATS"),
+                                     function(x) grep(x, names(pars))))
                 if(length(ind) > 0){
                     pars[ind] <- exp(pars[ind])
                 }
@@ -1595,7 +1609,8 @@ plotmomo.compare.one <- function(fit, ...,
                 sds <- sds[!names(sds) %in% names(mapped)[mapped]]
                 lo <- pars - 1.96 * sds
                 hi <- pars + 1.96 * sds
-                ind <- which(names(pars) %in% c("beta","logSdObsATS"))
+                ind <- unlist(sapply(c("beta","logSdObsATS"),
+                                     function(x) grep(x, names(pars))))
                 if(length(ind) > 0){
                     lo[ind] <- exp(pars[ind] - 1.96 * sds[ind])
                     hi[ind] <- exp(pars[ind] + 1.96 * sds[ind])
@@ -1786,6 +1801,7 @@ plotmomo.compare <- function(fit, ...,
         }else{
             leg.text <- names(fitlist)
         }
+
         par(mar = c(1,5,0,0))
         plot.new()
         legend("center", legend = leg.text,

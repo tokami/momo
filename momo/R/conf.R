@@ -31,20 +31,38 @@ def.conf <- function(dat){
     ## Env
     if(!is.null(dat$env)){
         nenv <- length(dat$env)
-        ## TODO: how to do this automatic? env could be annually, by quarter, season, require a time stamp? attributes(dat$env)
-        ## ienv <- rep(sapply(dat$env, function(x) dim(x)[3]),
-        ##             each = length(dat$time.cont))
-        ienv <- sapply(dat$env, function(x){
-            if(dim(x)[3] == diff(dat$trange)){
-                res <- rep(1:dim(x)[3], each = (length(dat$time.cont)-1)/dim(x)[3])
-                if(length(res) != length(dat$time.cont)) res <- c(res, rep(dim(x)[3], length(dat$time.cont) - length(res)))
-            }else{
-                res <- rep(1, length(dat$time.cont))
-            }
-            return(res)
-        })
-        ienv.tax <- matrix(ienv, nenv, length(dat$time.cont))
-
+        ## OLDER:
+        ## ## TODO: how to do this automatic? env could be annually, by quarter, season, require a time stamp? attributes(dat$env)
+        ## ## ienv <- rep(sapply(dat$env, function(x) dim(x)[3]),
+        ## ##             each = length(dat$time.cont))
+        ## ienv <- sapply(dat$env, function(x){
+        ##     if(dim(x)[3] == diff(dat$trange)){
+        ##         res <- rep(1:dim(x)[3], each = (length(dat$time.cont)-1)/dim(x)[3])
+        ##         if(length(res) != length(dat$time.cont)){
+        ##             res <- c(res, rep(dim(x)[3], length(dat$time.cont) - length(res)))
+        ##         }
+        ##     }else{
+        ##         res <- rep(1, length(dat$time.cont))
+        ##     }
+        ##     return(res)
+        ## })
+        ## ienv.tax <- matrix(ienv, nenv, length(dat$time.cont))
+        tmp <- sapply(dat$env,
+                      function(x)
+                          if(!is.null(attributes(x)$dimnames[[3]])){
+                              as.numeric(attributes(x)$dimnames[[3]])
+                          }else{
+                              seq(dat$trange[1], dat$trange[2],
+                                  length.out = dim(x)[3]+1)
+                          })
+        ienv.tax <- t(apply(tmp, 2,
+                          function(x){
+                              tmp <- as.integer(cut(dat$time.cont,
+                                                    unique(c(x,dat$trange[2])),
+                                                    right = FALSE))
+                              tmp[is.na(tmp)] <- max(tmp, na.rm = TRUE)
+                              return(tmp)
+                          }))
         if(dat$const.dif){
             ienv.dif <- matrix(1, nenv, length(dat$time.cont))
         }else{

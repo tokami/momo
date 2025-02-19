@@ -12,7 +12,8 @@ create.grid(
   plot.land = FALSE,
   keep.par = FALSE,
   verbose = TRUE,
-  fit = NULL
+  fit = NULL,
+  grid = NULL
 )
 }
 \arguments{

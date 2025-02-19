@@ -74,14 +74,14 @@ sim.momo <- function(fit = NULL,
                    diagonal = diagonal)
 
 
-    par.out <- list(alpha = array(sim.alpha(0.01, 0.04, n.alpha),
+    par.out <- list(alpha = array(sim.alpha(0.02, 0.06, n.alpha),  ## 0.01-0.04
                               dim = c(n.alpha,1,1)))
     if(const.dif){
-        par.out$beta <- array(log(runif(1, 0.02, 0.1)), dim = c(1,1,1))
+        par.out$beta <- array(log(runif(1, 0.005, 0.04)), dim = c(1,1,1)) ## 0.02 - 0.1
     }else{
-        par.out$beta <- array(log(runif(3, 0.02, 0.1)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.005, 0.04)), dim = c(3,1,1))
     }
-    par.out$logSdObsATS <- log(runif(1, 0.02, 0.1))
+    par.out$logSdObsATS <- log(runif(1, 0.005, 0.04))
     if(!is.null(par)){
         for(i in 1:length(par)){
             par.out[names(par)[i]] <- par[names(par)[i]]
@@ -333,8 +333,9 @@ sim.ctags <- function(grid,
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
     }else if(!is.null(env)){
-        if(!is.null(attributes(env)$dimnames[[3]])){
-            stop("Implement to simulate tags from dates in env, but dates could have any format.")
+        if(!is.null(attributes(env[[1]])$dimnames[[3]])){
+            ## stop("Implement to simulate tags from dates in env, but dates could have any format.")
+            trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
         }else{
             trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
         }
@@ -461,7 +462,7 @@ sim.atags <- function(grid,
                       xrange.rel = NULL,
                       yrange.rel = NULL,
                       trange.rec = NULL,
-                      by = 0.05,
+                      by = 0.01,
                       knots.tax = NULL,
                       knots.dif = NULL,
                       funcs = NULL){
@@ -475,10 +476,15 @@ sim.atags <- function(grid,
     ## Dimensions
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
+    }else if(!is.null(env)){
+        if(!is.null(attributes(env[[1]])$dimnames[[3]])){
+            ## stop("Implement to simulate tags from dates in env, but dates could have any format.")
+            trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
+        }else{
+            trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
+        }
     }
-    if(!is.null(env)){
-        trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
-    }
+
     if(is.null(trange.rel)){
         trange.rel <- trange
     }
