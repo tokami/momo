@@ -473,6 +473,7 @@ setup.momo.data <- function(grid,
 
     res$ddt <- 0.01
     res$eps <- 0.000001
+    res$var.init.kf <- 1e-6
 
     ## Return
     res <- add.class(res, "momo.data")

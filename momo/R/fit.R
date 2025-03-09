@@ -113,7 +113,6 @@ fit.momo <- function(dat,
 
     times <- c(makeadfun = signif(as.numeric(difftime(t2, t1, units = "mins")),2), nlminb = signif(as.numeric(difftime(t3, t2, units = "mins")),2))
 
-
     if(do.report){
         rep <- obj$report()
         res$rep <- rep

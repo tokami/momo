@@ -918,3 +918,25 @@ get.par.names <- function(fit){
     res <- unlist(sapply(seq_along(tab), function(x) if(tab[x] > 1) paste0(names(tab)[x],1:tab[x]) else names(tab)[x]))
     return(res)
 }
+
+
+
+unscented.transform <- function(x, Px){
+    "c" <- ADoverload("c")
+    "[<-" <- ADoverload("[<-")
+    L <- length(x)
+    W0 <- 0
+    chi <- array(0, dim = c(L, 2*L+1))
+    chi[,1] <- x
+    if(!RTMB:::ad_context()){
+        sqrtMat <- chol((L/(1-W0)) * Px)
+    }else{
+        sqrtMat <- RTMB:::chol.advector((L/(1-W0)) * Px)
+    }
+    for(i in 1:L){
+        chi[, i + 1] <- x + sqrtMat[, i]
+        chi[, i + 1 + L] <- x - sqrtMat[, i]
+    }
+    Wm <- Wc <- RTMB::matrix(c(W0, rep((1-W0)/(2*L), 2*L)), 1, 2*L+1)
+    return(list(chi = chi, Wm = Wm, Wc = Wc))
+}

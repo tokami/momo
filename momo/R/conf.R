@@ -16,6 +16,7 @@ def.conf <- function(dat){
     conf$use.ctags <- ifelse(!is.null(dat$ctags), TRUE, FALSE)
     conf$use.atags <- ifelse(!is.null(dat$atags), TRUE, FALSE)
     conf$use.expm <- FALSE
+    conf$use.ukf <- TRUE
     conf$use.effort <- ifelse(!is.null(dat$effort), TRUE, FALSE)
     conf$use.catch <- FALSE
     conf$use.taxis <- TRUE
