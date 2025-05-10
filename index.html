@@ -76,7 +76,7 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9">
-<p>momo is a new R package for tagging-based <strong>mo</strong>vement <strong>mo</strong>deling, specifically designed to estimate fine-scale animal movement patterns using various tagging data, such as mark-recapture, mark-resight, and data-logging/archival tags. The movement model is based on the advection-diffusion equation and incorporates habitat preference functions, enabling the reconstruction of individual movement paths and inference of population-level movement dynamics using a small set of interpretable parameters. Movement rates are estimated as a function of environmental conditions or geographic locations.</p>
+<p><em>momo</em> is a new R package for tagging-based <em>mo</em>vement <em>mo</em>deling, specifically designed to estimate fine-scale animal movement patterns using various tagging data, such as mark-recapture, mark-resight, and data-logging/archival tags. The movement model is based on the advection-diffusion equation and incorporates habitat preference functions, enabling the reconstruction of individual movement paths and inference of population-level movement dynamics using a small set of interpretable parameters. Movement rates are estimated as a function of environmental conditions or geographic locations.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -87,14 +87,64 @@
 </div>
 <div class=".momo-devel">
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tokami/momo"</span>, ref <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tokami/momo"</span>, ref <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Get started with:</p>
+<p>To get started with <em>momo</em>, load the package, simulate a tagging dataset, and fit the movement model:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tokami/momo" class="external-link">momo</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: RTMB</span></span>
+<span></span>
+<span><span class="co">## Simulate a small tagging data set</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim.momo.html">sim.momo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in prep.env(env): Something went wrong when trying to conver the date</span></span>
+<span><span class="co">#&gt; information (3rd dimension) to decimal years. Please check the use of the</span></span>
+<span><span class="co">#&gt; argument 'date.format' to specify the format of the time dimension!</span></span>
+<span><span class="co">#&gt; Tags recaptured outside of spatial domain: 3. Removing them.</span></span>
+<span></span>
+<span><span class="co">## Fit momo to the simulated data</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit.momo.html">fit.momo</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
+<span><span class="co">#&gt; Model built (0.65min). Minimizing neg. loglik.</span></span>
+<span><span class="co">#&gt;   0:    -764.52921:  0.00000  0.00000 -4.60517 -4.60517</span></span>
+<span><span class="co">#&gt;   1:    -1622.7452: 0.809506 -0.158924 -4.26143 -4.15652</span></span>
+<span><span class="co">#&gt;   2:    -3852.9454: 0.460597 -0.136380 -3.98798 -3.92635</span></span>
+<span><span class="co">#&gt;   3:    -4697.4419: 0.0549107 -0.158445 -3.85450 -3.66728</span></span>
+<span><span class="co">#&gt;   4:    -4754.9426: 0.153769 -0.130276 -3.73661 -3.51863</span></span>
+<span><span class="co">#&gt;   5:    -4774.9591: 0.0273377 -0.0211933 -3.60556 -3.55739</span></span>
+<span><span class="co">#&gt;   6:    -4797.3994: 0.130940 -0.0732304 -3.44445 -3.64202</span></span>
+<span><span class="co">#&gt;   7:    -4799.1280: 0.0799836 -0.267297 -3.48732 -3.57520</span></span>
+<span><span class="co">#&gt;   8:    -4811.4709: 0.0580559 -0.180328 -3.44624 -3.53151</span></span>
+<span><span class="co">#&gt;   9:    -4813.7381: 0.0906916 -0.165858 -3.44379 -3.53516</span></span>
+<span><span class="co">#&gt;  10:    -4815.1586: 0.0736870 -0.158719 -3.41886 -3.55339</span></span>
+<span><span class="co">#&gt;  11:    -4816.6418: 0.0809782 -0.115713 -3.46543 -3.52017</span></span>
+<span><span class="co">#&gt;  12:    -4816.9184: 0.0925146 -0.0900967 -3.41286 -3.56044</span></span>
+<span><span class="co">#&gt;  13:    -4817.5956: 0.0838907 -0.0895346 -3.41309 -3.55842</span></span>
+<span><span class="co">#&gt;  14:    -4817.7726: 0.0783491 -0.0911288 -3.41440 -3.55179</span></span>
+<span><span class="co">#&gt;  15:    -4817.8239: 0.0819420 -0.0915767 -3.42057 -3.54653</span></span>
+<span><span class="co">#&gt;  16:    -4817.8851: 0.0796595 -0.0876647 -3.42814 -3.54749</span></span>
+<span><span class="co">#&gt;  17:    -4817.9036: 0.0795222 -0.0863060 -3.42808 -3.54425</span></span>
+<span><span class="co">#&gt;  18:    -4817.9041: 0.0805814 -0.0838177 -3.42965 -3.54264</span></span>
+<span><span class="co">#&gt;  19:    -4817.9089: 0.0796985 -0.0842348 -3.43111 -3.54271</span></span>
+<span><span class="co">#&gt;  20:    -4817.9090: 0.0796483 -0.0839999 -3.43091 -3.54288</span></span>
+<span><span class="co">#&gt;  21:    -4817.9090: 0.0796543 -0.0840143 -3.43104 -3.54291</span></span>
+<span><span class="co">#&gt;  22:    -4817.9090: 0.0796473 -0.0840087 -3.43100 -3.54288</span></span>
+<span><span class="co">#&gt;  23:    -4817.9090: 0.0796492 -0.0840076 -3.43099 -3.54288</span></span>
+<span><span class="co">#&gt; Minimization done (0.017min). Model converged. Estimating uncertainty.</span></span>
+<span></span>
+<span><span class="co">## Plot simulated data and model predictions</span></span>
+<span><span class="fu"><a href="reference/plotmomo.compare.html">plotmomo.compare</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span>, fit <span class="op">=</span> <span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/unnamed-chunk-4-1.png"><!-- --></p>
+<p>This example illustrates the basic workflow: prepare data (here simulate), fit the model, and access results. For real applications, momo supports multiple types of tagging data, customizable environmental covariates, and both estimation and prediction features.</p>
+<p>Detailed examples and guidance are provided in the package vignettes (see <a href="https://tokami.github.io/momo/" class="uri">https://tokami.github.io/momo/</a>).</p>
+</div>
+<div class="section level2">
+<h2 id="getting-help">Getting help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
+</h2>
+<p>You can find more information about <em>momo</em> on its <em>pkgdown</em> page at <a href="https://tokami.github.io/momo/" class="uri">https://tokami.github.io/momo/</a>. The page includes links to vignettes, functions descriptions, version updates, and many more. In case, your question is not answered on the <em>pkgdown</em> webpage, please write an email to the maintainer: <a href="mailto:t.k.mildenberger@gmail.com">Tobias Mildenberger</a>. In case you find bugs, please post an issue on <a href="https://github.com/tokami/momo/issues" class="external-link">here</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
@@ -102,23 +152,11 @@
 <p>Please use the R command <code>citation("momo")</code> to receive information on how to cite this package.</p>
 </div>
 <div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
-</h2>
-<p>The <a href="link">tutorial</a> vignette demonstrates the use of the main functions of momo for estimating habitat suitability and movement patterns for simulated example data.</p>
-</div>
-<div class="section level2">
-<h2 id="questions--issues">Questions / Issues<a class="anchor" aria-label="anchor" href="#questions--issues"></a>
-</h2>
-<p>In case you have questions or find bugs, please write an email to <a href="mailto:t.k.mildenberger@gmail.com">Tobias Mildenberger</a> or post on <a href="https://github.com/tokami/momo/issues" class="external-link">momo/issues</a>.</p>
-</div>
-<div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li>Mildenberger, T. K., Maunder, M., Nielsen, A. (in process). momo: an R package for the estimation of fine-scale animal movement based on tagging data <a href="link">link</a>
-</li>
-<li>Mildenberger, T. K., et al. (in process). Habitat suitability and movement of Skipjack tuna in the Eastern Pacific Ocean <a href="link">link</a>
-</li>
+<li>Mildenberger, T. K., Maunder, M., Nielsen, A. (in prep). momo: an R package for the estimation of fine-scale animal movement based on tagging data</li>
+<li>Mildenberger, T. K., et al. (in prep). Habitat suitability and movement of Skipjack tuna in the Eastern Pacific Ocean</li>
 </ol>
 </div>
 
@@ -149,7 +187,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Tobias Mildenberger <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-6631-7524" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://github.com/tokami" class="external-link">Tobias Mildenberger</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-6631-7524" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>
 <a href="https://github.com/fishfollower" class="external-link">Anders Nielsen</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0001-9683-9262" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
@@ -167,7 +206,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Tobias Mildenberger, <a href="https://github.com/fishfollower" class="external-link">Anders Nielsen</a>.</p>
+  <p>Developed by <a href="https://github.com/tokami" class="external-link">Tobias Mildenberger</a>, <a href="https://github.com/fishfollower" class="external-link">Anders Nielsen</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
