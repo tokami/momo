@@ -23,12 +23,12 @@ Depends:
     R (>= 4.4),
     RTMB (>= 1.0)
 Imports:
-    Matrix, RTMB, spdep, abind
+    Matrix, spdep, abind, geosphere, maps, lubridate
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr, rmarkdown
 Suggests: knitr, rmarkdown
-URL: https://github.com/tokami/momo
+URL: https://github.com/tokami/momo, https://tokami.github.io/momo/
 BugReports: https://github.com/tokami/momo/issues
 NeedsCompilation: yes
 Encoding: UTF-8

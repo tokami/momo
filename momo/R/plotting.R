@@ -65,11 +65,7 @@ plotmomo.grid <- function(x,
           ylim = ylims,
           add = TRUE)
     if(plot.land){
-        try(maps::map("world",
-                  xlim = xlims,
-                  ylim = ylims,
-                  fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
+        plot.land()
     }
     labs <- as.numeric(grid$celltable)
     labs <- labs[!is.na(labs)]
@@ -161,12 +157,7 @@ plotmomo.env <- function(x,
              ...)
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
         if(plot.land){
-            try(maps::map("world",
-                      xlim = xlims,
-                      ylim = ylims,
-                      fill = TRUE, plot = TRUE, add = TRUE,
-                      col = adjustcolor(grey(0.7),0.5),
-                      border = grey(0.5)), silent = TRUE)
+            plot.land(xlims, ylims)
         }
         contour(x, y, env[,,i], add = TRUE)
         if(nt > 1) legend("topleft", legend = paste0("Field ", i),
@@ -264,11 +255,7 @@ plotmomo.ctags <- function(x,
            length = 0.1)
     points(ctags$x0, ctags$y0, pch = 16, col = "grey30", cex = 0.8)
     if(plot.land && !add){
-        try(maps::map("world",
-                  xlim = xlims,
-                  ylim = ylims,
-                  fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
+        plot.land(xlims, ylims)
     }
     if(!add){
         box(lwd = 1.5)
@@ -357,11 +344,7 @@ plotmomo.atags <- function(x,
              ...)
     }
     if(plot.land){
-        try(maps::map("world",
-                  xlim = xlims,
-                  ylim = ylims,
-                  fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
+        plot.land(xlims, ylims)
     }
     for(i in 1:length(atags)){
         points(atags[[i]][1,2], atags[[i]][1,3], col = cols[1], pch = 1)
@@ -452,11 +435,7 @@ plotmomo.stags <- function(x,
              ...)
     }
     if(plot.land){
-        try(maps::map("world",
-                  xlim = xlims,
-                  ylim = ylims,
-                  fill = TRUE, plot = TRUE, add = TRUE,
-                  col = grey(0.95), border = grey(0.5)), silent = TRUE)
+        plot.land(xlims, ylims)
     }
     for(i in 1:length(stags)){
         points(stags[[i]][1,2], stags[[i]][1,3], col = cols[1], pch = 1)
@@ -927,12 +906,7 @@ plotmomo.taxis <- function(x,
                      ...)
             }
             if(plot.land){
-                try(maps::map("world",
-                     xlim = x$dat$xrange,
-                     ylim = x$dat$yrange,
-                          fill = TRUE, plot = TRUE, add = TRUE,
-                     col = adjustcolor(grey(0.95),0.5),
-                     border = grey(0.7)), silent = TRUE)
+                plot.land(x$dat$xrange, x$dat$yrange)
             }
 
             arrows(x$dat$xygrid.pred[,1],
@@ -1088,12 +1062,7 @@ plotmomo.dif <- function(x,
         }
 
         if(plot.land){
-            try(maps::map("world",
-                          xlim = x$dat$xrange,
-                          ylim = x$dat$yrange,
-                          fill = TRUE, plot = TRUE, add = TRUE,
-                          col = adjustcolor(grey(0.95),0.5),
-                          border = grey(0.7)), silent = TRUE)
+            plot.land(x$dat$xrange, x$dat$yrange)
         }
 
         points(x$dat$xygrid.pred[,1],
@@ -1860,4 +1829,27 @@ plotmomo.compare <- function(fit, ...,
                col = col[1:length(fitlist)],
                bg = "white")
     }
+}
+
+
+
+
+##' Plot land masses
+##'
+##' @description Plot land masses.
+##'
+##' @param xlim x limits
+##' @param ylim y limits
+##'
+##' @return Nothing.
+##'
+##' @importFrom maps map
+##'
+plot.land <- function(xlim, ylim){
+    try(maps::map("world",
+                  xlim = xlim,
+                  ylim = ylim,
+                  fill = TRUE, plot = TRUE, add = TRUE,
+                  col = adjustcolor(grey(0.7),0.5), ## grey(0.95),
+                  border = grey(0.5)), silent = TRUE)
 }

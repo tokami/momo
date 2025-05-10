@@ -354,7 +354,9 @@ sim.env <- function(grid,
 ##' @return A data frame with simulate mark-recaptured tags.
 ##'
 ##' @examples
-##' ctags <- sim.ctags()
+##' data(skjepo)
+##'
+##' ctags <- sim.ctags(skjepo$grid)
 ##'
 ##' @export
 sim.ctags <- function(grid,
@@ -534,7 +536,9 @@ sim.ctags <- function(grid,
 ##' @return A data frame with simulate archival tags.
 ##'
 ##' @examples
-##' atags <- sim.atags()
+##' data(skjepo)
+##'
+##' atags <- sim.atags(skjepo$grid)
 ##'
 ##' @export
 sim.atags <- function(grid,
@@ -681,9 +685,6 @@ sim.atags <- function(grid,
 ##' @param digits number of significant digits for the parameters. Default: `2`.
 ##'
 ##' @return A vector with simulate alpha values.
-##'
-##' @examples
-##' alphas <- sim.alpha(0.01, 0.05)
 ##'
 sim.alpha <- function(ll, ul, n = 3, digits = 2){
     alphas <- rep(NA, n)

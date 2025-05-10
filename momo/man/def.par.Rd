@@ -19,7 +19,7 @@ A named list.
 Get a list with parameters and default initial values.
 }
 \examples{
-dat(skjepo)
+data(skjepo)
 
 par <- with(skjepo, def.par(dat, conf))
 

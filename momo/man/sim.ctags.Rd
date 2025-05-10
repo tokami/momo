@@ -74,6 +74,8 @@ A data frame with simulate mark-recaptured tags.
 \code{sim.ctags} allows to simulate mark-recapture tags.
 }
 \examples{
-ctags <- sim.ctags()
+data(skjepo)
+
+ctags <- sim.ctags(skjepo$grid)
 
 }

@@ -74,6 +74,8 @@ A data frame with simulate archival tags.
 \code{sim.atags} allows to simulate archival tags.
 }
 \examples{
-atags <- sim.atags()
+data(skjepo)
+
+atags <- sim.atags(skjepo$grid)
 
 }

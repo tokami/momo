@@ -195,6 +195,8 @@ add.sdreport <- function(fit){
     res$times <- c(res$times,
                    sdreport = signif(as.numeric(difftime(t4, t3, units = "mins")),2))
 
+
+    res <- add.class(res, "momo.fit")
     return(res)
 }
 
@@ -217,5 +219,6 @@ add.report <- function(fit){
     rep <- fit$obj$report()
     fit$rep <- rep
 
+    fit <- add.class(fit, "momo.fit")
     return(fit)
 }

@@ -21,6 +21,9 @@
 ##'
 ##' @return A dataframe with prepared tags.
 ##'
+##' @importFrom geosphere distGeo distm
+##' @importFrom lubridate decimal_date
+##'
 ##' @examples
 ##'
 ##' data(skjepo)
@@ -126,6 +129,8 @@ prep.ctags <- function(x,
 ##'
 ##' @return A list with prepared tags.
 ##'
+##' @importFrom lubridate decimal_date
+##'
 ##' @examples
 ##'
 ##' data(skjepo)
@@ -191,6 +196,8 @@ prep.atags <- function(x,
 ##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
 ##'
 ##' @return A list with prepared tags.
+##'
+##' @importFrom lubridate decimal_date
 ##'
 ##' @export
 prep.stags <- function(x,

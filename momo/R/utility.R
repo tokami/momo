@@ -11,6 +11,8 @@
 ##'     Default: `FALSE`.
 ##' @param plot.land plot.land logical; If `TRUE`, plot land masses using the
 ##'     function [maps::map]. Default: `FALSE`.
+##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
+##'     parameters. Default: `FALSE`.
 ##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
 ##' @param fit optional; allows to extract and update grid from fitted object of
 ##'     class `momo.fit` returned by function [fit.momo]. Default: `NULL`. NULL.
@@ -29,7 +31,7 @@ create.grid <- function(xrange = c(0,1),
                         dxdy = c(0.1,0.1),
                         select = FALSE,
                         plot.land = FALSE,
-                        keep.par = FALSE,
+                        keep.gpar = FALSE,
                         verbose = TRUE,
                         fit = NULL,
                         grid = NULL){
@@ -82,7 +84,7 @@ create.grid <- function(xrange = c(0,1),
         on.exit(options(opts))
         options(locatorBell = FALSE)
 
-        if(!keep.par){
+        if(!keep.gpar){
             opar <- par(no.readonly = TRUE)
             on.exit(par(opar))
             par(mfrow = c(1,1))
@@ -115,12 +117,7 @@ create.grid <- function(xrange = c(0,1),
                  ylim = yrange,
                  add = TRUE)
             if(plot.land){
-                maps::map("world",
-                          xlim = xrange,
-                          ylim = yrange,
-                          fill = TRUE, plot = TRUE, add = TRUE,
-                          col = grey(0.95),
-                          border = grey(0.5))
+                plot.land(xrange, yrange)
             }
             abline(v = xgr)
             abline(h = ygr)

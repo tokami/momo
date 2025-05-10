@@ -10,7 +10,7 @@ create.grid(
   dxdy = c(0.1, 0.1),
   select = FALSE,
   plot.land = FALSE,
-  keep.par = FALSE,
+  keep.gpar = FALSE,
   verbose = TRUE,
   fit = NULL,
   grid = NULL
@@ -28,6 +28,9 @@ Default: \code{FALSE}.}
 
 \item{plot.land}{plot.land logical; If \code{TRUE}, plot land masses using the
 function \link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
 
 \item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
 

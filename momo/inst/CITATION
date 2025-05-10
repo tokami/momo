@@ -11,13 +11,13 @@ bibentry(
       person("Mark", "Maunder"),
       person("Anders", "Nielsen")
   ),
-  journal = "",
-  year = "",
+  journal = "Methods in Ecology and Evolution",
+  year = "in prep",
   volume = "",
   number = "",
   pages = "",
   doi = "",
-  url = "http://dx.doi.org/",
+  url = "",
   issn = ""
 )
 

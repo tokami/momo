@@ -21,7 +21,3 @@ A vector with simulate alpha values.
 \description{
 Simulate alpha parameter specifying taxis component.
 }
-\examples{
-alphas <- sim.alpha(0.01, 0.05)
-
-}

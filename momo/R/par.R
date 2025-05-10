@@ -9,7 +9,7 @@
 ##' @return A named list.
 ##'
 ##' @examples
-##' dat(skjepo)
+##' data(skjepo)
 ##'
 ##' par <- with(skjepo, def.par(dat, conf))
 ##'
