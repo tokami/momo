@@ -47,7 +47,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news">
 <li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
-    <li><a class="external-link dropdown-item" href="https://github.com/tokami/momo/blob/main/NEWS.md">Version 0.0.0.9000</a></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/tokami/momo/blob/main/momo/NEWS.md">Version 0.0.0.9000</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../news/index.html">Changelog</a></li>
   </ul>
@@ -80,10 +80,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Fine-scale movement modeling based on tagging data</h1>
-                        <h4 data-toc-skip class="author">Tobias K.
-Mildenberger and Anders Nielsen</h4>
             
-            <h4 data-toc-skip class="date">2025-05-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/tokami/momo/blob/HEAD/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>tutorial.Rmd</code></div>
@@ -144,7 +141,7 @@ specific grid cells as needed.</p>
 <p>Since manual selection of grid cells is not feasible in this
 automated vignette, we use the grid provided in the skjepo data set, but
 modify it to create a coarser resolution:</p>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-5-1.png" alt="Spatial grid" width="768"></p>
 <p>Another important component of <em>momo</em> is the environmental
 data, which characterizes the habitat preferences of the modeled
 species. The <code>prep.env</code> function formats this data into the
@@ -239,7 +236,7 @@ calculation of uncertainty estimates by setting
 <span><span class="co">#&gt;  56:     2869.4992:  1446.64  1924.07  2.66420 -2.18598</span></span>
 <span><span class="co">#&gt;  57:     2869.4992:  1446.77  1924.23  2.66424 -2.18641</span></span>
 <span><span class="co">#&gt;  58:     2869.4992:  1446.74  1924.19  2.66423 -2.18633</span></span>
-<span><span class="co">#&gt; Minimization done (0.019min). Model converged. Estimating uncertainty.</span></span></code></pre>
+<span><span class="co">#&gt; Minimization done (0.018min). Model converged. Estimating uncertainty.</span></span></code></pre>
 <p>In addition to the input data lists, the returned object also
 includes the <code>obj</code> (from RTMB) and <code>opt</code> (from the
 minimizer). Both contain the estimated parameter values and other
