@@ -2,20 +2,52 @@
 % Please edit documentation in R/plotting.R
 \name{plotmomo.env}
 \alias{plotmomo.env}
-\title{Plot momo env}
+\title{Plot environmental fields}
 \usage{
 plotmomo.env(
   x,
   select = NULL,
   main = "Environmental fields",
   labels = TRUE,
-  keep.par = FALSE,
   plot.land = FALSE,
+  keep.gpar = FALSE,
   xlab = "x",
   ylab = "y",
   ...
 )
 }
+\arguments{
+\item{x}{a grid or a list of class \code{momo.data}, \code{momo.sim}, or \code{momo.fit}.}
+
+\item{select}{optional; allows to select specific time steps. Default:
+\code{NULL}.}
+
+\item{main}{a main title for the plot. Default: \verb{Environmental fields}.}
+
+\item{labels}{logical; If \code{TRUE} (default), plot numbers in cells.}
+
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "x".}
+
+\item{ylab}{a label for the y axis. Default: "y".}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
+}
 \description{
-Plot momo env
+Plot the environmental fields of any momo object that contains
+environmental data.
+}
+\examples{
+data(skjepo)
+
+plotmomo.env(skjepo$env)
+
 }

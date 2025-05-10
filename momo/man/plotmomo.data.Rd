@@ -4,8 +4,19 @@
 \alias{plotmomo.data}
 \title{Plot data}
 \usage{
-plotmomo.data(x, keep.par = FALSE, ...)
+plotmomo.data(x, keep.gpar = FALSE, ...)
+}
+\arguments{
+\item{x}{a list of class \code{momo.data} as returned by \link{setup.momo.data}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
 }
 \description{
-Plot data
+Plot data.
 }

@@ -2,20 +2,47 @@
 % Please edit documentation in R/plotting.R
 \name{plotmomo.grid}
 \alias{plotmomo.grid}
-\title{Plot momo grid}
+\title{Plot grid}
 \usage{
 plotmomo.grid(
-  grid,
+  x,
   main = "Grid",
   labels = TRUE,
   plot.land = FALSE,
-  keep.par = FALSE,
+  keep.gpar = FALSE,
+  xlab = "x",
+  ylab = "y",
   ...
 )
 }
 \arguments{
-\item{grid}{grid}
+\item{x}{a grid or a list of class \code{momo.data}, \code{momo.sim}, or \code{momo.fit}.}
+
+\item{main}{a main title for the plot. Default: "Grid".}
+
+\item{labels}{logical; If \code{TRUE} (default), plot numbers in cells.}
+
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "x".}
+
+\item{ylab}{a label for the y axis. Default: "y".}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
 }
 \description{
-Plot momo grid
+Plot the spatial grid of any momo object that contains a grid.
+}
+\examples{
+data(skjepo)
+
+plotmomo.grid(skjepo$grid)
+
 }

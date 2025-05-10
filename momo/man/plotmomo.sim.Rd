@@ -4,8 +4,19 @@
 \alias{plotmomo.sim}
 \title{Plot simulated data}
 \usage{
-plotmomo.sim(x, keep.par = FALSE, ...)
+plotmomo.sim(x, keep.gpar = FALSE, ...)
+}
+\arguments{
+\item{x}{a list of class \code{momo.sim} as returned by \link{sim.momo}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
 }
 \description{
-Plot simulated data
+Plot simulated data.
 }

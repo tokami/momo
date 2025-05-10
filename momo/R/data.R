@@ -1,20 +1,36 @@
-##' Simulated tags
+##' Prepare mark-recapture tags
 ##'
-##' @name simTags
-##' @docType data
-##' @author Tobias Mildenberger \email{tobm@dtu.dk}
-##' @references \url{bla bla}
-##' @keywords data
-NULL
-
-
-##' prep.ctags
+##' @description `prep.ctags` checks a data frame with information about
+##'     mark-recapture (conventional) tags and converts it into the object
+##'     required by \emph{momo}.
 ##'
-##' @param x Data frame with required information
-##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
-##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
-##' @param speed.limit Optional speed in km/d
-##' @param verbose Print messages?
+##' @param x Data frame with information about mark-recapture (conventional)
+##'     tags. At a minimum, the data frame has to include a column for each the
+##'     release and recapture date as well as x and y position of the release
+##'     and recapture. If a tag was not recaptured the entries in the recapture
+##'     columns shoud be empty (or NA).
+##' @param names Names of columns that contain in following order: release time,
+##'     recapture time, release location x, recapture location x, release
+##'     location y, recapture location y.
+##' @param origin Optional; allows to convert a date from a numeric format to
+##'     date format by using the origin. Default: `NULL`.
+##' @param speed.limit Optional; allows to apply a speed filter in km/d. All
+##'     tags that would imply a larger speed by assuming the distance between
+##'     recapture and relase location. Default: `NULL`.
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A dataframe with prepared tags.
+##'
+##' @examples
+##'
+##' data(skjepo)
+##'
+##' ctags <- prep.ctags(skjepo.ctags,
+##'                     names = c("date_time","date_caught",
+##'                               "rel_lon","recap_lon",
+##'                               "rel_lat","recap_lat"),
+##'                     origin = "1899-12-30",
+##'                     speed.limit = 200)
 ##'
 ##' @export
 prep.ctags <- function(x,
@@ -90,14 +106,33 @@ prep.ctags <- function(x,
 }
 
 
-
-##' prep.atags
+##' Prepare data-logging tags
 ##'
-##' @param x Data frame with required information
-##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
-##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
-##' @param speed.limit Optional speed in km/d
-##' @param verbose Print messages?
+##' @description `prep.atags` checks a list with information about data-logging
+##'     (archival) tags and converts it into the object required by \emph{momo}.
+##'
+##' @param x List with data frames where each data frame holds information about
+##'     the track of one data-logging (archival) tag. At a minimum, each data
+##'     frame has to include a column for the time and x and y position of a
+##'     tag.
+##' @param names Names of columns that contain in following order: time,
+##'     location x, location y.
+##' @param origin Optional; allows to convert a date from a numeric format to
+##'     date format by using the origin. Default: `NULL`.
+##' @param speed.limit Optional; allows to apply a speed filter in km/d. All
+##'     tags that would imply a larger speed by assuming the distance between
+##'     recapture and relase location. Default: `NULL`.
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A list with prepared tags.
+##'
+##' @examples
+##'
+##' data(skjepo)
+##'
+##' atags <- prep.atags(skjepo.atags,
+##'                     names = c("time","mptlon","mptlat"),
+##'                     origin = "1899-12-30")
 ##'
 ##' @export
 prep.atags <- function(x,
@@ -138,17 +173,90 @@ prep.atags <- function(x,
 }
 
 
-##' prep.env
+##' Prepare mark-resight tags
 ##'
-##' @param x Data frame with required information
-##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
-##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
-##' @param verbose Print messages?
+##' @description `prep.stags` checks a list with information about mark-resight
+##'     tags and converts it into the object required by \emph{momo}.
+##'
+##' @param x List with data frames where each data frame holds information about
+##'     the track of one mark-resight tag. At a minimum, each data frame has to
+##'     include a column for the time and x and y position of a tag.
+##' @param names Names of columns that contain in following order: time,
+##'     location x, location y.
+##' @param origin Optional; allows to convert a date from a numeric format to
+##'     date format by using the origin. Default: `NULL`.
+##' @param speed.limit Optional; allows to apply a speed filter in km/d. All
+##'     tags that would imply a larger speed by assuming the distance between
+##'     recapture and relase location. Default: `NULL`.
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A list with prepared tags.
+##'
+##' @export
+prep.stags <- function(x,
+                       names,
+                       origin = NULL,
+                       speed.limit = NULL,
+                       verbose = TRUE){
+
+
+    x0 <- x
+    x <- lapply(seq_along(x), function(i) {
+        x[[i]]$id <- i
+        return(x[[i]])
+    })
+    x <- do.call(rbind, x)
+
+
+    ## Select columns
+    idx <- names %in% colnames(x)
+    if(sum(idx) != length(names)){
+        stop(paste0(paste(names[!idx],collapse = ","),
+                    " not found in x!"))
+    }
+    dat <- x[,match(names,colnames(x))]
+    colnames(dat) <- c("t","x","y")
+    id <- x$id
+
+    ## Convert dates
+    if(!is.null(origin)){
+        dat$t <- lubridate::decimal_date(as.Date(dat$t, origin = origin))
+    }
+
+    res <- split(dat, id)
+
+    res <- add.class(res, "momo.stags")
+
+    return(res)
+}
+
+
+##' Prepare environmental data
+##'
+##' @description `prep.env` checks a list with information about mark-resight
+##'     tags and converts it into the object required by \emph{momo}.
+##'
+##' @param x Either a list with environmental data at different time points as
+##'     matrices or an array where the third dimension corresponds to the time
+##'     points.
+##' @param date.format Optional; allows to specify the format of the time points
+##'     (either names of list elements or attributes for the third dimension
+##'     depending on the format of x).
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A 3-dimensional array with the gridded environmental data for x and
+##'     y location (first two dimnesions) and the time points as third
+##'     dimension.
+##'
+##' @examples
+##'
+##' data(skjepo)
+##'
+##' env <- prep.env(skjepo.env)
 ##'
 ##' @export
 prep.env <- function(x,
-                     names,
-                     origin = NULL,
+                     date.format = NULL,
                      verbose = TRUE){
 
     res <- x
@@ -164,6 +272,28 @@ prep.env <- function(x,
     ## if(length(dim(x)) == 3){
     ##     res <- lapply(seq(dim(x)[3]), function(i) x[,,i])
     ## }
+
+    ## make sure 3rd dimension (time) is numeric
+    dates <- attributes(res)$dimnames[[3]]
+    dec.year <- rep(NA, length(dates))
+    if(is.null(date.format)){
+        dec.year <- as.numeric(dates)
+    }else if(length(grep("%d", date.format)) == 0){
+        date.format <- paste0(date.format, "-%d")
+        dates <- paste0(dates, "-01")
+        dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+    }else if(length(grep("%d", date.format)) == 1){
+        dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+    }else{
+        warning("Not sure how to convert date information to decimal years.")
+    }
+    dec.year <- round(dec.year, 3)
+
+    if(all(is.na(dec.year))){
+        warning("Something went wrong when trying to conver the date information (3rd dimension) to decimal years. Please check the use of the argument 'date.format' to specify the format of the time dimension!")
+    }else{
+        attributes(res)$dimnames[[3]] <- dec.year
+    }
 
     res <- add.class(res, "momo.env")
 
@@ -171,47 +301,69 @@ prep.env <- function(x,
 }
 
 
-##' prep.effort
+
+##' Set-up input data for the movement model
 ##'
-##' @param x Data frame with required information
-##' @param names Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)
-##' @param origin Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates
-##' @param verbose Print messages?
+##' @description `setup.momo.data` combines all individual data sets, such as
+##'     tags and environmental data sets and sets up the required data object
+##'     required to fit the movement model ([fit.momo]).
 ##'
-##' @export
-prep.effort <- function(x,
-                     names,
-                     origin = NULL,
-                     verbose = TRUE){
-
-    res <- x
-
-    if(inherits(x, "list")){
-        res <- simplify2array(x)
-    }
-
-    if(length(dim(x)) == 2){
-        res <- array(x, c(dim(x),1))
-    }
-
-    ## if(length(dim(x)) == 3){
-    ##     res <- lapply(seq(dim(x)[3]), function(i) x[,,i])
-    ## }
-
-    res <- add.class(res, "momo.effort")
-
-    return(res)
-}
-
-
-
-##' setup.momo.data
+##' @param grid a grid object of class `momo.grid` as returned by the function
+##'     [create.grid].
+##' @param env a list with environmental covariates of class `momo.env` as
+##'     returned by the function [prep.env].
+##' @param ctags a data frame with mark-recapture tags of class `momo.ctags` as
+##'     returned by the function [prep.ctags]. Default: `NULL`.
+##' @param atags a list with archival tags of class `momo.atags`. as returned by
+##'     the function [prep.atags]. Default: `NULL`.
+##' @param stags a list with mark-resight tags of class `momo.stags`. as
+##'     returned by the function [prep.stags]. Default: `NULL`.
+##' @param effort a list with effort information of class `momo.effort`. as
+##'     returned by the function [prep.effort]. Default: `NULL`.
+##' @param knots.tax knots for the taxis component. Default: `NULL`.
+##' @param knots.dif knots for the diffusion component. Default: `NULL`.
+##' @param const.dif logical; If `TRUE` (default), diffusion is assumed to be
+##'     constant in time and space.
+##' @param trange vector of size two defining the limits of the model time
+##'     range. If `NULL` (default), time range is defined based on the tags.
+##' @param dt time step of the model time. If `NULL` (default), the time step is
+##'     set to 0.1.
+##' @param time.cont optional; allows to provide a vector representing the model
+##'     time. Default: `NULL`.
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A list with all data required to fit \emph{momo}.
+##'
+##' @examples
+##'
+##' data(skjepo)
+##'
+##' ctags <- prep.ctags(skjepo.ctags,
+##'                     names = c("date_time","date_caught",
+##'                               "rel_lon","recap_lon",
+##'                               "rel_lat","recap_lat"),
+##'                     origin = "1899-12-30",
+##'                     speed.limit = 200)
+##'
+##' atags <- prep.atags(skjepo.atags,
+##'                     names = c("time","mptlon","mptlat"),
+##'                     origin = "1899-12-30")
+##'
+##' grid <- create.grid(grid = skjepo.grid, dxdy = c(10,10))
+##'
+##' env <- prep.env(skjepo.env)
+##'
+##' dat <- setup.momo.data(grid = grid,
+##'                        env = env,
+##'                        ctags = ctags,
+##'                        atags = atags)
 ##'
 ##' @export
 setup.momo.data <- function(grid,
                             env,
                             ctags = NULL,
                             atags = NULL,
+                            stags = NULL,
                             effort = NULL,
                             knots.tax = NULL,
                             knots.dif = NULL,
@@ -227,8 +379,8 @@ setup.momo.data <- function(grid,
 
     ## Time
     if(is.null(trange)){
-        if(!is.null(ctags) || !is.null(atags)){
-            dim.tags <- get.dim(ctags, atags)
+        if(!is.null(ctags) || !is.null(atags) || !is.null(stags)){
+            dim.tags <- get.dim(ctags, atags, stags)
             trange <- dim.tags$trange
         }else{
             trange <- c(0, max(1,max(sapply(env, function(x) dim(x)[3]))-1))
@@ -394,6 +546,36 @@ setup.momo.data <- function(grid,
                 tag$use <- 1
             }
             res$atags[[a]] <- tag
+        }
+
+    }
+
+    ## stags
+    res$stags <- stags
+
+    if(!is.null(stags)){
+
+        nr <- length(stags)
+        res$stags <- vector("list", nr)
+        for(r in 1:nr){
+            tag <- as.data.frame(stags[[r]])
+            tag$it <- as.integer(cut(tag$t, res$time.cont,
+                                     include.lowest = TRUE))
+            tag$ic <- res$celltable[cbind(as.integer(cut(tag$x, res$xgr)),
+                                          as.integer(cut(tag$y, res$ygr)))]
+            res$stags[[r]] <- tag
+        }
+
+        ## Checks
+        ## Deactivate any ringing tag that leaves the grid (NA in ic)
+        for(r in 1:nr){
+            tag <- as.data.frame(res$stags[[r]])
+            if(any(is.na(tag$ic))){
+                tag$use <- 0
+            }else{
+                tag$use <- 1
+            }
+            res$stags[[r]] <- tag
         }
 
     }

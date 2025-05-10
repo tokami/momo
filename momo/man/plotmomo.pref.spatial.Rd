@@ -2,22 +2,46 @@
 % Please edit documentation in R/plotting.R
 \name{plotmomo.pref.spatial}
 \alias{plotmomo.pref.spatial}
-\title{Plot spatial preference}
+\title{Plot spatial habitat preference}
 \usage{
 plotmomo.pref.spatial(
   x,
   type = "taxis",
   col = hcl.colors(14, "YlOrRd", rev = TRUE),
   ci = 0.95,
-  par = NULL,
-  funcs = NULL,
-  env = NULL,
-  keep.par = FALSE,
-  knots.tax = NULL,
+  keep.gpar = FALSE,
   add = FALSE,
+  xlab = "x",
+  ylab = "y",
   ...
 )
 }
+\arguments{
+\item{x}{a list of class \code{momo.sim} or \code{momo.fit}.}
+
+\item{type}{the process that should be plotted, either "taxis" (default) or
+"diffusion".}
+
+\item{col}{colors of heatmap. By default, using function \link[grDevices:palettes]{grDevices::hcl.colors}:
+\code{hcl.colors(14, "YlOrRd", rev = TRUE)}.}
+
+\item{ci}{level for confidence intervals. Default: \code{0.95}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{add}{logical; if \code{TRUE}, no new graphical window is created and tags
+are added to existing graphical window. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "x".}
+
+\item{ylab}{a label for the y axis. Default: "y".}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
+}
 \description{
-Plot spatial preference
+Plot the habitat preference in space.
 }

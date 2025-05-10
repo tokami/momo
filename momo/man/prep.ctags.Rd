@@ -2,21 +2,47 @@
 % Please edit documentation in R/data.R
 \name{prep.ctags}
 \alias{prep.ctags}
-\title{prep.ctags}
+\title{Prepare mark-recapture tags}
 \usage{
 prep.ctags(x, names, origin = NULL, speed.limit = NULL, verbose = TRUE)
 }
 \arguments{
-\item{x}{Data frame with required information}
+\item{x}{Data frame with information about mark-recapture (conventional)
+tags. At a minimum, the data frame has to include a column for each the
+release and recapture date as well as x and y position of the release
+and recapture. If a tag was not recaptured the entries in the recapture
+columns shoud be empty (or NA).}
 
-\item{names}{Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)}
+\item{names}{Names of columns that contain in following order: release time,
+recapture time, release location x, recapture location x, release
+location y, recapture location y.}
 
-\item{origin}{Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates}
+\item{origin}{Optional; allows to convert a date from a numeric format to
+date format by using the origin. Default: \code{NULL}.}
 
-\item{speed.limit}{Optional speed in km/d}
+\item{speed.limit}{Optional; allows to apply a speed filter in km/d. All
+tags that would imply a larger speed by assuming the distance between
+recapture and relase location. Default: \code{NULL}.}
 
-\item{verbose}{Print messages?}
+\item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A dataframe with prepared tags.
 }
 \description{
-prep.ctags
+\code{prep.ctags} checks a data frame with information about
+mark-recapture (conventional) tags and converts it into the object
+required by \emph{momo}.
+}
+\examples{
+
+data(skjepo)
+
+ctags <- prep.ctags(skjepo.ctags,
+                    names = c("date_time","date_caught",
+                              "rel_lon","recap_lon",
+                              "rel_lat","recap_lat"),
+                    origin = "1899-12-30",
+                    speed.limit = 200)
+
 }

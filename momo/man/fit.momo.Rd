@@ -9,38 +9,76 @@ fit.momo(
   conf = NULL,
   par = NULL,
   map = NULL,
-  newtonsteps = 3,
-  rm.unidentified = FALSE,
   run = TRUE,
   lower = get.lower.bounds(par),
   upper = get.upper.bounds(par),
-  sim.condRE = TRUE,
-  ignore.parm.uncertainty = FALSE,
   rel.tol = 1e-10,
-  verbose = TRUE,
   do.sdreport = TRUE,
   do.report = TRUE,
   use.expm = NULL,
-  use.rel.events = FALSE,
+  use.rel.events = NULL,
+  verbose = TRUE,
   ...
 )
 }
 \arguments{
-\item{dat}{list of dat objects}
+\item{dat}{data frame with input data as produced by the function
+\link{check.momo.data}.}
 
-\item{conf}{list of initial model parameters}
+\item{conf}{configuration list as produced by the function \link{def.conf}. If
+\code{NULL} (default), \link{def.conf} is used to generate the default
+configuration list based on the input data.}
 
-\item{par}{list of initial model parameters}
+\item{par}{parameter list with initial values as produced by the function
+\link{def.par}. If \code{NULL} (default), \link{def.par} is used to generate the
+default parameter list based on the input data and configuration list.}
+
+\item{map}{list with parameter mapping as produced by the function
+\link{def.map}. If \code{NULL} (default), \link{def.map} is used to generate the
+default mapping list based on the input data and configuration and
+parameter lists.}
+
+\item{run}{logical; If \code{FALSE}, the AD object is returned with the
+optimization. Default: \code{FALSE}.}
+
+\item{lower}{by default, \link{get.lower.bounds} is used.}
+
+\item{upper}{by default, \link{get.upper.bounds} is used.}
+
+\item{rel.tol}{option passed to \link[stats:nlminb]{stats::nlminb} sets the convergence
+criteria. Default: \code{1e-10}.}
+
+\item{do.sdreport}{logical; If \code{FALSE}, \link[RTMB:TMB-interface]{RTMB::sdreport} is not run and no
+parameter uncertainties are returned. Default: \code{TRUE}.}
+
+\item{do.report}{logical; If \code{FALSE}, \code{obj$report()} is not run and RTMB
+variables might not be reported. Default: \code{TRUE}.}
+
+\item{use.expm}{logical; allows to overwrite setting in configuration list
+(\code{conf$use.expm}). If \code{NULL}, setting from configuration list is used.
+Default: \code{NULL}.}
+
+\item{use.rel.events}{logical; allows to overwrite setting in configuration
+list (\code{conf$use.rel.events}). If \code{NULL}, setting from configuration list
+is used. Default: \code{NULL}.}
+
+\item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
+
+\item{...}{extra arguments to \link[RTMB:TMB-interface]{RTMB::MakeADFun}.}
 }
 \value{
-list of result of minimization conducted via nlminb
+A list of class \code{momo.fit}.
 }
 \description{
-Fit the movement model
-}
-\details{
-...
+The movement model, momo, allows estimation of habitat
+preferences and fine-scale movement rates using various types of tagging
+data. It supports flexible spatiotemporal modeling with options for
+Kalman filter or matrix exponential approaches, and includes tools for
+data preparation, model fitting, and visualization.
 }
 \examples{
-3 + 3
+data(skjepo)
+
+fit <- fit.momo(skjepo)
+
 }

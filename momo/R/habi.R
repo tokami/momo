@@ -1,10 +1,26 @@
-##' Habitat function
+##' Full habitat function
 ##'
-##' @param FIELDS fields
+##' @description Creates a light habitat class that is being used within
+##'     \emph{momo}.
 ##'
-##' @details habitat function
+##' @param FIELDS A list with 3-D array fields that are used for interpolation,
+##'     where the first 2 dimensions span the x and y direction of the spatial
+##'     field and the third dimension indicates the time dimension.
+##' @param XR Limits of the 2-D fields in x direction.
+##' @param YR Limits of the 2-D fields in y direction.
+##' @param ienv Indicator matrix mapping each model time step to the time steps
+##'     of each field. The first dimension corresponds to the number of fields
+##'     and the second to the number of model time steps.
+##' @param time.cont Vector with continuous model time steps.
+##' @param S List of smooth functions relating fields to habitat preference
+##'     functions.
+##' @param dS List of derivatives of smooth functions relating fields to habitat
+##'     preference functions.
+##' @param ienvS Indicator matrix mapping each model time step to the time step
+##'     of each spline. The first dimension corresponds to the number of splines
+##'     and the second to the number of model time steps.
 ##'
-##' @return Different things
+##' @return List with functions.
 ##'
 ##' @importFrom abind abind
 ##'
@@ -143,6 +159,23 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
 }
 
 
+##' Light habitat function
+##'
+##' @description Creates a light habitat class that is being used within
+##'     \emph{momo}.
+##'
+##' @param FIELDS A list with 3-D array fields that are used for interpolation,
+##'     where the first 2 dimensions span the x and y direction of the spatial
+##'     field and the third dimension indicates the time dimension.
+##' @param XR Limits of the 2-D fields in x direction.
+##' @param YR Limits of the 2-D fields in y direction.
+##' @param ienv Indicator matrix mapping each model time step to the time steps
+##'     of each field. The first dimension corresponds to the number of fields
+##'     and the second to the number of model time steps.
+##' @param time.cont Vector with continuous model time steps.
+##'
+##' @return List with functions.
+##'
 habi.light <- function(FIELDS, XR, YR, ienv, time.cont){
 
     nenv <- length(FIELDS)

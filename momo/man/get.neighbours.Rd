@@ -7,8 +7,21 @@
 get.neighbours(celltable, diagonal = FALSE)
 }
 \arguments{
-\item{celltable}{celltable}
+\item{celltable}{data frame with numbered cells as returned by the function
+\link{create.grid}.}
+
+\item{diagonal}{logical; if \code{TRUE}, diagonal neighbours are included.
+Default: \code{FALSE}.}
+}
+\value{
+A matix with each cell and corresponding neighbouring cells.
 }
 \description{
-Get neighbours for each cell of a grid
+\code{get.neighbours} allows to get a
+}
+\examples{
+grid <- create.grid()
+
+neighbours <- get.neighbours(grid$celltable)
+
 }

@@ -7,8 +7,19 @@
 get.cfl(grid, env, par)
 }
 \arguments{
-\item{grid}{grid}
+\item{grid}{a grid object of class \code{momo.grid} as returned by the function
+\link{create.grid}.}
+
+\item{env}{a list with environmental covariates of class \code{momo.env} as
+returned by the function \link{prep.env}.}
+
+\item{par}{parameter list with initial values as produced by the function
+\link{def.par}.}
+}
+\value{
+The Courant-Friedrichs-Lewy condition.
 }
 \description{
-Get Courant–Friedrichs–Lewy condition
+\code{get.cfl} allows to calculate the Courant-Friedrichs-Lewy
+condition.
 }

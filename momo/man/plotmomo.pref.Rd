@@ -2,22 +2,52 @@
 % Please edit documentation in R/plotting.R
 \name{plotmomo.pref}
 \alias{plotmomo.pref}
-\title{Plot preference}
+\title{Plot habitat preference function}
 \usage{
 plotmomo.pref(
   x,
   type = "taxis",
+  main = "Preference",
   col = "black",
   lwd = 1,
   ci = 0.95,
-  par = NULL,
-  funcs = NULL,
-  env = NULL,
-  keep.par = FALSE,
+  keep.gpar = FALSE,
   add = FALSE,
+  xlab = "Covariate",
+  ylab = "Preference",
   ...
 )
 }
+\arguments{
+\item{x}{a list of class \code{momo.sim} or \code{momo.fit}.}
+
+\item{type}{the process that should be plotted, either "taxis" (default) or
+"diffusion".}
+
+\item{main}{a main title for the plot. Default: "Preference".}
+
+\item{col}{color of line. Default: "black".}
+
+\item{lwd}{line width. Default: \code{1}.}
+
+\item{ci}{level for confidence intervals. Default: \code{0.95}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{add}{logical; if \code{TRUE}, no new graphical window is created and tags
+are added to existing graphical window. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "Covariate".}
+
+\item{ylab}{a label for the y axis. Default: "Preference".}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
+}
 \description{
-Plot preference
+Plot the habitat preference function as a function of
+any covariate.
 }

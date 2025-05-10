@@ -7,12 +7,20 @@
 def.map(dat, conf, par)
 }
 \arguments{
-\item{dat}{Data list with required information}
+\item{dat}{data frame with input data as produced by the function
+\link{check.momo.data}.}
 
-\item{conf}{Configuration list}
+\item{conf}{configuration list as produced by the function \link{def.conf}.}
 
-\item{par}{parameter list}
+\item{par}{parameter list with initial values as produced by the function
+\link{def.par}.}
 }
 \description{
-def.map
+Get a list with default mappings for parameters.
+}
+\examples{
+data(skjepo)
+
+map <- with(skjepo, def.map(dat, conf, par))
+
 }

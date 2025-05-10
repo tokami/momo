@@ -17,20 +17,36 @@ create.grid(
 )
 }
 \arguments{
-\item{xrange}{Range x}
+\item{xrange}{range of the x-dimension of spatial domain. Default: \code{c(0,1)}.}
 
-\item{yrange}{Range y}
+\item{yrange}{range of the y-dimension of spatial domain. Default: \code{c(0,1)}.}
 
-\item{dxdy}{dxdy}
+\item{dxdy}{resolution of grid in x and y direction. Default: \code{c(0.1,0.1)}.}
 
-\item{plot.land}{Optional plot land (only when select.cells = TRUE)}
+\item{select}{logical; if \code{TRUE}, allows to select cells in spatial grid.
+Default: \code{FALSE}.}
 
-\item{verbose}{Print messages?}
+\item{plot.land}{plot.land logical; If \code{TRUE}, plot land masses using the
+function \link[maps:map]{maps::map}. Default: \code{FALSE}.}
 
-\item{fit}{Default: NULL. If fit provided, grid is extracted from fit}
+\item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
 
-\item{select.cells}{Select cells}
+\item{fit}{optional; allows to extract and update grid from fitted object of
+class \code{momo.fit} returned by function \link{fit.momo}. Default: \code{NULL}. NULL.}
+
+\item{grid}{optional; allows to update a grid of class \code{momo.grid} as
+returned by the function \link{create.grid}. Default: \code{NULL}.}
+}
+\value{
+A list of class \code{momo.grid} with a information about the spatial
+domain and grid.
 }
 \description{
-Create a grid
+\code{create.grid} allows to create a new grid or modify an existing
+grid that is used by \link{fit.momo} to predict movement rates and required
+for the matrix exponential approach.
+}
+\examples{
+grid <- create.grid()
+
 }

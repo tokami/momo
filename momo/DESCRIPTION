@@ -2,7 +2,7 @@ Package: momo
 Type: Package
 Title: Tagging-based movement modeling
 Version: 0.0.0.9000
-Date: 2024-11-16
+Date: 2025-05-07
 Authors@R:
     c(person("Tobias", "Mildenberger",
            role = c("aut", "cre"),
@@ -13,7 +13,11 @@ Authors@R:
            role = "aut",
            comment = c(ORCID = "0000-0001-9683-9262")))
 Maintainer: Tobias Mildenberger <tobm@dtu.dk>
-Description: Estimate animal movement rates based on tagging data.
+Description: A movement model that allows estimation of habitat preferences
+    and fine-scale movement rates using various types of tagging data. It supports
+    flexible spatiotemporal modeling with options for Kalman filter or matrix
+    exponential approaches, and includes tools for data preparation, model
+    fitting, and visualization.
 License: GPL (>= 3)
 Depends:
     R (>= 4.4),

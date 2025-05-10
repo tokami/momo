@@ -1,15 +1,16 @@
 ##' Negative log likelihood function
 ##'
-##' @param par a list of initial parameters
-##' @param dat the data set
+##' @description Likelihood function for the movement model.
 ##'
-##' @details exported, but mainly intended for internal use
+##' @param par List with initial values for the model in a format similar to
+##'     what is returned from the [def.par] function.
+##' @param dat Data frame with input data as produced by the function
+##'     [check.momo.data].
 ##'
-##' @return a scalar function value
+##' @return The negative loglikelihood value.
 ##'
 ##' @importFrom Matrix expm
 ##'
-##' @export
 nll <- function(par, dat){
 
     ## R's JIT does not preserve a few specific definitions made by RTMB
@@ -17,7 +18,7 @@ nll <- function(par, dat){
     "[<-" <- RTMB::ADoverload("[<-")
     "diag<-" <- RTMB::ADoverload("diag<-")
 
-    nll <- loglik.ctags <- loglik.atags <- 0
+    nll <- loglik.ctags <- loglik.atags <- loglik.stags <- 0
 
     ## Flags
     flag.const.dif <- ifelse(nrow(dat$knots.dif) == 1, TRUE, FALSE)
@@ -92,9 +93,9 @@ nll <- function(par, dat){
 
     if(!dat$use.expm){
 
-        ## unscented Kalman filter  -----------------------------
+        ## Kalman filter  -----------------------------
 
-        ## Conventional tags
+        ## Mark-recapture tags (conventional tags)
         if(dat$use.ctags){
 
             nctags <- nrow(dat$ctags)
@@ -153,7 +154,7 @@ nll <- function(par, dat){
                         vxy[t+1,] <- diag(P)
                     }else{
                         ## classic KF
-                        move <- c(0,0)
+                        move <- numeric(2)
                         if(dat$use.taxis){
                             move <- move + habitat.tax$grad(mxy[t,], ts[t]) * dat$ddt
                         }
@@ -412,11 +413,158 @@ nll <- function(par, dat){
             REPORT(resid.atags.fine)
         }
 
+        ## Mark-resight tags (e.g. rings)
+        if(dat$use.stags){
+
+            nstags <- length(dat$stags)
+
+            resid.stags.fine <- vector("list", nstags)
+            resid.stags <- matrix(NA_real_, nstags, 4)
+
+            obsvar <- exp(2 * par$logSdObsSTS)
+
+            for(r in seq_len(nstags)){
+
+                tag <- dat$stags[[r]]
+                resid.stags.fine[[r]] <- matrix(NA_real_, nrow(tag), 3)
+                lastxy <- as.numeric(tag[1,2:3])
+                ts <- seq(tag$t[1], tag$t[nrow(tag)], by = dat$ddt)
+                nts <- length(ts)
+                dt <- dat$ddt
+                sighted <- sapply(tag$t[-1], function(x) min(which(ts >= x)))
+
+                if(dat$use.ukf){
+                    P <- diag(c(dat$var.init.kf,dat$var.init.kf))
+                    if(RTMB:::ad_context()){
+                        P <- RTMB::advector(P)
+                    }
+                }else{
+                    P <- c(0,0)
+                }
+
+                for(t in seq_len(nts)){
+
+                    if(dat$use.ukf){
+                        ## unscented KF
+                        ut <- unscented.transform(lastxy, P)
+                        sigmaPred <- ut$chi
+                        for(sp in 1:ncol(sigmaPred)){
+                            move <- numeric(2)
+                            if(dat$use.taxis){
+                                move <- move + habitat.tax$grad(sigmaPred[,sp],
+                                                                ts[t]) * dt
+                            }
+                            if(dat$use.advection){
+                                move <- move + c(habitat.adv.x$val(sigmaPred[,sp],
+                                                                   ts[t]),
+                                                 habitat.adv.y$val(sigmaPred[,sp],
+                                                                   ts[t])) * dt
+                            }
+                            if(dat$use.boundaries){
+                                move <- move * bound$val(sigmaPred[,sp], ts[t])
+                            }
+                            sigmaPred[,sp] <- sigmaPred[,sp] + move
+                        }
+                        predxy <- ut$Wm %*% t(sigmaPred)
+                        devs <- sigmaPred - RTMB::matrix(predxy, nrow(sigmaPred), ncol(sigmaPred))
+                        dif <- diag(2) * exp(habitat.dif$val(lastxy, ts[t]))
+                        if(dat$use.boundaries){
+                            dif <- dif * bound$val(lastxy, ts[t])
+                        }
+                        PP <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dt
+                        browser()
+                        if(r == nrows.tag){
+                            F <- PP
+                        }else{
+                            F <- PP + RTMB::diag(obsvar, 2)
+                        }
+                        K <- PP %*% RTMB::solve(F)
+                        w <- thisxy - predxy[1,]
+                        lastxy <- predxy + t(K %*% w)
+                        P <- PP - K %*% F %*% t(K)
+                        var <- diag(F)
+                    }else{
+                        ## classic KF
+                        move <- numeric(2)
+                        if(dat$use.taxis){
+                            move <- move + habitat.tax$grad(lastxy, ts[t]) * dt
+                        }
+                        if(dat$use.advection){
+                            move <- move + c(habitat.adv.x$val(lastxy, ts[t]),
+                                             habitat.adv.y$val(lastxy, ts[t])) * dt
+                        }
+                        if(dat$use.boundaries){
+                            move <- move * bound$val(lastxy, ts[t])
+                        }
+                        dif <- exp(habitat.dif$val(lastxy, ts[t]))
+                        if(dat$use.boundaries){
+                            dif <- dif * bound$val(lastxy, ts[t])
+                        }
+                        predxy <- lastxy + move
+                        PP <- P + 2 * dif * dt
+                    }
+
+
+                    if(t %in% sighted){
+                        F <- PP + obsvar
+                        indi <- which(sighted == t) + 1
+                        thisxy <- c(tag$x[indi],
+                                    tag$y[indi])
+                        w <- thisxy - predxy
+                        lastxy <- predxy + PP / F * w
+                        P <- PP - PP / F * PP
+                        var <- F
+
+                        loglik.stags <- loglik.stags +
+                            dnorm(w[1], 0, sqrt(var[1]), TRUE)
+                        loglik.stags <- loglik.stags +
+                            dnorm(w[2], 0, sqrt(var[2]), TRUE)
+
+                        ## ## If sighted, position known
+                        ## lastxy <- as.numeric(tag[indi, 2:3])
+                        ## if(dat$use.ukf){
+                        ##     P <- diag(c(dat$var.init.kf,dat$var.init.kf))
+                        ##     if(RTMB:::ad_context()){
+                        ##         P <- RTMB::advector(P)
+                        ##     }
+                        ## }else{
+                        ##     P <- c(0,0)
+                        ## }
+
+                        ## if(!RTMB:::ad_context()){
+                        ##     resid.stags.fine[[r]][t,1] <- w[1] / sqrt(var[1])
+                        ##     resid.stags.fine[[r]][t,2] <- w[2] / sqrt(var[2])
+                        ##     resid.stags.fine[[r]][t,3] <- sqrt((thisxy[1] -
+                        ##                                         predxy[1])^2 +
+                        ##                                        (thisxy[2] -
+                        ##                                         predxy[2])^2) /
+                        ##         sqrt((var[1] + var[2])/2)
+                        ## }
+
+                    }else{
+                        lastxy <- predxy
+                        P <- PP
+                    }
+                }
+
+                if(!RTMB:::ad_context()){
+                    resid.stags[r,1] <- resid.stags.fine[[r]][nrow(tag),1]
+                    resid.stags[r,2] <- resid.stags.fine[[r]][nrow(tag),2]
+                    resid.stags[r,3] <- resid.stags.fine[[r]][nrow(tag),3]
+                }
+            }
+
+            nll <- nll - loglik.stags
+
+            REPORT(resid.stags)
+            REPORT(resid.stags.fine)
+        }
+
     }else{
 
         ## Matrix exponential ---------------------------------
 
-        ## Conventional tags
+        ## Mark-recapture (conventional) tags
         if(dat$use.ctags){
 
             nctags <- nrow(dat$ctags)
@@ -639,6 +787,7 @@ nll <- function(par, dat){
             REPORT(resid.ctags)
         }
 
+        ## Archival tags
         if(dat$use.atags){
 
             natags <- length(dat$atags)
@@ -764,7 +913,6 @@ nll <- function(par, dat){
 
                     } ## end of time loop
 
-
                     ## Likelihood contribution -----------------------------
                     for(t in 2:(itmax-1)){
 
@@ -852,6 +1000,7 @@ nll <- function(par, dat){
 
     REPORT(loglik.ctags)
     REPORT(loglik.atags)
+    REPORT(loglik.stags)
 
     ## Prediction ---------------------------------
     prefT.pred <- habitat.tax$env2val(dat$env.pred)

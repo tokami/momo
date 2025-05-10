@@ -1,33 +1,74 @@
-##' Simulate alpha
+##' Simulate a simple data set
 ##'
-##' @param ll ll
+##' @description `sim.momo` allows to quickly simulate all data sets and
+##'     components required to fit the movement model, [fit.momo].
 ##'
-sim.alpha <- function(ll, ul, n = 3, digits = 2){
-    alphas <- rep(NA, n)
-    alphas[1] <- 0
-    if(n > 1){
-        for(i in 2:n){
-            alphas[i] <- alphas[i-1] + sample(c(-1,1), 1) * runif(1, ll, ul)
-        }
-    }
-    return(signif(alphas, digits))
-}
-
-
-
-##' Simulate all data needed for fit.momo
+##' @param fit optional; allows to provide a list of class `momo.fit` to
+##'     simulate based on the fitted object. By default (`NULL`), no fitted
+##'     object is used.
+##' @param xrange range of the x-dimension of spatial domain. Default: `c(0,1)`.
+##' @param yrange range of the y-dimension of spatial domain. Default: `c(0,1)`.
+##' @param dxdy resolution of grid in x and y direction. Default: `c(0.1,0.1)`.
+##' @param select logical; if `TRUE`, allows to select cells in spatial grid.
+##'     Default: `FALSE`.
+##' @param plot.land logical; If `TRUE`, plot land masses using the function
+##'     [maps::map]. Default: `FALSE`.
+##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
+##'     parameters. Default: `FALSE`.
+##' @param trange range of model time. Default: `c(0,1)`.
+##' @param dt resolution of model time steps. Default: `0.1`.
+##' @param nt number of environmental fields. Default: `1`.
+##' @param rho_t autocorrelation coefficient of temporal autocorrelation for
+##'     environmental fields. Default: `0.85`.
+##' @param sd standard deviation for simulation of environmental fields.
+##'     Default: `2`.
+##' @param h parameter of the matern covariance structure. Default: `0.2`.
+##' @param nu parameter of the matern covariance structure. Default: `2`.
+##' @param rho_s parameter of the matern covariance structure. Default: `0.8`.
+##' @param delta parameter of the matern covariance structure. Default: `0.1`.
+##' @param zrange range of the environmental covariate. Default: `c(20, 28)`.
+##' @param matern logical; if `TRUE` (default), matern covariance structure is
+##'     used for simulation of environmental fields.
+##' @param diagonal logical; if `TRUE`, diagonal neighbours are considered in
+##'     neighbouring structure. Default: `FALSE`.
+##' @param par optional; allows to specify all or some of the parameters used
+##'     for simulation. Default: `NULL`.
+##' @param n.alpha number of knots for taxis. Default: `3`.
+##' @param const.dif logical; if `TRUE` (default), constant diffusion is
+##'     assumed.
+##' @param knots.tax optional; allows to specify knots for the taxis component.
+##'     Default: `NULL`.
+##' @param knots.dif optional; allows to specify knots for the diffusion
+##'     component. Default: `NULL`.
+##' @param correct.peclet logical; if `TRUE`, the diffusion is increased until
+##'     the peclet number is fulfilled. Default: `FALSE`.
+##' @param use.ctags logical; if `TRUE` (default), mark-recapture tags are
+##'     simulated.
+##' @param n.ctags number of mark-recapture tags. Default: `500`.
+##' @param use.atags logical; if `TRUE` (default), archival tags are simulated.
+##' @param n.atags number of archival tags. Default: `50`.
+##' @param trange.rel optional; allows to specify a specific part of the time
+##'     series in which tags are released. Default: `NULL`.
+##' @param xrange.rel optional; allows to specify a specific part of the x range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param yrange.rel optional; allows to specify a specific part of the y range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
 ##'
-##' @param fit optional. momo fit
+##' @return A list of class `momo.sim`.
+##'
+##' @examples
+##' sim <- sim.momo()
 ##'
 ##' @export
 sim.momo <- function(fit = NULL,
-                     xrange = c(0, 1),
-                     yrange = c(0, 1),
+                     xrange = c(0,1),
+                     yrange = c(0,1),
                      dxdy = c(0.1, 0.1),
                      select = FALSE,
                      plot.land = FALSE,
-                     keep.par = FALSE,
-                     trange = c(0, 1),
+                     keep.gpar = FALSE,
+                     trange = c(0,1),
                      dt = 0.1,
                      nt = 1,
                      rho_t = 0.85, sd = 2, h = 0.2, nu = 2,
@@ -53,9 +94,9 @@ sim.momo <- function(fit = NULL,
     grid <- create.grid(xrange = xrange,
                         yrange = yrange,
                         dxdy = dxdy,
-                        select = FALSE,
-                        plot.land = FALSE,
-                        keep.par = FALSE,
+                        select = select,
+                        plot.land = plot.land,
+                        keep.gpar = keep.gpar,
                         verbose = verbose,
                         fit = fit)
 
@@ -74,14 +115,15 @@ sim.momo <- function(fit = NULL,
                    diagonal = diagonal)
 
 
-    par.out <- list(alpha = array(sim.alpha(0.01, 0.04, n.alpha),  ## 0.01-0.04
+    par.out <- list(alpha = array(sim.alpha(0.01, 0.2, n.alpha),  ## 0.01-0.04
                               dim = c(n.alpha,1,1)))
     if(const.dif){
-        par.out$beta <- array(log(runif(1, 0.001, 0.04)), dim = c(1,1,1)) ## 0.02 - 0.1
+        par.out$beta <- array(log(runif(1, 0.005, 0.05)), dim = c(1,1,1)) ## 0.02 - 0.1
     }else{
-        par.out$beta <- array(log(runif(3, 0.001, 0.04)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.005, 0.05)), dim = c(3,1,1))
     }
-    par.out$logSdObsATS <- log(runif(1, 0.001, 0.04))
+    par.out$logSdObsATS <- log(runif(1, 0.005, 0.05))
+    par.out$logSdObsSTS <- log(runif(1, 0.005, 0.05))
     if(!is.null(par)){
         for(i in 1:length(par)){
             par.out[names(par)[i]] <- par[names(par)[i]]
@@ -184,7 +226,33 @@ sim.momo <- function(fit = NULL,
 }
 
 
+
 ##' Simulate environmental fields
+##'
+##' @description `sim.env` allows to simulate environmental fields.
+##'
+##' @param grid a grid.
+##' @param nt number of environmental fields. Default: `1`.
+##' @param rho_t autocorrelation coefficient of temporal autocorrelation for
+##'     environmental fields. Default: `0.85`.
+##' @param sd standard deviation for simulation of environmental fields.
+##'     Default: `2`.
+##' @param h parameter of the matern covariance structure. Default: `0.2`.
+##' @param nu parameter of the matern covariance structure. Default: `2`.
+##' @param rho_s parameter of the matern covariance structure. Default: `0.8`.
+##' @param delta parameter of the matern covariance structure. Default: `0.1`.
+##' @param zrange range of the environmental covariate. Default: `c(20, 28)`.
+##' @param matern logical; if `TRUE` (default), matern covariance structure is
+##'     used for simulation of environmental fields.
+##' @param diagonal logical; if `TRUE`, diagonal neighbours are considered in
+##'     neighbouring structure. Default: `FALSE`.
+##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A list with simulated environmental fields.
+##'
+##' @examples
+##' env <- sim.env()
+##'
 ##' @export
 sim.env <- function(grid,
                     nt = 9,
@@ -196,7 +264,8 @@ sim.env <- function(grid,
                     delta = 0.1,
                     zrange = c(20,28),
                     matern = TRUE,
-                    diagonal = FALSE){
+                    diagonal = FALSE,
+                    verbose = TRUE){
 
     nx <- nrow(grid$celltable)
     ny <- ncol(grid$celltable)
@@ -213,7 +282,7 @@ sim.env <- function(grid,
         return(res)
     }
 
-    get.env <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
+    get.env.one <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
 
         ## Generate a random field
         rf <- rnorm(nrow(grid$xygrid), 0, sd = sd)
@@ -229,10 +298,11 @@ sim.env <- function(grid,
     }
 
     env0 <- env <- vector("list", nt)
-    env0[[1]] <- get.env(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
+    env0[[1]] <- get.env.one(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
     if(nt > 1){
         for(i in 2:nt){
-            env0[[i]] <- rho_t * env0[[i-1]] + sqrt(1 - rho_t^2) * get.env(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
+            env0[[i]] <- rho_t * env0[[i-1]] + sqrt(1 - rho_t^2) *
+                get.env.one(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
         }
     }
 
@@ -248,65 +318,44 @@ sim.env <- function(grid,
     return(env)
 }
 
-##' Simulate effort data
-##' @export
-sim.effort <- function(grid,
-                       nt = 9,
-                       rho_t = 0.85,
-                       sd = 2,
-                       h = 0.2,
-                       nu = 2,
-                       rho_s = 0.8,
-                       delta = 0.1,
-                       zrange = c(20,28),
-                       matern = TRUE,
-                       diagonal = FALSE){
 
-    nx <- nrow(grid$celltable)
-    ny <- ncol(grid$celltable)
-
-    rescale.effort <- function(eff, zrange, i = NULL){
-        eff.range <- range(unlist(eff))
-        effi <- if(!is.null(i)) eff[[i]] else eff
-        res <- (effi - eff.range[1]) /
-            (eff.range[2] - eff.range[1]) * (zrange[2] - zrange[1]) + zrange[1]
-        return(res)
-    }
-
-    get.effort <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
-
-        ## Generate a random field
-        rf <- rnorm(nx * ny, 0, sd = sd)
-
-        ## GMRF
-        Q <- get.precision.matrix(grid, h, nu, rho, delta, matern, diagonal)
-        L <- chol(Q)
-        S <- solve(L, rf)
-        rf.smooth <- matrix(S, nrow = nx, ncol = ny)
-
-        return(rf.smooth)
-    }
-
-    eff0 <- eff <- vector("list", nt)
-    eff0[[1]] <- get.effort(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
-    if(nt > 1){
-        for(i in 2:nt){
-            eff0[[i]] <- rho_t * eff0[[i-1]] + sqrt(1 - rho_t^2) * get.effort(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
-        }
-    }
-
-    ## Rescale
-    for(i in 1:nt){
-        eff[[i]] <- rescale.effort(eff0, zrange, i)
-    }
-
-    eff <- prep.effort(eff)
-
-    return(eff)
-}
-
-
-##' Simulate conventional tags
+##' Simulate mark-recapture tags
+##'
+##' @description `sim.ctags` allows to simulate mark-recapture tags.
+##'
+##' @param grid a grid.
+##' @param par optional; allows to specify all or some of the parameters used
+##'     for simulation. Default: `NULL`.
+##' @param env optional; allows to specify environmental fields that are used
+##'     for simulation. Default: `NULL`.
+##' @param n number of tags. Default: `300`.
+##' @param effort optional; allows to specify effort fields that are used for
+##'     simulation. Default: `NULL`.
+##' @param trange range model time. Default: `NULL`.
+##' @param dt optional; resolution of model time steps. If `NULL` (default), the
+##'     default time step of [setup.momo.data] is used (`0.1`).
+##' @param trange.rel optional; allows to specify a specific part of the time
+##'     series in which tags are released. Default: `NULL`.
+##' @param xrange.rel optional; allows to specify a specific part of the x range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param yrange.rel optional; allows to specify a specific part of the y range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param trange.rec optional; allows to specify a specific part of the time
+##'     series in which tags are recaptured. Default: `NULL`.
+##' @param by time step of the tag simulation model. Default: `0.05`.
+##' @param knots.tax optional; allows to specify knots for the taxis component.
+##'     Default: `NULL`.
+##' @param knots.dif optional; allows to specify knots for the diffusion
+##'     component. Default: `NULL`.
+##' @param funcs optional; allows to specify movement functions. If `NULL`
+##'     (default), the function [get.sim.funcs] is used.
+##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A data frame with simulate mark-recaptured tags.
+##'
+##' @examples
+##' ctags <- sim.ctags()
+##'
 ##' @export
 sim.ctags <- function(grid,
                       par = NULL,
@@ -322,7 +371,8 @@ sim.ctags <- function(grid,
                       by = 0.05,
                       knots.tax = NULL,
                       knots.dif = NULL,
-                      funcs = NULL){
+                      funcs = NULL,
+                      verbose = TRUE){
 
     flag.const.dif <- ifelse(nrow(par$beta) == 1, TRUE, FALSE)
     flag.effort <- ifelse(!is.null(effort), TRUE, FALSE)
@@ -450,6 +500,42 @@ sim.ctags <- function(grid,
 
 
 ##' Simulate archival tags
+##'
+##' @description `sim.atags` allows to simulate archival tags.
+##'
+##' @param grid a grid.
+##' @param par optional; allows to specify all or some of the parameters used
+##'     for simulation. Default: `NULL`.
+##' @param env optional; allows to specify environmental fields that are used
+##'     for simulation. Default: `NULL`.
+##' @param n number of tags. Default: `30`.
+##' @param effort optional; allows to specify effort fields that are used for
+##'     simulation. Default: `NULL`.
+##' @param trange range model time. Default: `NULL`.
+##' @param dt optional; resolution of model time steps. If `NULL` (default), the
+##'     default time step of [setup.momo.data] is used (`0.1`).
+##' @param trange.rel optional; allows to specify a specific part of the time
+##'     series in which tags are released. Default: `NULL`.
+##' @param xrange.rel optional; allows to specify a specific part of the x range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param yrange.rel optional; allows to specify a specific part of the y range
+##'     of the spatial domain in which tags are released. Default: `c(0.4,0.6)`.
+##' @param trange.rec optional; allows to specify a specific part of the time
+##'     series in which tags are recaptured. Default: `NULL`.
+##' @param by time step of the tag simulation model. Default: `0.01`.
+##' @param knots.tax optional; allows to specify knots for the taxis component.
+##'     Default: `NULL`.
+##' @param knots.dif optional; allows to specify knots for the diffusion
+##'     component. Default: `NULL`.
+##' @param funcs optional; allows to specify movement functions. If `NULL`
+##'     (default), the function [get.sim.funcs] is used.
+##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A data frame with simulate archival tags.
+##'
+##' @examples
+##' atags <- sim.atags()
+##'
 ##' @export
 sim.atags <- function(grid,
                       par = NULL,
@@ -465,7 +551,8 @@ sim.atags <- function(grid,
                       by = 0.01,
                       knots.tax = NULL,
                       knots.dif = NULL,
-                      funcs = NULL){
+                      funcs = NULL,
+                      verbose = TRUE){
 
     flag.env <- ifelse(is.null(env), FALSE, TRUE)
     flag.const.dif <- ifelse(nrow(par$beta) == 1, TRUE, FALSE)
@@ -580,4 +667,31 @@ sim.atags <- function(grid,
 ##    res <- res[lapply(res, nrow) > 3]
 
     return(res)
+}
+
+
+
+##' Simulate alpha
+##'
+##' @description Simulate alpha parameter specifying taxis component.
+##'
+##' @param ll lower limit of [runif] to simulate parameters.
+##' @param ul upper limit of [runif] to simulate parameters.
+##' @param n number of alpha parameters. Default: `3`.
+##' @param digits number of significant digits for the parameters. Default: `2`.
+##'
+##' @return A vector with simulate alpha values.
+##'
+##' @examples
+##' alphas <- sim.alpha(0.01, 0.05)
+##'
+sim.alpha <- function(ll, ul, n = 3, digits = 2){
+    alphas <- rep(NA, n)
+    alphas[1] <- 0
+    if(n > 1){
+        for(i in 2:n){
+            alphas[i] <- alphas[i-1] + sample(c(-1,1), 1) * runif(1, ll, ul)
+        }
+    }
+    return(signif(alphas, digits))
 }

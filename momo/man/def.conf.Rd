@@ -2,15 +2,23 @@
 % Please edit documentation in R/conf.R
 \name{def.conf}
 \alias{def.conf}
-\title{def.conf}
+\title{Generate default configuration list}
 \usage{
 def.conf(dat)
 }
 \arguments{
-\item{dat}{Dat frame with required information created by function \code{\link{check.momo.data}}}
-
-\item{const.dif}{Constant diffusion? logical}
+\item{dat}{data frame with input data as produced by the function
+\link{check.momo.data}.}
+}
+\value{
+A list with configurations.
 }
 \description{
-def.conf
+\code{def.conf} generates a list with default configurations
+required by the function \link{fit.momo}.
+}
+\examples{
+data(skjepo)
+conf <- def.conf(skjepo$dat)
+
 }

@@ -2,13 +2,14 @@
 % Please edit documentation in R/data.R
 \name{setup.momo.data}
 \alias{setup.momo.data}
-\title{setup.momo.data}
+\title{Set-up input data for the movement model}
 \usage{
 setup.momo.data(
   grid,
   env,
   ctags = NULL,
   atags = NULL,
+  stags = NULL,
   effort = NULL,
   knots.tax = NULL,
   knots.dif = NULL,
@@ -19,6 +20,73 @@ setup.momo.data(
   verbose = TRUE
 )
 }
+\arguments{
+\item{grid}{a grid object of class \code{momo.grid} as returned by the function
+\link{create.grid}.}
+
+\item{env}{a list with environmental covariates of class \code{momo.env} as
+returned by the function \link{prep.env}.}
+
+\item{ctags}{a data frame with mark-recapture tags of class \code{momo.ctags} as
+returned by the function \link{prep.ctags}. Default: \code{NULL}.}
+
+\item{atags}{a list with archival tags of class \code{momo.atags}. as returned by
+the function \link{prep.atags}. Default: \code{NULL}.}
+
+\item{stags}{a list with mark-resight tags of class \code{momo.stags}. as
+returned by the function \link{prep.stags}. Default: \code{NULL}.}
+
+\item{effort}{a list with effort information of class \code{momo.effort}. as
+returned by the function \link{prep.effort}. Default: \code{NULL}.}
+
+\item{knots.tax}{knots for the taxis component. Default: \code{NULL}.}
+
+\item{knots.dif}{knots for the diffusion component. Default: \code{NULL}.}
+
+\item{const.dif}{logical; If \code{TRUE} (default), diffusion is assumed to be
+constant in time and space.}
+
+\item{trange}{vector of size two defining the limits of the model time
+range. If \code{NULL} (default), time range is defined based on the tags.}
+
+\item{dt}{time step of the model time. If \code{NULL} (default), the time step is
+set to 0.1.}
+
+\item{time.cont}{optional; allows to provide a vector representing the model
+time. Default: \code{NULL}.}
+
+\item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A list with all data required to fit \emph{momo}.
+}
 \description{
-setup.momo.data
+\code{setup.momo.data} combines all individual data sets, such as
+tags and environmental data sets and sets up the required data object
+required to fit the movement model (\link{fit.momo}).
+}
+\examples{
+
+data(skjepo)
+
+ctags <- prep.ctags(skjepo.ctags,
+                    names = c("date_time","date_caught",
+                              "rel_lon","recap_lon",
+                              "rel_lat","recap_lat"),
+                    origin = "1899-12-30",
+                    speed.limit = 200)
+
+atags <- prep.atags(skjepo.atags,
+                    names = c("time","mptlon","mptlat"),
+                    origin = "1899-12-30")
+
+grid <- create.grid(grid = skjepo.grid, dxdy = c(10,10))
+
+env <- prep.env(skjepo.env)
+
+dat <- setup.momo.data(grid = grid,
+                       env = env,
+                       ctags = ctags,
+                       atags = atags)
+
 }

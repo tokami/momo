@@ -2,13 +2,17 @@
 % Please edit documentation in R/utility.R
 \name{get.diag}
 \alias{get.diag}
-\title{Get neighbours for each cell of a grid}
+\title{Get diagnostics for residuals}
 \usage{
 get.diag(fit)
 }
 \arguments{
-\item{fit}{fit}
+\item{fit}{a list of class \code{momo.fit} as returned by the function \link{fit.momo}.}
+}
+\value{
+Fitted object with the list element \code{diag} with the results of the
+diagnostic tests.
 }
 \description{
-Get neighbours for each cell of a grid
+\code{get.diag} applies diagnostics tests to the residuals.
 }

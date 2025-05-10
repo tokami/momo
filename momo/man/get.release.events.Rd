@@ -7,8 +7,40 @@
 get.release.events(dat, grid = NULL, time.cont = NULL, age.max = NULL)
 }
 \arguments{
-\item{dat}{}
+\item{dat}{data frame with input data as produced by the function
+\link{check.momo.data}.}
+
+\item{grid}{optional; allows to provide an extra spatial grid (e.g. with a
+finer resolution) that is used to define the release events. If \code{NULL}
+(default), the grid in \code{dat} is used.}
+
+\item{time.cont}{optional; allows to provide an extra time vector (e.g. with
+a finer resolution) that is used to define the release events. If \code{NULL}
+(default), the time vector in \code{dat} is used.}
+
+\item{age.max}{optional; allows to specify a maximum age of the species
+which is used as the maximum time of each release event. If \code{NULL}
+(default), the maximum time difference of the release event and each
+associated tag that was recovered is used.}
+}
+\value{
+A list with a data frame containing the release events and and index
+vector matching each mark-recapture tag to a release event.
 }
 \description{
-Get release events
+\code{get.release.events} allows to group mark-recapture tags to
+release events that are close in space and time.
+}
+\examples{
+data(skjepo)
+
+dat <- skjepo$dat
+
+tmp <- get.release.events(dat,
+                          grid = create.grid(dat$xrange, dat$yrange, c(1,1)),
+                          time.cont = seq(dat$trange[1], dat$trange[2],
+                                          1/(52*diff(dat$trange))))
+dat$rel.events <- tmp$rel.events
+dat$ctags$rel.event <- tmp$idx
+
 }

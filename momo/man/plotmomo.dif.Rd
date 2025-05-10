@@ -7,15 +7,65 @@
 plotmomo.dif(
   x,
   cor = NULL,
-  main = "Diffusion",
   col = "black",
   alpha = 0.5,
   lwd = 1,
-  keep.par = FALSE,
+  main = "Diffusion",
+  plot.land = FALSE,
+  keep.gpar = FALSE,
   add = FALSE,
+  xlab = "x",
+  ylab = "y",
+  xaxt = "s",
+  yaxt = "s",
   ...
 )
 }
+\arguments{
+\item{x}{a list of class \code{momo.sim} or \code{momo.fit}.}
+
+\item{cor}{scaling parameter for the arrows. Default: \code{0.05}.}
+
+\item{col}{color of lines. Default: "black".}
+
+\item{alpha}{Transparency value. Default: \code{0.5}.}
+
+\item{lwd}{line width. Default: \code{1}.}
+
+\item{main}{a main title for the plot. Default: "Diffusion".}
+
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{add}{logical; if \code{TRUE}, no new graphical window is created and tags
+are added to existing graphical window. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "x".}
+
+\item{ylab}{a label for the y axis. Default: "y".}
+
+\item{xaxt}{A character which specifies the x axis type. Specifying ‘"n"’
+suppresses plotting of the axis. The standard value is "s": for
+compatibility with S values "l" and "t" are accepted but are equivalent
+to "s": any value other than "n" implies plotting.}
+
+\item{yaxt}{A character which specifies the y axis type. Specifying "n"
+suppresses plotting.}
+
+\item{...}{additional arguments for the function \link{plot}.}
+
+\item{select}{optional; allows to select specific time steps. Default:
+\code{NULL}.}
+
+\item{average}{logical; if \code{TRUE} (default), plots the average diffusion over
+the selected time steps.}
+}
+\value{
+Nothing.
+}
 \description{
-Plot diffusion
+Plot diffusion as circes on the spatial domain.
 }

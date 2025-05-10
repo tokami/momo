@@ -2,21 +2,62 @@
 % Please edit documentation in R/plotting.R
 \name{plotmomo.atags}
 \alias{plotmomo.atags}
-\title{Plot momo atags}
+\title{Plot archival tags}
 \usage{
 plotmomo.atags(
   x,
   main = "Archival tags",
-  keep.par = FALSE,
   plot.land = FALSE,
+  keep.gpar = FALSE,
   xlim = NULL,
   ylim = NULL,
+  add = FALSE,
   xlab = "x",
   ylab = "y",
   leg.pos = "topright",
   ...
 )
 }
+\arguments{
+\item{x}{a list with archival tags or a list of class
+\code{momo.data}, \code{momo.sim}, or \code{momo.fit}.}
+
+\item{main}{a main title for the plot. Default: "Archival tags".}
+
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{xlim}{the x limits (x1, x2) of the plot. Note that "x1 > x2" is
+allowed and leads to a "reversed axis". The default value, \code{NULL},
+indicates that the range of the finite values to be plotted should be
+used.}
+
+\item{ylim}{the y limits of the plot.}
+
+\item{add}{logical; if \code{TRUE}, no new graphical window is created and tags
+are added to existing graphical window. Default: \code{FALSE}.}
+
+\item{xlab}{a label for the x axis. Default: "x".}
+
+\item{ylab}{a label for the y axis. Default: "y".}
+
+\item{leg.pos}{position of the legend. Default: "topright".}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
+}
 \description{
-Plot momo atags
+Plot archival tags as lines between release and recapture
+positions.
+}
+\examples{
+data(skjepo)
+
+plotmomo.atags(skjepo$atags)
+
 }

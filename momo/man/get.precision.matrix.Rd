@@ -7,10 +7,27 @@
 get.precision.matrix(grid, h, nu, rho, delta, matern = TRUE, diagonal = FALSE)
 }
 \arguments{
-\item{grid}{Grid}
+\item{grid}{a grid object of class \code{momo.grid} as returned by the function
+\link{create.grid}.}
 
-\item{delta}{Parameter}
+\item{h}{parameter of the matern covariance structure.}
+
+\item{nu}{parameter of the matern covariance structure.}
+
+\item{rho}{parameter of the matern covariance structure.}
+
+\item{delta}{parameter of the matern covariance structure.}
+
+\item{matern}{logical; if \code{TRUE} (default), matern covariance structure is
+used for simulation of environmental fields.}
+
+\item{diagonal}{logical; if \code{TRUE}, diagonal neighbours are considered in
+neighbouring structure. Default: \code{FALSE}.}
+}
+\value{
+A precision matrix.
 }
 \description{
-Get precision matrix
+\code{get.precision.matrix} allows to create a precision matrix
+based on a grid.
 }

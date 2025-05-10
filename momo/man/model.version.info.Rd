@@ -7,14 +7,12 @@
 model.version.info(fit, ...)
 }
 \arguments{
-\item{fit}{returned object from fit.movemod}
+\item{fit}{A fitted momo list of class \code{momo.fit} as returned by the
+function \link{fit.momo}.}
 
-\item{...}{Additional parameters to be passed to ...}
+\item{...}{Additional parameters to be passed to \link{writeLines}.}
 }
 \description{
-Description of model
-}
-\details{
 Writes a string to install the version of the package which was
 used to run the model.
 }

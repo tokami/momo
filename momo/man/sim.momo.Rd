@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim.R
 \name{sim.momo}
 \alias{sim.momo}
-\title{Simulate all data needed for fit.momo}
+\title{Simulate a simple data set}
 \usage{
 sim.momo(
   fit = NULL,
@@ -11,7 +11,7 @@ sim.momo(
   dxdy = c(0.1, 0.1),
   select = FALSE,
   plot.land = FALSE,
-  keep.par = FALSE,
+  keep.gpar = FALSE,
   trange = c(0, 1),
   dt = 0.1,
   nt = 1,
@@ -41,8 +41,98 @@ sim.momo(
 )
 }
 \arguments{
-\item{fit}{optional. momo fit}
+\item{fit}{optional; allows to provide a list of class \code{momo.fit} to
+simulate based on the fitted object. By default (\code{NULL}), no fitted
+object is used.}
+
+\item{xrange}{range of the x-dimension of spatial domain. Default: \code{c(0,1)}.}
+
+\item{yrange}{range of the y-dimension of spatial domain. Default: \code{c(0,1)}.}
+
+\item{dxdy}{resolution of grid in x and y direction. Default: \code{c(0.1,0.1)}.}
+
+\item{select}{logical; if \code{TRUE}, allows to select cells in spatial grid.
+Default: \code{FALSE}.}
+
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{trange}{range of model time. Default: \code{c(0,1)}.}
+
+\item{dt}{resolution of model time steps. Default: \code{0.1}.}
+
+\item{nt}{number of environmental fields. Default: \code{1}.}
+
+\item{rho_t}{autocorrelation coefficient of temporal autocorrelation for
+environmental fields. Default: \code{0.85}.}
+
+\item{sd}{standard deviation for simulation of environmental fields.
+Default: \code{2}.}
+
+\item{h}{parameter of the matern covariance structure. Default: \code{0.2}.}
+
+\item{nu}{parameter of the matern covariance structure. Default: \code{2}.}
+
+\item{rho_s}{parameter of the matern covariance structure. Default: \code{0.8}.}
+
+\item{delta}{parameter of the matern covariance structure. Default: \code{0.1}.}
+
+\item{zrange}{range of the environmental covariate. Default: \code{c(20, 28)}.}
+
+\item{matern}{logical; if \code{TRUE} (default), matern covariance structure is
+used for simulation of environmental fields.}
+
+\item{diagonal}{logical; if \code{TRUE}, diagonal neighbours are considered in
+neighbouring structure. Default: \code{FALSE}.}
+
+\item{par}{optional; allows to specify all or some of the parameters used
+for simulation. Default: \code{NULL}.}
+
+\item{n.alpha}{number of knots for taxis. Default: \code{3}.}
+
+\item{const.dif}{logical; if \code{TRUE} (default), constant diffusion is
+assumed.}
+
+\item{knots.tax}{optional; allows to specify knots for the taxis component.
+Default: \code{NULL}.}
+
+\item{knots.dif}{optional; allows to specify knots for the diffusion
+component. Default: \code{NULL}.}
+
+\item{correct.peclet}{logical; if \code{TRUE}, the diffusion is increased until
+the peclet number is fulfilled. Default: \code{FALSE}.}
+
+\item{use.ctags}{logical; if \code{TRUE} (default), mark-recapture tags are
+simulated.}
+
+\item{n.ctags}{number of mark-recapture tags. Default: \code{500}.}
+
+\item{use.atags}{logical; if \code{TRUE} (default), archival tags are simulated.}
+
+\item{n.atags}{number of archival tags. Default: \code{50}.}
+
+\item{trange.rel}{optional; allows to specify a specific part of the time
+series in which tags are released. Default: \code{NULL}.}
+
+\item{xrange.rel}{optional; allows to specify a specific part of the x range
+of the spatial domain in which tags are released. Default: \code{c(0.4,0.6)}.}
+
+\item{yrange.rel}{optional; allows to specify a specific part of the y range
+of the spatial domain in which tags are released. Default: \code{c(0.4,0.6)}.}
+
+\item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A list of class \code{momo.sim}.
 }
 \description{
-Simulate all data needed for fit.momo
+\code{sim.momo} allows to quickly simulate all data sets and
+components required to fit the movement model, \link{fit.momo}.
+}
+\examples{
+sim <- sim.momo()
+
 }

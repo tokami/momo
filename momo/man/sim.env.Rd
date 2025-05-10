@@ -15,9 +15,46 @@ sim.env(
   delta = 0.1,
   zrange = c(20, 28),
   matern = TRUE,
-  diagonal = FALSE
+  diagonal = FALSE,
+  verbose = TRUE
 )
 }
+\arguments{
+\item{grid}{a grid.}
+
+\item{nt}{number of environmental fields. Default: \code{1}.}
+
+\item{rho_t}{autocorrelation coefficient of temporal autocorrelation for
+environmental fields. Default: \code{0.85}.}
+
+\item{sd}{standard deviation for simulation of environmental fields.
+Default: \code{2}.}
+
+\item{h}{parameter of the matern covariance structure. Default: \code{0.2}.}
+
+\item{nu}{parameter of the matern covariance structure. Default: \code{2}.}
+
+\item{rho_s}{parameter of the matern covariance structure. Default: \code{0.8}.}
+
+\item{delta}{parameter of the matern covariance structure. Default: \code{0.1}.}
+
+\item{zrange}{range of the environmental covariate. Default: \code{c(20, 28)}.}
+
+\item{matern}{logical; if \code{TRUE} (default), matern covariance structure is
+used for simulation of environmental fields.}
+
+\item{diagonal}{logical; if \code{TRUE}, diagonal neighbours are considered in
+neighbouring structure. Default: \code{FALSE}.}
+
+\item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A list with simulated environmental fields.
+}
 \description{
-Simulate environmental fields
+\code{sim.env} allows to simulate environmental fields.
+}
+\examples{
+env <- sim.env()
+
 }

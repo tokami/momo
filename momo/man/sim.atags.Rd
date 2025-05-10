@@ -19,9 +19,61 @@ sim.atags(
   by = 0.01,
   knots.tax = NULL,
   knots.dif = NULL,
-  funcs = NULL
+  funcs = NULL,
+  verbose = TRUE
 )
 }
+\arguments{
+\item{grid}{a grid.}
+
+\item{par}{optional; allows to specify all or some of the parameters used
+for simulation. Default: \code{NULL}.}
+
+\item{env}{optional; allows to specify environmental fields that are used
+for simulation. Default: \code{NULL}.}
+
+\item{n}{number of tags. Default: \code{30}.}
+
+\item{effort}{optional; allows to specify effort fields that are used for
+simulation. Default: \code{NULL}.}
+
+\item{trange}{range model time. Default: \code{NULL}.}
+
+\item{dt}{optional; resolution of model time steps. If \code{NULL} (default), the
+default time step of \link{setup.momo.data} is used (\code{0.1}).}
+
+\item{trange.rel}{optional; allows to specify a specific part of the time
+series in which tags are released. Default: \code{NULL}.}
+
+\item{xrange.rel}{optional; allows to specify a specific part of the x range
+of the spatial domain in which tags are released. Default: \code{c(0.4,0.6)}.}
+
+\item{yrange.rel}{optional; allows to specify a specific part of the y range
+of the spatial domain in which tags are released. Default: \code{c(0.4,0.6)}.}
+
+\item{trange.rec}{optional; allows to specify a specific part of the time
+series in which tags are recaptured. Default: \code{NULL}.}
+
+\item{by}{time step of the tag simulation model. Default: \code{0.01}.}
+
+\item{knots.tax}{optional; allows to specify knots for the taxis component.
+Default: \code{NULL}.}
+
+\item{knots.dif}{optional; allows to specify knots for the diffusion
+component. Default: \code{NULL}.}
+
+\item{funcs}{optional; allows to specify movement functions. If \code{NULL}
+(default), the function \link{get.sim.funcs} is used.}
+
+\item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A data frame with simulate archival tags.
+}
 \description{
-Simulate archival tags
+\code{sim.atags} allows to simulate archival tags.
+}
+\examples{
+atags <- sim.atags()
+
 }

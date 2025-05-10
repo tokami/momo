@@ -7,10 +7,20 @@
 def.par(dat, conf)
 }
 \arguments{
-\item{dat}{Data list with required information}
+\item{dat}{data frame with input data as produced by the function
+\link{check.momo.data}.}
 
-\item{conf}{Configuration list}
+\item{conf}{configuration list as produced by the function \link{def.conf}.}
+}
+\value{
+A named list.
 }
 \description{
-def.par
+Get a list with parameters and default initial values.
+}
+\examples{
+dat(skjepo)
+
+par <- with(skjepo, def.par(dat, conf))
+
 }

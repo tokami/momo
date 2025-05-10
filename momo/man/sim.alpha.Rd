@@ -7,8 +7,21 @@
 sim.alpha(ll, ul, n = 3, digits = 2)
 }
 \arguments{
-\item{ll}{ll}
+\item{ll}{lower limit of \link{runif} to simulate parameters.}
+
+\item{ul}{upper limit of \link{runif} to simulate parameters.}
+
+\item{n}{number of alpha parameters. Default: \code{3}.}
+
+\item{digits}{number of significant digits for the parameters. Default: \code{2}.}
+}
+\value{
+A vector with simulate alpha values.
 }
 \description{
-Simulate alpha
+Simulate alpha parameter specifying taxis component.
+}
+\examples{
+alphas <- sim.alpha(0.01, 0.05)
+
 }

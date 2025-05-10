@@ -4,13 +4,23 @@
 \alias{get.dim}
 \title{Get dimensions from tagging data}
 \usage{
-get.dim(ctags = NULL, atags = NULL)
+get.dim(ctags = NULL, atags = NULL, stags = NULL)
 }
 \arguments{
-\item{ctags}{Conventional tags}
+\item{ctags}{a data frame with mark-recapture tags of class \code{momo.ctags} as
+returned by the function \link{prep.ctags}. Default: \code{NULL}.}
 
-\item{atags}{Archival tags}
+\item{atags}{a list with archival tags of class \code{momo.atags}. as returned by
+the function \link{prep.atags}. Default: \code{NULL}.}
+
+\item{stags}{a list with mark-resight tags of class \code{momo.stags}. as
+returned by the function \link{prep.stags}. Default: \code{NULL}.}
+}
+\value{
+A list with the temporal and spatial (in x and y direction)
+dimensions.
 }
 \description{
-Get dimensions from tagging data
+\code{get.dim} extracts the time and spatial dimensions from tagging
+data.
 }

@@ -2,19 +2,34 @@
 % Please edit documentation in R/data.R
 \name{prep.env}
 \alias{prep.env}
-\title{prep.env}
+\title{Prepare environmental data}
 \usage{
-prep.env(x, names, origin = NULL, verbose = TRUE)
+prep.env(x, date.format = NULL, verbose = TRUE)
 }
 \arguments{
-\item{x}{Data frame with required information}
+\item{x}{Either a list with environmental data at different time points as
+matrices or an array where the third dimension corresponds to the time
+points.}
 
-\item{names}{Names of columns that contain in following order: release time (t0), recapture time (t1), release location x (x0), recapture location x (x1), release location y (y0), recapture location y (y1)}
+\item{date.format}{Optional; allows to specify the format of the time points
+(either names of list elements or attributes for the third dimension
+depending on the format of x).}
 
-\item{origin}{Optional, if time column not provided as decimal date, origin can be used to convert date columns to dates}
-
-\item{verbose}{Print messages?}
+\item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
+}
+\value{
+A 3-dimensional array with the gridded environmental data for x and
+y location (first two dimnesions) and the time points as third
+dimension.
 }
 \description{
-prep.env
+\code{prep.env} checks a list with information about mark-resight
+tags and converts it into the object required by \emph{momo}.
+}
+\examples{
+
+data(skjepo)
+
+env <- prep.env(skjepo.env)
+
 }

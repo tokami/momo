@@ -1,7 +1,16 @@
-##' def.conf
+##' Generate default configuration list
 ##'
-##' @param dat Dat frame with required information created by function \code{\link{check.momo.data}}
-##' @param const.dif Constant diffusion? logical
+##' @description `def.conf` generates a list with default configurations
+##'     required by the function [fit.momo].
+##'
+##' @param dat data frame with input data as produced by the function
+##'     [check.momo.data].
+##'
+##' @return A list with configurations.
+##'
+##' @examples
+##' data(skjepo)
+##' conf <- def.conf(skjepo$dat)
 ##'
 ##' @export
 def.conf <- function(dat){
@@ -15,8 +24,8 @@ def.conf <- function(dat){
     ## Flags
     conf$use.ctags <- ifelse(!is.null(dat$ctags), TRUE, FALSE)
     conf$use.atags <- ifelse(!is.null(dat$atags), TRUE, FALSE)
+    conf$use.stags <- ifelse(!is.null(dat$stags), TRUE, FALSE)
     conf$use.expm <- FALSE
-    conf$use.ukf <- TRUE
     conf$use.effort <- ifelse(!is.null(dat$effort), TRUE, FALSE)
     conf$use.catch <- FALSE
     conf$use.taxis <- TRUE
@@ -60,7 +69,8 @@ def.conf <- function(dat){
                           function(x){
                               tmp <- as.integer(cut(dat$time.cont,
                                                     unique(c(x,dat$trange[2])),
-                                                    right = FALSE))
+                                                    right = FALSE,
+                                                    include.lowest = TRUE))
                               tmp[is.na(tmp)] <- max(tmp, na.rm = TRUE)
                               return(tmp)
                           }))

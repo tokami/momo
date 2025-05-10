@@ -4,8 +4,22 @@
 \alias{plotmomo.resid}
 \title{Plot residuals}
 \usage{
-plotmomo.resid(fit, add.dist = FALSE, keep.par = FALSE, ...)
+plotmomo.resid(x, add.dist = FALSE, keep.gpar = FALSE, ...)
+}
+\arguments{
+\item{x}{a list of class \code{momo.fit} as returned by the function \link{fit.momo}.}
+
+\item{add.dist}{logical; If \code{TRUE}, residuals for the distance between
+predicted and observed recapture location are added.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
+\item{...}{additional arguments for the function \link{plot}.}
+}
+\value{
+Nothing.
 }
 \description{
-Plot residuals
+Plot residuals.
 }

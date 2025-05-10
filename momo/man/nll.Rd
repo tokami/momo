@@ -7,16 +7,15 @@
 nll(par, dat)
 }
 \arguments{
-\item{par}{a list of initial parameters}
+\item{par}{List with initial values for the model in a format similar to
+what is returned from the \link{def.par} function.}
 
-\item{dat}{the data set}
+\item{dat}{Data frame with input data as produced by the function
+\link{check.momo.data}.}
 }
 \value{
-a scalar function value
+The negative loglikelihood value.
 }
 \description{
-Negative log likelihood function
-}
-\details{
-exported, but mainly intended for internal use
+Likelihood function for the movement model.
 }

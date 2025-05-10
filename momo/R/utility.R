@@ -1,12 +1,27 @@
 ##' Create a grid
 ##'
-##' @param xrange Range x
-##' @param yrange Range y
-##' @param dxdy dxdy
-##' @param select.cells Select cells
-##' @param plot.land Optional plot land (only when select.cells = TRUE)
-##' @param verbose Print messages?
-##' @param fit Default: NULL. If fit provided, grid is extracted from fit
+##' @description `create.grid` allows to create a new grid or modify an existing
+##'     grid that is used by [fit.momo] to predict movement rates and required
+##'     for the matrix exponential approach.
+##'
+##' @param xrange range of the x-dimension of spatial domain. Default: `c(0,1)`.
+##' @param yrange range of the y-dimension of spatial domain. Default: `c(0,1)`.
+##' @param dxdy resolution of grid in x and y direction. Default: `c(0.1,0.1)`.
+##' @param select logical; if `TRUE`, allows to select cells in spatial grid.
+##'     Default: `FALSE`.
+##' @param plot.land plot.land logical; If `TRUE`, plot land masses using the
+##'     function [maps::map]. Default: `FALSE`.
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##' @param fit optional; allows to extract and update grid from fitted object of
+##'     class `momo.fit` returned by function [fit.momo]. Default: `NULL`. NULL.
+##' @param grid optional; allows to update a grid of class `momo.grid` as
+##'     returned by the function [create.grid]. Default: `NULL`.
+##'
+##' @return A list of class `momo.grid` with a information about the spatial
+##'     domain and grid.
+##'
+##' @examples
+##' grid <- create.grid()
 ##'
 ##' @export
 create.grid <- function(xrange = c(0,1),
@@ -165,6 +180,8 @@ create.grid <- function(xrange = c(0,1),
                              nx = length(xcen),
                              ny = length(ycen))
 
+    ## Return
+    grid <- add.class(grid, "momo.grid")
     return(grid)
 }
 
@@ -172,13 +189,25 @@ create.grid <- function(xrange = c(0,1),
 
 ##' Get dimensions from tagging data
 ##'
-##' @param ctags Conventional tags
-##' @param atags Archival tags
+##' @description `get.dim` extracts the time and spatial dimensions from tagging
+##'     data.
+##'
+##' @param ctags a data frame with mark-recapture tags of class `momo.ctags` as
+##'     returned by the function [prep.ctags]. Default: `NULL`.
+##' @param atags a list with archival tags of class `momo.atags`. as returned by
+##'     the function [prep.atags]. Default: `NULL`.
+##' @param stags a list with mark-resight tags of class `momo.stags`. as
+##'     returned by the function [prep.stags]. Default: `NULL`.
+##'
+##' @return A list with the temporal and spatial (in x and y direction)
+##'     dimensions.
 ##'
 ##' @export
-get.dim <- function(ctags = NULL, atags = NULL){
+get.dim <- function(ctags = NULL, atags = NULL, stags = NULL){
 
-    trange.c <- trange.a <- xrange.c <- xrange.a <- yrange.c <- yrange.a <- NULL
+    trange.c <- trange.a <- trange.s <-
+        xrange.c <- xrange.a <- xrange.s <-
+            yrange.c <- yrange.a <- yrange.s <-NULL
     if(!is.null(ctags)){
         var <- c("t0","t1")
         trange.c <- range(ctags[,var], na.rm = TRUE)
@@ -196,17 +225,38 @@ get.dim <- function(ctags = NULL, atags = NULL){
         var <- c("y")
         yrange.a <- range(atags[,var], na.rm = TRUE)
     }
+    if(!is.null(stags)){
+        stags <- do.call(rbind, stags)
+        var <- c("t")
+        trange.s <- range(stags[,var], na.rm = TRUE)
+        var <- c("x")
+        xrange.s <- range(stags[,var], na.rm = TRUE)
+        var <- c("y")
+        yrange.s <- range(stags[,var], na.rm = TRUE)
+    }
 
-    res <- list(trange = range(trange.c, trange.a, na.rm = TRUE),
-                xrange = range(xrange.c, xrange.a, na.rm = TRUE),
-                yrange = range(yrange.c, yrange.a, na.rm = TRUE))
+    res <- list(trange = range(trange.c, trange.a, trange.s, na.rm = TRUE),
+                xrange = range(xrange.c, xrange.a, xrange.s, na.rm = TRUE),
+                yrange = range(yrange.c, yrange.a, yrange.s, na.rm = TRUE))
     return(res)
 }
 
 
 ##' Get neighbours for each cell of a grid
 ##'
-##' @param celltable celltable
+##' @description `get.neighbours` allows to get a
+##'
+##' @param celltable data frame with numbered cells as returned by the function
+##'     [create.grid].
+##' @param diagonal logical; if `TRUE`, diagonal neighbours are included.
+##'     Default: `FALSE`.
+##'
+##' @return A matix with each cell and corresponding neighbouring cells.
+##'
+##' @examples
+##' grid <- create.grid()
+##'
+##' neighbours <- get.neighbours(grid$celltable)
 ##'
 ##' @export
 get.neighbours <- function(celltable, diagonal = FALSE){
@@ -256,8 +306,21 @@ get.neighbours <- function(celltable, diagonal = FALSE){
 
 ##' Get precision matrix
 ##'
-##' @param grid Grid
-##' @param delta Parameter
+##' @description `get.precision.matrix` allows to create a precision matrix
+##'     based on a grid.
+##'
+##' @param grid a grid object of class `momo.grid` as returned by the function
+##'     [create.grid].
+##' @param h parameter of the matern covariance structure.
+##' @param nu parameter of the matern covariance structure.
+##' @param rho parameter of the matern covariance structure.
+##' @param delta parameter of the matern covariance structure.
+##' @param matern logical; if `TRUE` (default), matern covariance structure is
+##'     used for simulation of environmental fields.
+##' @param diagonal logical; if `TRUE`, diagonal neighbours are considered in
+##'     neighbouring structure. Default: `FALSE`.
+##'
+##' @return A precision matrix.
 ##'
 ##' @export
 get.precision.matrix <- function(grid, h, nu, rho, delta,
@@ -314,7 +377,20 @@ inv.logit <- function(x){
 }
 
 
-get.momo.cols <- function(n = 1, alpha = 1, type = NULL){
+##' Momo colors
+##'
+##' @description `momo.cols` returns a vector with colors for different
+##'     scenarios.
+##'
+##' @param n number of colors. Default: `1`.
+##' @param alpha transparency value. Default: `1`.
+##' @param type optional; allows to extract colors for specific occasions.
+##'    Default: `NULL`.
+##'
+##' @return A vector with colors.
+##'
+##' @export
+momo.cols <- function(n = 1, alpha = 1, type = NULL){
 
     if(is.null(type) || is.na(type)){
         adjustcolor(c("dodgerblue3","goldenrod2",
@@ -461,6 +537,15 @@ add.class <- function(x, class){
     return(x)
 }
 
+check.class <- function(x, class){
+    if(!inherits(x, class)){
+        stop(paste0("The object ",deparse(substitute(x)),
+                       " does not inherit class ", class,
+                       ". Please check your code."))
+    }
+    return(invisible(NULL))
+}
+
 
 get.env.funcs <- function(dat, conf, par){
 
@@ -587,7 +672,11 @@ get.sim.par <- function(par = NULL){
     return(par.out)
 }
 
-
+##' Simulate functions
+##'
+##' @description Simulate movement functions.
+##'
+##'
 get.sim.funcs <- function(funcs = NULL, dat, conf, env, par){
 
 
@@ -641,9 +730,14 @@ get.sim.funcs <- function(funcs = NULL, dat, conf, env, par){
 
 
 
-##' Get neighbours for each cell of a grid
+##' Get diagnostics for residuals
 ##'
-##' @param fit fit
+##' @description `get.diag` applies diagnostics tests to the residuals.
+##'
+##' @param fit a list of class `momo.fit` as returned by the function [fit.momo].
+##'
+##' @return Fitted object with the list element `diag` with the results of the
+##'     diagnostic tests.
 ##'
 ##' @export
 get.diag <- function(fit){
@@ -733,7 +827,18 @@ get.adv <- function(dat, par, conf, funcs = NULL){
 
 ##' Get peclet number
 ##'
-##' @param grid grid
+##' @description `get.peclet` calculates the peclet number.
+##'
+##' @param grid a grid object of class `momo.grid` as returned by the function
+##'     [create.grid].
+##' @param env a list with environmental covariates of class `momo.env` as
+##'     returned by the function [prep.env].
+##' @param par parameter list with initial values as produced by the function
+##'     [def.par].
+##' @param knots.tax knots for the taxis component. Default: `NULL`.
+##' @param knots.dif knots for the diffusion component. Default: `NULL`.
+##'
+##' @return The peclet number.
 ##'
 ##' @export
 get.peclet <- function(grid, env, par, knots.tax = NULL, knots.dif = NULL){
@@ -760,7 +865,17 @@ get.peclet <- function(grid, env, par, knots.tax = NULL, knots.dif = NULL){
 
 ##' Get Courant–Friedrichs–Lewy condition
 ##'
-##' @param grid grid
+##' @description `get.cfl` allows to calculate the Courant-Friedrichs-Lewy
+##'     condition.
+##'
+##' @param grid a grid object of class `momo.grid` as returned by the function
+##'     [create.grid].
+##' @param env a list with environmental covariates of class `momo.env` as
+##'     returned by the function [prep.env].
+##' @param par parameter list with initial values as produced by the function
+##'     [def.par].
+##'
+##' @return The Courant-Friedrichs-Lewy condition.
 ##'
 ##' @export
 get.cfl <- function(grid, env, par){
@@ -841,7 +956,36 @@ add.lab <- function(lab){
 
 ##' Get release events
 ##'
-##' @param dat
+##' @description `get.release.events` allows to group mark-recapture tags to
+##'     release events that are close in space and time.
+##'
+##' @param dat data frame with input data as produced by the function
+##'     [check.momo.data].
+##' @param grid optional; allows to provide an extra spatial grid (e.g. with a
+##'     finer resolution) that is used to define the release events. If `NULL`
+##'     (default), the grid in `dat` is used.
+##' @param time.cont optional; allows to provide an extra time vector (e.g. with
+##'     a finer resolution) that is used to define the release events. If `NULL`
+##'     (default), the time vector in `dat` is used.
+##' @param age.max optional; allows to specify a maximum age of the species
+##'     which is used as the maximum time of each release event. If `NULL`
+##'     (default), the maximum time difference of the release event and each
+##'     associated tag that was recovered is used.
+##'
+##' @return A list with a data frame containing the release events and and index
+##'     vector matching each mark-recapture tag to a release event.
+##'
+##' @examples
+##' data(skjepo)
+##'
+##' dat <- skjepo$dat
+##'
+##' tmp <- get.release.events(dat,
+##'                           grid = create.grid(dat$xrange, dat$yrange, c(1,1)),
+##'                           time.cont = seq(dat$trange[1], dat$trange[2],
+##'                                           1/(52*diff(dat$trange))))
+##' dat$rel.events <- tmp$rel.events
+##' dat$ctags$rel.event <- tmp$idx
 ##'
 ##' @export
 get.release.events <- function(dat,
@@ -939,4 +1083,18 @@ unscented.transform <- function(x, Px){
     }
     Wm <- Wc <- RTMB::matrix(c(W0, rep((1-W0)/(2*L), 2*L)), 1, 2*L+1)
     return(list(chi = chi, Wm = Wm, Wc = Wc))
+}
+
+
+
+date.2.decimal.year <- function(dates){
+    leap_year <- function(year) {
+        (year %% 4 == 0 & year %% 100 != 0) | (year %% 400 == 0)
+    }
+    year <- as.numeric(format(dates, "%Y"))
+    doy <- as.numeric(format(dates, "%j"))
+    is_leap <- leap_year(year)
+    days_in_year <- ifelse(is_leap, 366, 365)
+    dec_year <- year + (doy - 1) / days_in_year
+    return(dec_year)
 }
