@@ -13,30 +13,6 @@ The goal of momo is to offer a flexible and fast model that can estimate habitat
 preferences and fine-scale movement patterns based on tagging data.
 
 
-## *Installing and loading *momo**
-The current version of *momo* (v0.0.1) requires R $>= 4.0.0$ and can be downloaded
-from github as follows.
-
-```{r, echo = TRUE, include = TRUE, eval = FALSE}
-install.packages("remotes")
-remotes::install_github("tokami/momo/momo")
-```
-
-The development version can be installed with:
-
-```{r, eval=FALSE, echo=TRUE}
-install.packages("remotes")
-remotes::install_github("tokami/momo/momo", ref = "dev")
-```
-
-The package is loaded into the R environment with:
-
-```{r, eval=TRUE, echo=TRUE}
-library(momo)
-```
-
-
-
 ## *Tagging data*
 
 A data set containing all required information can quickly be created by the

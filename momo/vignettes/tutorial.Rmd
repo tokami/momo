@@ -1,7 +1,5 @@
 ---
 title: "Fine-scale movement modeling based on tagging data"
-author: "Tobias K. Mildenberger and Anders Nielsen"
-date: "`r Sys.Date()`"
 output:
     rmarkdown::html_vignette:
     fig_caption: yes
@@ -67,7 +65,9 @@ structure of raw input data and demonstrate how the functions in the *momo*
 package can be used to convert them into the format required by the model as
 demonstrated in the next section.
 
+
 ## *Prepare the data*
+
 The package provides two main data sets: one with information on releases and
 recoveries of conventional tags, and another with track data from archival tags.
 These data sets can be prepared for analysis using the built-in functions
@@ -78,7 +78,7 @@ filter to flag implausible movements, are also available. For full details on
 how to use each function, refer to their respective help pages (e.g.,
 `help("prep.ctags")`).
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE, fig.alt = "Mark-recapture and archival tags"}
 ## Load ctags
 ctags <- prep.ctags(skjepo.ctags,
                     names = c("date_time","date_caught",
@@ -102,7 +102,7 @@ visualization, and analysis of estimated habitat preferences and movement rates.
 The `create.grid` function offers flexible functionality to define custom grids
 and to manually include or exclude specific grid cells as needed.
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE, fig.alt = "Spatial grid"}
 ## Create a grid based on tagging data
 grid <- create.grid(c(-150, -70), c(-30, 35),
                     dxdy = c(10,10),
@@ -113,7 +113,7 @@ Since manual selection of grid cells is not feasible in this automated vignette,
 we use the grid provided in the skjepo data set, but modify it to create a
 coarser resolution:
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE, fig.alt = "Spatial grid"}
 grid <- create.grid(grid = skjepo.grid, dxdy = c(10,10))
 plotmomo.grid(grid, plot.land = TRUE)
 ```
@@ -122,7 +122,7 @@ Another important component of *momo* is the environmental data, which
 characterizes the habitat preferences of the modeled species. The `prep.env`
 function formats this data into the structure required by the model:
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE, fig.alt = "First four environmental fields"}
 ## Env data
 env <- prep.env(skjepo.env)
 plotmomo.env(env[,,1:4], plot.land = TRUE,
@@ -174,7 +174,9 @@ With all necessary input data prepared, the model is now ready to be fitted
 using *momo*.
 
 
+
 ## *Fit the model*
+
 The model is fitted using the `fit.momo` function. Depending on the model’s
 complexity and the number of tags, this step may take several minutes. To reduce
 computation time, we disable the calculation of uncertainty estimates by setting
@@ -196,13 +198,15 @@ fit$opt$par
 ```
 
 
+
 ## *Results*
+
 *momo* provides several functions for visualizing model results. In this example,
 since the data are simulated and the true parameters are known, we can use the
 `plotmomo.compare` function to visualize both the estimated and true habitat
 preferences and movement patterns.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE, fig.alt = "Simulated data and model predictions"}
 plotmomo.compare(sim = skjepo, fit = fit)
 ```
 
@@ -255,7 +259,9 @@ map <- def.map(dat, conf, par)
 ```
 
 
+
 ## *Summary*
+
 This vignette introduced the main features and workflow of the *momo* package for
 estimating animal movement and habitat preferences from tagging data. Using a
 simulated data set (`skjepo`), we demonstrated how to prepare the required inputs,
@@ -281,6 +287,7 @@ files of the functions (`help()` or `?`, where the dots refer to any
 function of the package). Additional vignettes will explore uncertainty
 estimation, model diagnostics, and sensitivity analyses to support more robust
 ecological inference and management applications.
+
 
 
 ## *References*
