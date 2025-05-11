@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   momo: momo.html
   tutorial: tutorial.html
-last_built: 2025-05-11T07:43Z
+last_built: 2025-05-11T08:02Z
 urls:
   reference: https://tokami.github.io/momo/reference
   article: https://tokami.github.io/momo/articles
