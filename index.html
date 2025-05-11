@@ -80,11 +80,13 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>The current version of <em>momo</em> (v0.0.1) requires R <span class="math inline">\(&gt;= 4.0.0\)</span> and can be downloaded from github as follows.</p>
 <div class=".momo-release">
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tokami/momo"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<p>The development version can be installed with:</p>
 <div class=".momo-devel">
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tokami/momo"</span>, ref <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
@@ -94,50 +96,42 @@
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>To get started with <em>momo</em>, load the package, simulate a tagging dataset, and fit the movement model:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tokami/momo" class="external-link">momo</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: RTMB</span></span>
-<span></span>
-<span><span class="co">## Simulate a small tagging data set</span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim.momo.html">sim.momo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in prep.env(env): Something went wrong when trying to conver the date</span></span>
-<span><span class="co">#&gt; information (3rd dimension) to decimal years. Please check the use of the</span></span>
-<span><span class="co">#&gt; argument 'date.format' to specify the format of the time dimension!</span></span>
-<span><span class="co">#&gt; Tags recaptured outside of spatial domain: 3. Removing them.</span></span>
-<span></span>
-<span><span class="co">## Fit momo to the simulated data</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit.momo.html">fit.momo</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
-<span><span class="co">#&gt; Model built (0.65min). Minimizing neg. loglik.</span></span>
-<span><span class="co">#&gt;   0:    -764.52921:  0.00000  0.00000 -4.60517 -4.60517</span></span>
-<span><span class="co">#&gt;   1:    -1622.7452: 0.809506 -0.158924 -4.26143 -4.15652</span></span>
-<span><span class="co">#&gt;   2:    -3852.9454: 0.460597 -0.136380 -3.98798 -3.92635</span></span>
-<span><span class="co">#&gt;   3:    -4697.4419: 0.0549107 -0.158445 -3.85450 -3.66728</span></span>
-<span><span class="co">#&gt;   4:    -4754.9426: 0.153769 -0.130276 -3.73661 -3.51863</span></span>
-<span><span class="co">#&gt;   5:    -4774.9591: 0.0273377 -0.0211933 -3.60556 -3.55739</span></span>
-<span><span class="co">#&gt;   6:    -4797.3994: 0.130940 -0.0732304 -3.44445 -3.64202</span></span>
-<span><span class="co">#&gt;   7:    -4799.1280: 0.0799836 -0.267297 -3.48732 -3.57520</span></span>
-<span><span class="co">#&gt;   8:    -4811.4709: 0.0580559 -0.180328 -3.44624 -3.53151</span></span>
-<span><span class="co">#&gt;   9:    -4813.7381: 0.0906916 -0.165858 -3.44379 -3.53516</span></span>
-<span><span class="co">#&gt;  10:    -4815.1586: 0.0736870 -0.158719 -3.41886 -3.55339</span></span>
-<span><span class="co">#&gt;  11:    -4816.6418: 0.0809782 -0.115713 -3.46543 -3.52017</span></span>
-<span><span class="co">#&gt;  12:    -4816.9184: 0.0925146 -0.0900967 -3.41286 -3.56044</span></span>
-<span><span class="co">#&gt;  13:    -4817.5956: 0.0838907 -0.0895346 -3.41309 -3.55842</span></span>
-<span><span class="co">#&gt;  14:    -4817.7726: 0.0783491 -0.0911288 -3.41440 -3.55179</span></span>
-<span><span class="co">#&gt;  15:    -4817.8239: 0.0819420 -0.0915767 -3.42057 -3.54653</span></span>
-<span><span class="co">#&gt;  16:    -4817.8851: 0.0796595 -0.0876647 -3.42814 -3.54749</span></span>
-<span><span class="co">#&gt;  17:    -4817.9036: 0.0795222 -0.0863060 -3.42808 -3.54425</span></span>
-<span><span class="co">#&gt;  18:    -4817.9041: 0.0805814 -0.0838177 -3.42965 -3.54264</span></span>
-<span><span class="co">#&gt;  19:    -4817.9089: 0.0796985 -0.0842348 -3.43111 -3.54271</span></span>
-<span><span class="co">#&gt;  20:    -4817.9090: 0.0796483 -0.0839999 -3.43091 -3.54288</span></span>
-<span><span class="co">#&gt;  21:    -4817.9090: 0.0796543 -0.0840143 -3.43104 -3.54291</span></span>
-<span><span class="co">#&gt;  22:    -4817.9090: 0.0796473 -0.0840087 -3.43100 -3.54288</span></span>
-<span><span class="co">#&gt;  23:    -4817.9090: 0.0796492 -0.0840076 -3.43099 -3.54288</span></span>
-<span><span class="co">#&gt; Minimization done (0.017min). Model converged. Estimating uncertainty.</span></span>
-<span></span>
-<span><span class="co">## Plot simulated data and model predictions</span></span>
-<span><span class="fu"><a href="reference/plotmomo.compare.html">plotmomo.compare</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span>, fit <span class="op">=</span> <span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/unnamed-chunk-4-1.png"><!-- --></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">#&gt; Loading required package: RTMB</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Tags recaptured outside of spatial domain: 29. Removing them.</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Model built (0.61min). Minimizing neg. loglik.</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   0:    -4192.6138:  0.00000  0.00000 -4.60517 -4.60517</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   1:    -4796.5268: -0.0966489 -0.0101145 -4.58773 -4.58928</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;   2:    -4898.8200: -0.124812 -0.00939873 -4.58212 -4.58068</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   3:    -4929.8245: -0.145965 -0.00888311 -4.57511 -4.56854</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   4:    -4950.1877: -0.129787 -0.0152229 -4.56598 -4.55245</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   5:    -5014.1349: -0.147579 -0.0232125 -4.54254 -4.51187</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;   6:    -5106.3383: -0.129261 -0.0418619 -4.49775 -4.42458</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;   7:    -5212.4041: -0.160512 -0.0105762 -4.45841 -4.23035</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;   8:    -5272.3929: -0.152722 -0.179770 -4.49911 -4.12601</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;   9:    -5289.5654: -0.118451 0.00573862 -4.43678 -4.08410</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;  10:    -5312.2511: -0.138613 0.00577972 -4.43551 -4.08205</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;  11:    -5315.9420: -0.133293 0.000917144 -4.41912 -4.07248</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;  12:    -5324.0147: -0.139426 0.000501935 -4.39967 -4.03736</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;  13:    -5325.8618: -0.134744 -0.00457497 -4.36004 -4.04291</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;  14:    -5328.9224: -0.139222 -0.00856291 -4.38720 -4.01332</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;  15:    -5330.0923: -0.139555 -0.0210903 -4.31298 -4.04384</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;  16:    -5333.2754: -0.145893 -0.0406397 -4.37201 -3.99197</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  17:    -5333.4577: -0.144182 -0.0411830 -4.37179 -3.99181</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;  18:    -5333.5257: -0.144936 -0.0422246 -4.37077 -3.99104</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;  19:    -5333.6107: -0.144124 -0.0421883 -4.36725 -3.99143</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  20:    -5333.7127: -0.144735 -0.0410208 -4.36026 -3.99286</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;  21:    -5333.8461: -0.143139 -0.0375878 -4.34776 -3.98652</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;  22:    -5334.0934: -0.144215 -0.0463768 -4.33756 -3.99185</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;  23:    -5334.1644: -0.146714 -0.0511159 -4.34462 -3.98035</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;  24:    -5334.2021: -0.146640 -0.0490708 -4.33335 -3.98927</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;  25:    -5334.2463: -0.145587 -0.0515736 -4.32823 -3.98826</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;  26:    -5334.2772: -0.146360 -0.0517267 -4.32914 -3.98771</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt;  27:    -5334.2794: -0.146265 -0.0520271 -4.32972 -3.98767</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt;  28:    -5334.2794: -0.146266 -0.0520397 -4.32963 -3.98768</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt;  29:    -5334.2794: -0.146266 -0.0520383 -4.32964 -3.98768</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; Minimization done (0.024min). Model converged. Estimating uncertainty.</span></span></code></pre></div>
+<p><img src="reference/figures/unnamed-chunk-4-1.png" alt="Simulated data and model predictions"></p>
 <p>This example illustrates the basic workflow: prepare data (here simulate), fit the model, and access results. For real applications, momo supports multiple types of tagging data, customizable environmental covariates, and both estimation and prediction features.</p>
 <p>Detailed examples and guidance are provided in the package vignettes (see <a href="https://tokami.github.io/momo/" class="uri">https://tokami.github.io/momo/</a>).</p>
 </div>
