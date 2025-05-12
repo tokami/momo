@@ -24,6 +24,8 @@ knitr::opts_chunk$set(echo = TRUE,
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- badges: end -->
 
+## Overview
+
 *momo* is a new R package for tagging-based *mo*vement *mo*deling,
 specifically designed to estimate fine-scale animal movement patterns using
 various tagging data, such as mark-recapture, mark-resight, and
@@ -34,36 +36,16 @@ population-level movement dynamics using a small set of interpretable
 parameters. Movement rates are estimated as a function of environmental
 conditions or geographic locations.
 
+The current version of the package allows to estimate habitat preference
+functions and movement patterns. Further package development will allow to
+estimate spatiotemporally varying recapture probability, estimate natural and
+fishing mortality rates, and relative biomass indices and distribution.
 
+To get started with *momo*, install and load the package, simulate a tagging
+dataset, and fit the movement model:
 
-## Installation
-
-The current version of *momo* (v0.0.1) requires R $>= 4.0.0$ and can be
-downloaded from github as follows.
-
-::: .momo-release
-```{r, eval = FALSE}
-# install.packages("remotes")
-remotes::install_github("tokami/momo")
-```
-:::
-
-The development version can be installed with:
-
-::: .momo-devel
-```{r, eval = FALSE}
-remotes::install_github("tokami/momo", ref = "dev")
-```
-:::
-
-
-
-## Usage
-
-To get started with *momo*, load the package, simulate a tagging dataset, and fit
-the movement model:
-
-```{r, eval = TRUE, echo = FALSE, fig.alt = "Simulated data and model predictions"}
+```{r, eval = FALSE, echo = TRUE, fig.alt = "Simulated data and model predictions"}
+## devtools::install_github("tokami/momo/momo")
 library(momo)
 
 ## Simulate a small tagging data set
@@ -76,38 +58,29 @@ fit <- fit.momo(sim)
 plotmomo.compare(sim = sim, fit = fit)
 ```
 
-This example illustrates the basic workflow: prepare data (here simulate), fit
-the model, and access results. For real applications, momo supports multiple
-types of tagging data, customizable environmental covariates, and both
-estimation and prediction features.
 
-Detailed examples and guidance are provided in the package vignettes (see
-[https://tokami.github.io/momo/](https://tokami.github.io/momo/)).
+## More information
 
-
-## Getting help
-
-You can find more information about *momo* on its *pkgdown* page at
-[https://tokami.github.io/momo/](https://tokami.github.io/momo/). The page
-includes links to vignettes, functions descriptions, version updates, and many
-more. In case, your question is not answered on the *pkgdown* webpage, please
-write an email to the maintainer: [Tobias
-Mildenberger](mailto:t.k.mildenberger@gmail.com). In case you find bugs, please
-post an issue on [here](https://github.com/tokami/momo/issues).
+More detailed examples and documentation for *momo* can be found at
+[https://tokami.github.io/momo/](https://tokami.github.io/momo/). The *pkgdown*
+page includes links to articles, vignettes, functions descriptions, information
+to version updates, and much more. In case, your question is not answered by the
+package documentation and on the *pkgdown* pages, please write an email to the
+maintainer: [Tobias Mildenberger](mailto:t.k.mildenberger@gmail.com). In case
+you find bugs, please post an issue on
+[here](https://github.com/tokami/momo/issues).
 
 
-
-## Citation
+### Citation
 
 Please use the R command `citation("momo")` to receive information on how to
 cite this package.
 
 
+### Funding
 
-## References
+The development of *momo* was cofunded by the European Union.
 
-1. Mildenberger, T. K., Maunder, M., Nielsen, A. (in prep). momo: an R
-   package for the estimation of fine-scale animal movement based on tagging
-   data
-2. Mildenberger, T. K., et al. (in prep). Habitat suitability and movement of
-   Skipjack tuna in the Eastern Pacific Ocean
+---
+
+![](man/figures/EN_Co-fundedbytheEU_RGB_POS.png){width=250px}

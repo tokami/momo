@@ -9,38 +9,94 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The goal of momo is to offer a flexible and fast model that can estimate habitat
-preferences and fine-scale movement patterns based on tagging data.
+
+```{r ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      cache = FALSE,
+                      warning = FALSE,
+                      eval = TRUE,
+                      error = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      include = TRUE,
+                      collapse = TRUE,
+                      comment = "#>",
+                      fig.show = "hold",
+                      fig.width=8, fig.height=7)
+```
 
 
-## *Tagging data*
+The goal of the *mo*vement *mo*del *momo* is to offer a fast and flexible model
+and R package that allows estimating habitat preferences and fine-scale movement
+patterns based on tagging data. To get started, make sure to install the most
+recent package version from GitHub.
+
+
+## Installation
+
+The current version of *momo* (v0.0.1) requires R $>= 4.0.0$ and can be
+downloaded from github as follows.
+
+::: .momo-release
+```{r, eval = FALSE}
+# install.packages("remotes")
+remotes::install_github("tokami/momo")
+```
+:::
+
+The development version can be installed with:
+
+::: .momo-devel
+```{r, eval = FALSE}
+remotes::install_github("tokami/momo", ref = "dev")
+```
+:::
+
+
+
+## Basic usage
+
+After successful installation, the package can be loaded into the R environment.
+
+```{r, eval = TRUE, echo = FALSE, fig.alt = ""}
+library(momo)
+```
 
 A data set containing all required information can quickly be created by the
 function `sim.momo`:
 
-```{r, eval = FALSE}
+```{r, eval = TRUE, echo = FALSE, fig.alt = ""}
 # Simulate a data set with tagging data
 sim <- sim.momo()
 ```
 
-
-
-## *Fitting momo*
-
 The main function to estimate movement paramters is `fit.momo`:
 
-```{r, eval = FALSE}
+```{r, eval = TRUE, echo = FALSE, fig.alt = ""}
 # Fit the movement model
 fit <- fit.momo(sim)
 ```
 
-
-
-## *Inspecting results*
-
 The package includes a variety of functions that allows to inspect the results:
 
-```{r, eval = FALSE}
+```{r, eval = TRUE, echo = FALSE, fig.alt = "Simulated data and model predictions"}
 # Plot the results
-plotmomo.compare(sim = sim, fit = fit)
+plotmomo.compare(sim = sim, fit = fit, bg = "white")
 ```
+
+This example illustrates the basic workflow: prepare data (here based on
+simulation), fit the model, and access results. For real applications, momo
+supports multiple types of tagging data, customizable environmental covariates,
+and both estimation and prediction features.
+
+
+
+## A more realistic scenario
+
+In a more realistic scenario, the tagging data and environmental fields are not
+simulated but derived from actual observations, requiring additional data
+processing before fitting *momo*. The [tutorial vignette](tutorial.html)
+provides a step-by-step guide to applying *momo* to simulated data that closely
+mimics real-world observations of skipjack tuna in the Eastern Pacific Ocean. It
+illustrates the expected data formats and demonstrates how *momo* functions can
+be used to prepare and structure observational datasets for model fitting.
