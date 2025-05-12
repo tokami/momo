@@ -69,11 +69,14 @@ fitted and simulated data.</p>
 <span>  <span class="va">fit</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  quantity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pref"</span>, <span class="st">"taxis"</span>, <span class="st">"dif"</span>, <span class="st">"par"</span><span class="op">)</span>,</span>
+<span>  plot.land <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  keep.gpar <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  asp <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  col <span class="op">=</span> <span class="fu"><a href="momo.cols.html">momo.cols</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>,</span>
 <span>  lty <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
-<span>  plot.legend <span class="op">=</span> <span class="fl">1</span></span>
+<span>  cor.dif <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  plot.legend <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  bg <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,6 +99,16 @@ currently implemented: <code>"taxis"</code> for the taxis, <code>"dif"</code> fo
 diffusion, <code>"par"</code> for the parameters.</p></dd>
 
 
+<dt id="arg-plot-land">plot.land<a class="anchor" aria-label="anchor" href="#arg-plot-land"></a></dt>
+<dd><p>logical; If <code>TRUE</code>, plot land masses using the function
+<a href="https://rdrr.io/pkg/maps/man/map.html" class="external-link">maps::map</a>. Default: <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-keep-gpar">keep.gpar<a class="anchor" aria-label="anchor" href="#arg-keep-gpar"></a></dt>
+<dd><p>logical; If <code>TRUE</code>, do not overwrite the graphical
+parameters. Default: <code>FALSE</code>.</p></dd>
+
+
 <dt id="arg-asp">asp<a class="anchor" aria-label="anchor" href="#arg-asp"></a></dt>
 <dd><p>positive number deining the target aspect ratio (columns / rows)
 of the plot arrangement.</p></dd>
@@ -112,6 +125,15 @@ of the plot arrangement.</p></dd>
 <dt id="arg-plot-legend">plot.legend<a class="anchor" aria-label="anchor" href="#arg-plot-legend"></a></dt>
 <dd><p>logical or integer indicating which legend should be
 plotted. Default: <code>1</code>.</p></dd>
+
+
+<dt id="arg-bg">bg<a class="anchor" aria-label="anchor" href="#arg-bg"></a></dt>
+<dd><p>background color of the graphical window. By default (<code>NULL</code>),
+background is transparent.</p></dd>
+
+
+<dt id="arg-cor">cor<a class="anchor" aria-label="anchor" href="#arg-cor"></a></dt>
+<dd><p>scaling parameter for the arrows. By default (<code>NULL</code>), not used.</p></dd>
 
 </dl></div>
     <div class="section level2">

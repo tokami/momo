@@ -129,7 +129,7 @@ features, such as a speed filter to flag implausible movements, are also
 available. For full details on how to use each function, refer to their
 respective help pages (e.g., <code><a href="../reference/prep.ctags.html">help("prep.ctags")</a></code>).</p>
 <pre><code><span><span class="co">#&gt; Removing 5 recaptured tags for which release time is after recapture time (t0 &gt; t1).</span></span></code></pre>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-3-1.png" alt="Mark-recapture and archival tags" width="768"><img src="tutorial_files/figure-html/unnamed-chunk-3-2.png" alt="Mark-recapture and archival tags" width="768"></p>
+<p><img src="reference/figures/unnamed-chunk-3-1.png" alt="Mark-recapture and archival tags" width="768"><img src="reference/figures/unnamed-chunk-3-2.png" alt="Mark-recapture and archival tags" width="768"></p>
 <p>Based on the spatial extent of the tagging data, the next step is to
 define a spatial grid. While the Kalman filter approach does not require
 a grid for model fitting <span class="citation">(Mildenberger, Maunder,
@@ -141,12 +141,12 @@ specific grid cells as needed.</p>
 <p>Since manual selection of grid cells is not feasible in this
 automated vignette, we use the grid provided in the skjepo data set, but
 modify it to create a coarser resolution:</p>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-5-1.png" alt="Spatial grid" width="768"></p>
+<p><img src="reference/figures/unnamed-chunk-5-1.png" alt="Spatial grid" width="768"></p>
 <p>Another important component of <em>momo</em> is the environmental
 data, which characterizes the habitat preferences of the modeled
 species. The <code>prep.env</code> function formats this data into the
 structure required by the model:</p>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" alt="First four environmental fields" width="768"></p>
+<p><img src="reference/figures/unnamed-chunk-6-1.png" alt="First four environmental fields" width="768"></p>
 <p>To speed up the fitting process in this vignette, we use a subset of
 the available conventional tag data:</p>
 <p>The individual data sets can then be combined into a single input
@@ -176,7 +176,7 @@ may take several minutes. To reduce computation time, we disable the
 calculation of uncertainty estimates by setting
 <code>do.sdreport = FALSE</code>.</p>
 <pre><code><span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
-<span><span class="co">#&gt; Model built (0.37min). Minimizing neg. loglik.</span></span>
+<span><span class="co">#&gt; Model built (0.54min). Minimizing neg. loglik.</span></span>
 <span><span class="co">#&gt;   0:     1595143.9:  0.00000  0.00000 -4.60517 -4.60517</span></span>
 <span><span class="co">#&gt;   1:     635104.70: -0.00109162 0.00103431 -3.80611 -4.00393</span></span>
 <span><span class="co">#&gt;   2:     304398.49: -0.00321421 0.00304836 -3.65852 -3.01488</span></span>
@@ -236,7 +236,7 @@ calculation of uncertainty estimates by setting
 <span><span class="co">#&gt;  56:     2869.4992:  1446.64  1924.07  2.66420 -2.18598</span></span>
 <span><span class="co">#&gt;  57:     2869.4992:  1446.77  1924.23  2.66424 -2.18641</span></span>
 <span><span class="co">#&gt;  58:     2869.4992:  1446.74  1924.19  2.66423 -2.18633</span></span>
-<span><span class="co">#&gt; Minimization done (0.019min). Model converged. Estimating uncertainty.</span></span></code></pre>
+<span><span class="co">#&gt; Minimization done (0.025min). Model converged. Estimating uncertainty.</span></span></code></pre>
 <p>In addition to the input data lists, the returned object also
 includes the <code>obj</code> (from RTMB) and <code>opt</code> (from the
 minimizer). Both contain the estimated parameter values and other
@@ -253,7 +253,7 @@ results. In this example, since the data are simulated and the true
 parameters are known, we can use the <code>plotmomo.compare</code>
 function to visualize both the estimated and true habitat preferences
 and movement patterns.</p>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-13-1.png" alt="Simulated data and model predictions" width="768"></p>
+<p><img src="reference/figures/unnamed-chunk-13-1.png" alt="Simulated data and model predictions" width="768"></p>
 </div>
 <div class="section level2">
 <h2 id="advanced-settings">
