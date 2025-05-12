@@ -235,6 +235,7 @@ nll <- function(par, dat){
                         }else if(flag.effort){
 
                             ## Likelihood
+                            idx.t <- nts ## TODO: check this
                             loglik.ctags <- loglik.ctags + log1p(-exp(lpC.cum[idx.t+1]))
 
                             ## Residuals

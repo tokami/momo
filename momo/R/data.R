@@ -240,8 +240,8 @@ prep.stags <- function(x,
 
 ##' Prepare environmental data
 ##'
-##' @description `prep.env` checks a list with information about mark-resight
-##'     tags and converts it into the object required by \emph{momo}.
+##' @description `prep.env` checks a list with information about environmental
+##'     covariates and converts it into the object required by \emph{momo}.
 ##'
 ##' @param x Either a list with environmental data at different time points as
 ##'     matrices or an array where the third dimension corresponds to the time
@@ -305,6 +305,73 @@ prep.env <- function(x,
     }
 
     res <- add.class(res, "momo.env")
+
+    return(res)
+}
+
+
+
+##' Prepare effort data
+##'
+##' @description `prep.effort` checks a list with effort information and
+##'     converts it into the object required by \emph{momo}.
+##'
+##' @param x Either a list with environmental data at different time points as
+##'     matrices or an array where the third dimension corresponds to the time
+##'     points.
+##' @param date.format Optional; allows to specify the format of the time points
+##'     (either names of list elements or attributes for the third dimension
+##'     depending on the format of x).
+##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
+##'
+##' @return A 3-dimensional array with the gridded effort data for x and
+##'     y location (first two dimnesions) and the time points as third
+##'     dimension.
+##'
+##' @export
+prep.effort <- function(x,
+                        date.format = NULL,
+                        verbose = TRUE){
+
+    res <- x
+
+    if(inherits(x, "list")){
+        res <- simplify2array(x)
+    }
+
+    if(length(dim(x)) == 2){
+        res <- array(x, c(dim(x),1))
+    }
+
+    ## if(length(dim(x)) == 3){
+    ##     res <- lapply(seq(dim(x)[3]), function(i) x[,,i])
+    ## }
+
+    ## make sure 3rd dimension (time) is numeric
+    dates <- attributes(res)$dimnames[[3]]
+    if(!is.null(dates)){
+        dec.year <- rep(NA, length(dates))
+        if(is.null(date.format)){
+            dec.year <- as.numeric(dates)
+        }else if(length(grep("%d", date.format)) == 0){
+            date.format <- paste0(date.format, "-%d")
+            dates <- paste0(dates, "-01")
+            dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+        }else if(length(grep("%d", date.format)) == 1){
+            dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+        }else{
+            warning("Not sure how to convert date information to decimal years.")
+        }
+        dec.year <- round(dec.year, 3)
+
+        if(all(is.na(dec.year))){
+            if(verbose) warning("Something went wrong when trying to convert the date information (3rd dimension) to decimal years. Please check the use of the argument 'date.format' to specify the format of the time dimension!")
+        }else{
+            attributes(res)$dimnames[[3]] <- dec.year
+        }
+    }
+
+    res <- add.class(res, "momo.effort")
 
     return(res)
 }

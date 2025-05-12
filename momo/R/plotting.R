@@ -105,6 +105,8 @@ plotmomo.grid <- function(x,
 ##' @param ylab a label for the y axis. Default: "y".
 ##' @param bg background color of the graphical window. By default (`NULL`),
 ##'     background is transparent.
+##' @param plot.contour logical; If `TRUE`, adds contours to plot. Default:
+##'     `FALSE`.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -124,6 +126,7 @@ plotmomo.env <- function(x,
                          xlab = "x",
                          ylab = "y",
                          bg = NULL,
+                         plot.contour = TRUE,
                          ...){
 
     if(inherits(x, "momo.sim")){
@@ -178,9 +181,131 @@ plotmomo.env <- function(x,
         if(plot.land){
             plot.land(xlims, ylims)
         }
-        contour(x, y, env[,,i], add = TRUE)
+        if(plot.contour) contour(x, y, env[,,i], add = TRUE)
         if(nt > 1) legend("topleft", legend = paste0("Field ", i),
                           bg = "white", pch = NA)
+        box(lwd = 1.5)
+    }
+    if(!keep.gpar){
+        mtext(main, 3, 0, outer = TRUE)
+        mtext(xlab, 1, 1, outer = TRUE)
+        mtext(ylab, 2, 1.5, outer = TRUE)
+    }
+
+
+    return(invisible(NULL))
+}
+
+
+##' Plot effort fields
+##'
+##' @description Plot the effort fields of any momo object that contains
+##'     effort data.
+##'
+##' @param x a grid or a list of class `momo.data`, `momo.sim`, or `momo.fit`.
+##' @param select optional; allows to select specific time steps. Default:
+##'     `NULL`.
+##' @param main a main title for the plot. Default: `Environmental fields`.
+##' @param labels logical; If `TRUE` (default), plot numbers in cells.
+##' @param plot.land logical; If `TRUE`, plot land masses using the function
+##'     [maps::map]. Default: `FALSE`.
+##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
+##'     parameters. Default: `FALSE`.
+##' @param xlab a label for the x axis. Default: "x".
+##' @param ylab a label for the y axis. Default: "y".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
+##' @param plot.contour logical; If `TRUE` (default), add contours to plot.
+##' @param plot.legend logical; If `TRUE` (default), add legend to plot.
+##' @param ... additional arguments for the function [plot].
+##'
+##' @return Nothing.
+##'
+##' @export
+plotmomo.effort <- function(x,
+                         select = NULL,
+                         main = "Effort fields",
+                         labels = TRUE,
+                         plot.land = FALSE,
+                         keep.gpar = FALSE,
+                         xlab = "x",
+                         ylab = "y",
+                         bg = NULL,
+                         plot.contour = TRUE,
+                         plot.legend = TRUE,
+                         ...){
+
+    if(inherits(x, "momo.sim")){
+        eff <- x$effort
+    }else{
+        eff <- x
+    }
+
+    if(inherits(eff, "list")){
+        stop("Not implemented yet for lists, plot one list element after the other!")
+    }
+
+    if(!is.null(select)){
+        eff <- eff[,,select]
+    }
+
+    nt <- dim(eff)[3]
+
+    if(any(names(attributes(eff)) == "dimnames")){
+        xlims <- range(as.numeric(attributes(eff)$dimnames[[1]]))
+        ylims <- range(as.numeric(attributes(eff)$dimnames[[2]]))
+    }else{
+        xlims <- c(1,nrow(eff))
+        ylims <- c(1,nrow(eff))
+    }
+
+    if(!keep.gpar){
+        opar <- par(no.readonly = TRUE)
+        on.exit(par(opar))
+        par(mfrow = n2mfrow(nt, asp = 2),
+            mar = c(1.5,1.5,1.5,1.5),
+            oma = c(3,3,ifelse(main == "", 0, 1.5),0))
+    }
+    for(i in 1:nt){
+        x <- as.numeric(rownames(eff[,,i]))
+        if(length(x) == 0) x <- 1:nrow(eff[,,i])
+        y <- as.numeric(colnames(eff[,,i]))
+        if(length(y) == 0) y <- 1:ncol(eff[,,i])
+        if(!is.null(bg)){
+            par(bg = bg)
+        }
+        plot(1,1, type = "n",
+             xlim = xlims, ylim = ylims,
+             xlab = "",
+             ylab = "",
+             ...)
+        z <- eff[,,i]
+        zlim <- range(z, na.rm = TRUE)
+        ncols <- 10
+        cols <- terrain.colors(ncols)
+        breaks <- seq(zlim[1], zlim[2], length.out = ncols + 1)
+        image(x, y, z,
+              col = cols,
+              breaks = breaks,
+              add = TRUE)
+        if(plot.land){
+            plot.land(xlims, ylims)
+        }
+        if(plot.contour) contour(x, y, eff[,,i], add = TRUE)
+        if(nt > 1) legend("topleft", legend = paste0("Field ", i),
+                          bg = "white", pch = NA)
+        if(i == nt){
+            if(plot.legend){
+                legend("bottomright",
+                       legend = paste0("[",round(breaks[-(ncols+1)],2), ",",
+                                       round(breaks[-1],2),")"),
+                       col = 1,
+                       ncol = 2,
+                       pt.bg = cols,
+                       pch = 22,
+                       bg = "white")
+            }
+        }
         box(lwd = 1.5)
     }
     if(!keep.gpar){
@@ -526,6 +651,10 @@ plotmomo.stags <- function(x,
 ##' @param ylab a label for the y axis. Default: "Preference".
 ##' @param bg background color of the graphical window. By default (`NULL`),
 ##'     background is transparent.
+##' @param xlim x limits
+##' @param ylim y limits
+##' @param return.limits logical; If `TRUE`, no graph is created but x and y
+##'     limits are returned. Default: `FALSE`.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -542,9 +671,12 @@ plotmomo.pref <- function(x,
                           xlab = "Covariate",
                           ylab = "Preference",
                           bg = NULL,
+                          ylim = NULL,
+                          xlim = NULL,
+                          return.limits = FALSE,
                           ...){
 
-    if(!keep.gpar){
+    if(!keep.gpar && !return.limits){
         opar <- par(no.readonly = TRUE)
         on.exit(par(opar))
         par(mfrow = c(1,1))
@@ -597,18 +729,22 @@ plotmomo.pref <- function(x,
             prefsd <- preflow <- prefup <- NULL
         }
 
-        xlims <- apply(env.pred, 2, range)
+        if(is.null(xlim)) xlim <- apply(env.pred, 2, range)
 
-        ylims <- range(pref, preflow, prefup, na.rm = TRUE) ## if more env fields this should be matrices
+        if(is.null(ylim)) ylim <- range(pref, preflow,
+                                         prefup, na.rm = TRUE)
+        ## if more env fields this should be matrices
         alpha <- 0.3
 
+        if(return.limits) return(list(xlim = xlim, ylim = ylim))
+
         if(!add){
-    if(!is.null(bg)){
-        par(bg = bg)
-    }
+            if(!is.null(bg)){
+                par(bg = bg)
+            }
             plot(NA, ty = 'n',
-                 xlim = xlims,
-                 ylim = ylims,
+                 xlim = xlim,
+                 ylim = ylim,
                  xlab = xlab,
                  ylab = ylab,
                  main = main,
@@ -656,7 +792,7 @@ plotmomo.pref <- function(x,
 
         env.pred <- dat$env.pred
 
-        xlims <- apply(dat$env.pred, 2, range)
+        if(is.null(xlim)) xlim <- apply(dat$env.pred, 2, range)
 
         if(type == "taxis"){
             knots <- dat$knots.tax[,i]
@@ -671,7 +807,9 @@ plotmomo.pref <- function(x,
 
         pref <- get.true.pref(dat$env.pred[,i])
 
-        ylims <- range(pref, par)
+        if(is.null(ylim)) ylim <- range(pref, par)
+
+        if(return.limits) return(list(xlim = xlim, ylim = ylim))
 
         alpha <- 0.3
 
@@ -681,8 +819,8 @@ plotmomo.pref <- function(x,
         par(bg = bg)
     }
             plot(NA, ty = 'n',
-                 xlim = xlims,
-                 ylim = ylims,
+                 xlim = xlim,
+                 ylim = ylim,
                  xlab = xlab,
                  ylab = ylab,
                  main = main,
@@ -1673,11 +1811,15 @@ plotmomo.compare.one <- function(fit, ...,
     quantity <- match.arg(quantity)
     n <- length(fitlist)
 
+
     if(quantity == "pref"){
+        ylims <- range(sapply(fitlist, function(x) plotmomo.pref(x, return.limits = TRUE)$ylim))
+
         plotmomo.pref(fitlist[[1]], col = col[1],
-                       main = "",
+                      main = "",
                       keep.gpar = TRUE,
-                      bg = bg)
+                      bg = bg,
+                      ylim = ylims)
         if(n > 1){
             for(i in 2:n){
                 plotmomo.pref(fitlist[[i]], add = TRUE,

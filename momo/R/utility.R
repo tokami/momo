@@ -615,12 +615,6 @@ get.env.funcs <- function(dat, conf, par){
                                conf$ienv$adv.y, dat$time.cont,
                                env.func.adv.y, env.dfunc.adv, conf$ienvS$adv)
 
-
-    if(conf$use.effort){
-        effort <- habi.light(dat$effort, dat$xranges.eff, dat$yranges.eff,
-                             dat$ieff, dat$time.cont)
-    }
-
     diffusion.fun <- function(xy, t){
         habitat.dif$val(xy, t)
     }
@@ -634,6 +628,19 @@ get.env.funcs <- function(dat, conf, par){
 
     res <- list(dif = diffusion.fun,
                 tax = taxis.fun)
+
+    if(conf$use.effort){
+        effort <- habi.light(dat$effort, dat$xranges.eff,
+                             dat$yranges.eff,
+                             dat$ieff, dat$time.cont)
+
+        fish.mort.fun <- function(xy, t){
+            exp(par$logLambda[1,1]) * effort$val(xy, t)
+        }
+
+        res$fish.mort <- fish.mort.fun
+    }
+
 
     if(conf$use.boundaries){
         bound <- habi.light(conf$boundaries,

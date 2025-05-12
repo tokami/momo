@@ -384,12 +384,13 @@ sim.ctags <- function(grid,
     ## Dimensions
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
-    }else if(!is.null(env)){
+    }else if(is.null(trange) && !is.null(env)){
         if(!is.null(attributes(env[[1]])$dimnames[[3]])){
             ## stop("Implement to simulate tags from dates in env, but dates could have any format.")
             trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
         }else{
             trange <- c(0, max(sapply(env, function(x) dim(x)[3])))
+            if(verbose) warning("Time range extracted from number of environmental fields.")
         }
     }
 
@@ -419,6 +420,7 @@ sim.ctags <- function(grid,
 
     ## Setup default data and conf
     dat <- setup.momo.data(grid, env,
+                           effort = effort,
                            knots.tax = knots.tax,
                            knots.dif = knots.dif,
                            trange = trange,

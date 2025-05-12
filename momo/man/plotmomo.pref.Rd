@@ -16,6 +16,9 @@ plotmomo.pref(
   xlab = "Covariate",
   ylab = "Preference",
   bg = NULL,
+  ylim = NULL,
+  xlim = NULL,
+  return.limits = FALSE,
   ...
 )
 }
@@ -45,6 +48,13 @@ are added to existing graphical window. Default: \code{FALSE}.}
 
 \item{bg}{background color of the graphical window. By default (\code{NULL}),
 background is transparent.}
+
+\item{ylim}{y limits}
+
+\item{xlim}{x limits}
+
+\item{return.limits}{logical; If \code{TRUE}, no graph is created but x and y
+limits are returned. Default: \code{FALSE}.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

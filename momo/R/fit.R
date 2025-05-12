@@ -82,7 +82,9 @@ fit.momo <- function(dat,
 
     ## Do not use release events for KF
     if(!conf$use.rel.events && !conf$use.expm && !is.null(dat$ctags)){
-        dat$rel.events <- dat$ctags
+        dat$rel.events <- dat$ctags[which(!is.na(dat$ctags$t1) &
+                                          !is.na(dat$ctags$x1) &
+                                          !is.na(dat$ctags$y1)),]
         dat$ctags$rel.event <- 1:nrow(dat$ctags)
     }
 
