@@ -15,6 +15,7 @@ plotmomo.pref(
   add = FALSE,
   xlab = "Covariate",
   ylab = "Preference",
+  bg = NULL,
   ...
 )
 }
@@ -41,6 +42,9 @@ are added to existing graphical window. Default: \code{FALSE}.}
 \item{xlab}{a label for the x axis. Default: "Covariate".}
 
 \item{ylab}{a label for the y axis. Default: "Preference".}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

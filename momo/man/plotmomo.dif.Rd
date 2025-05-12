@@ -18,13 +18,14 @@ plotmomo.dif(
   ylab = "y",
   xaxt = "s",
   yaxt = "s",
+  bg = NULL,
   ...
 )
 }
 \arguments{
 \item{x}{a list of class \code{momo.sim} or \code{momo.fit}.}
 
-\item{cor}{scaling parameter for the arrows. Default: \code{0.05}.}
+\item{cor}{scaling parameter for the arrows. By default (\code{NULL}), not used.}
 
 \item{col}{color of lines. Default: "black".}
 
@@ -54,6 +55,9 @@ to "s": any value other than "n" implies plotting.}
 
 \item{yaxt}{A character which specifies the y axis type. Specifying "n"
 suppresses plotting.}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 

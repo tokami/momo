@@ -282,24 +282,26 @@ prep.env <- function(x,
 
     ## make sure 3rd dimension (time) is numeric
     dates <- attributes(res)$dimnames[[3]]
-    dec.year <- rep(NA, length(dates))
-    if(is.null(date.format)){
-        dec.year <- as.numeric(dates)
-    }else if(length(grep("%d", date.format)) == 0){
-        date.format <- paste0(date.format, "-%d")
-        dates <- paste0(dates, "-01")
-        dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
-    }else if(length(grep("%d", date.format)) == 1){
-        dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
-    }else{
-        warning("Not sure how to convert date information to decimal years.")
-    }
-    dec.year <- round(dec.year, 3)
+    if(!is.null(dates)){
+        dec.year <- rep(NA, length(dates))
+        if(is.null(date.format)){
+            dec.year <- as.numeric(dates)
+        }else if(length(grep("%d", date.format)) == 0){
+            date.format <- paste0(date.format, "-%d")
+            dates <- paste0(dates, "-01")
+            dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+        }else if(length(grep("%d", date.format)) == 1){
+            dec.year <- date.2.decimal.year(as.Date(dates, format = date.format))
+        }else{
+            warning("Not sure how to convert date information to decimal years.")
+        }
+        dec.year <- round(dec.year, 3)
 
-    if(all(is.na(dec.year))){
-        warning("Something went wrong when trying to conver the date information (3rd dimension) to decimal years. Please check the use of the argument 'date.format' to specify the format of the time dimension!")
-    }else{
-        attributes(res)$dimnames[[3]] <- dec.year
+        if(all(is.na(dec.year))){
+            if(verbose) warning("Something went wrong when trying to convert the date information (3rd dimension) to decimal years. Please check the use of the argument 'date.format' to specify the format of the time dimension!")
+        }else{
+            attributes(res)$dimnames[[3]] <- dec.year
+        }
     }
 
     res <- add.class(res, "momo.env")

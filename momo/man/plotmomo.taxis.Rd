@@ -20,6 +20,7 @@ plotmomo.taxis(
   ylab = "y",
   xaxt = "s",
   yaxt = "s",
+  bg = NULL,
   ...
 )
 }
@@ -62,6 +63,9 @@ to "s": any value other than "n" implies plotting.}
 
 \item{yaxt}{A character which specifies the y axis type. Specifying "n"
 suppresses plotting.}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

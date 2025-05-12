@@ -11,6 +11,8 @@
 ##'     parameters. Default: `FALSE`.
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -28,6 +30,7 @@ plotmomo.grid <- function(x,
                           keep.gpar = FALSE,
                           xlab = "x",
                           ylab = "y",
+                          bg = NULL,
                           ...){
 
     if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
@@ -46,7 +49,9 @@ plotmomo.grid <- function(x,
         on.exit(par(opar))
         par(mfrow = c(1,1))
     }
-
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
     plot(xlims, ylims,
          xlim = xlims,
          ylim = ylims,
@@ -55,6 +60,10 @@ plotmomo.grid <- function(x,
          xaxs = "i", yaxs = "i",
          xlab = xlab, ylab = ylab,
          ...)
+    ## if(!is.null(bg)){
+    ##     usr <- par("usr")
+    ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+    ## }
     c0 <- t(grid$celltable)
     c0[c0 > 0] <- 1
     image(attributes(grid)$xgr,
@@ -94,6 +103,8 @@ plotmomo.grid <- function(x,
 ##'     parameters. Default: `FALSE`.
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -112,6 +123,7 @@ plotmomo.env <- function(x,
                          keep.gpar = FALSE,
                          xlab = "x",
                          ylab = "y",
+                         bg = NULL,
                          ...){
 
     if(inherits(x, "momo.sim")){
@@ -150,11 +162,18 @@ plotmomo.env <- function(x,
         if(length(x) == 0) x <- 1:nrow(env[,,i])
         y <- as.numeric(colnames(env[,,i]))
         if(length(y) == 0) y <- 1:ncol(env[,,i])
+        if(!is.null(bg)){
+            par(bg = bg)
+        }
         plot(1,1, type = "n",
              xlim = xlims, ylim = ylims,
              xlab = "",
              ylab = "",
              ...)
+        ## if(!is.null(bg)){
+        ##     usr <- par("usr")
+        ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+        ## }
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
         if(plot.land){
             plot.land(xlims, ylims)
@@ -196,6 +215,8 @@ plotmomo.env <- function(x,
 ##'     are added to existing graphical window. Default: `FALSE`.
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -215,6 +236,7 @@ plotmomo.ctags <- function(x,
                            add = FALSE,
                            xlab = "x",
                            ylab = "y",
+                           bg = NULL,
                            ...){
 
     if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
@@ -244,11 +266,18 @@ plotmomo.ctags <- function(x,
     }
 
     if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
         plot(0, 0, ty = "n", main = main,
              xlim = xlims,
              ylim = ylims,
              xlab = xlab, ylab = ylab,
              ...)
+        ## if(!is.null(bg)){
+        ##     usr <- par("usr")
+        ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+        ## }
     }
     arrows(ctags$x0, ctags$y0, ctags$x1, ctags$y1,
            col = adjustcolor("grey60",0.4),
@@ -287,6 +316,8 @@ plotmomo.ctags <- function(x,
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
 ##' @param leg.pos position of the legend. Default: "topright".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -307,6 +338,7 @@ plotmomo.atags <- function(x,
                            xlab = "x",
                            ylab = "y",
                            leg.pos = "topright",
+                           bg = NULL,
                            ...){
 
     if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
@@ -337,11 +369,18 @@ plotmomo.atags <- function(x,
     cols <- momo.cols(2)
 
     if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
         plot(0,0, ty = "n", main = main,
              xlim = xlims,
              ylim = ylims,
              xlab = xlab, ylab = ylab,
              ...)
+        ## if(!is.null(bg)){
+        ##     usr <- par("usr")
+        ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+        ## }
     }
     if(plot.land){
         plot.land(xlims, ylims)
@@ -385,6 +424,8 @@ plotmomo.atags <- function(x,
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
 ##' @param leg.pos position of the legend. Default: "topright".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -400,6 +441,7 @@ plotmomo.stags <- function(x,
                            xlab = "x",
                            ylab = "y",
                            leg.pos = "topright",
+                           bg = NULL,
                            ...){
 
     if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
@@ -428,11 +470,18 @@ plotmomo.stags <- function(x,
     cols <- momo.cols(2)
 
     if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
         plot(0,0, ty = "n", main = main,
              xlim = xlims,
              ylim = ylims,
              xlab = xlab, ylab = ylab,
              ...)
+        ## if(!is.null(bg)){
+        ##     usr <- par("usr")
+        ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+        ## }
     }
     if(plot.land){
         plot.land(xlims, ylims)
@@ -475,6 +524,8 @@ plotmomo.stags <- function(x,
 ##'     are added to existing graphical window. Default: `FALSE`.
 ##' @param xlab a label for the x axis. Default: "Covariate".
 ##' @param ylab a label for the y axis. Default: "Preference".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -490,6 +541,7 @@ plotmomo.pref <- function(x,
                           add = FALSE,
                           xlab = "Covariate",
                           ylab = "Preference",
+                          bg = NULL,
                           ...){
 
     if(!keep.gpar){
@@ -551,6 +603,9 @@ plotmomo.pref <- function(x,
         alpha <- 0.3
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA, ty = 'n',
                  xlim = xlims,
                  ylim = ylims,
@@ -558,6 +613,10 @@ plotmomo.pref <- function(x,
                  ylab = ylab,
                  main = main,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
 
         }
         polygon(c(env.pred[,i], rev(env.pred[,i])),
@@ -618,6 +677,9 @@ plotmomo.pref <- function(x,
 
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA, ty = 'n',
                  xlim = xlims,
                  ylim = ylims,
@@ -625,6 +687,10 @@ plotmomo.pref <- function(x,
                  ylab = ylab,
                  main = main,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
         }
         lines(env.pred[,i], pref,
               col = col,
@@ -648,12 +714,16 @@ plotmomo.pref <- function(x,
 ##' @param col colors of heatmap. By default, using function [grDevices::hcl.colors]:
 ##'     `hcl.colors(14, "YlOrRd", rev = TRUE)`.
 ##' @param ci level for confidence intervals. Default: `0.95`.
+##' @param plot.land logical; If `TRUE`, plot land masses using the function
+##'     [maps::map]. Default: `FALSE`.
 ##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
 ##'     parameters. Default: `FALSE`.
 ##' @param add logical; if `TRUE`, no new graphical window is created and tags
 ##'     are added to existing graphical window. Default: `FALSE`.
 ##' @param xlab a label for the x axis. Default: "x".
 ##' @param ylab a label for the y axis. Default: "y".
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -663,10 +733,12 @@ plotmomo.pref.spatial <- function(x,
                                   type = "taxis",
                                   col = hcl.colors(14, "YlOrRd", rev = TRUE),
                                   ci = 0.95,
+                                  plot.land = FALSE,
                                   keep.gpar = FALSE,
                                   add = FALSE,
                                   xlab = "x",
                                   ylab = "y",
+                                  bg = NULL,
                                   ...){
 
     if(!keep.gpar){
@@ -741,12 +813,23 @@ plotmomo.pref.spatial <- function(x,
         mat[] <- pref.pred
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA,
                  xlim = x$dat$xrange,
                  ylim = x$dat$yrange,
                  xlab = xlab,
                  ylab = ylab,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
+        }
+
+        if(plot.land){
+            plot.land(x$dat$xrange, x$dat$yrange)
         }
 
         image(as.numeric(rownames(mat)),
@@ -770,12 +853,19 @@ plotmomo.pref.spatial <- function(x,
         if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA,
                  xlim = attr(grid,"xrange"),
                  ylim = attr(grid,"yrange"),
                  xlab = xlab,
                  ylab = ylab,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
         }
 
         par <- get.sim.par(par)
@@ -794,6 +884,10 @@ plotmomo.pref.spatial <- function(x,
 
         i = 1
         pref.pred <- get.true.pref(as.numeric(env[[i]]))
+
+        if(plot.land){
+            plot.land(attr(grid,"xrange"), attr(grid,"yrange"))
+        }
 
         image(
             matrix(pref.pred, attr(grid, "nx"),
@@ -838,6 +932,8 @@ plotmomo.pref.spatial <- function(x,
 ##'     to "s": any value other than "n" implies plotting.
 ##' @param yaxt A character which specifies the y axis type. Specifying "n"
 ##'     suppresses plotting.
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -858,6 +954,7 @@ plotmomo.taxis <- function(x,
                            ylab = "y",
                            xaxt = "s",
                            yaxt = "s",
+                           bg = NULL,
                            ...){
 
     if(is.null(select)) select <- 1:length(x$dat$time.cont.pred)
@@ -895,6 +992,9 @@ plotmomo.taxis <- function(x,
         for(i in 1:ncol(tax.x)){
 
             if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
                 plot(NA,
                      xlim = x$dat$xrange,
                      ylim = x$dat$yrange,
@@ -904,6 +1004,10 @@ plotmomo.taxis <- function(x,
                      yaxt = yaxt,
                      main = "",
                      ...)
+                ## if(!is.null(bg)){
+                ##     usr <- par("usr")
+                ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+                ## }
             }
             if(plot.land){
                 plot.land(x$dat$xrange, x$dat$yrange)
@@ -932,6 +1036,9 @@ plotmomo.taxis <- function(x,
         if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA,
                  xlim = attr(grid,"xrange"),
                  ylim = attr(grid,"yrange"),
@@ -939,6 +1046,10 @@ plotmomo.taxis <- function(x,
                  ylab = "y",
                  main = main,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
         }
 
         par <- get.sim.par(par)
@@ -994,7 +1105,7 @@ plotmomo.taxis <- function(x,
 ##'     `NULL`.
 ##' @param average logical; if `TRUE` (default), plots the average diffusion over
 ##'     the selected time steps.
-##' @param cor scaling parameter for the arrows. Default: `0.05`.
+##' @param cor scaling parameter for the arrows. By default (`NULL`), not used.
 ##' @param col color of lines. Default: "black".
 ##' @param alpha Transparency value. Default: `0.5`.
 ##' @param lwd line width. Default: `1`.
@@ -1013,6 +1124,8 @@ plotmomo.taxis <- function(x,
 ##'     to "s": any value other than "n" implies plotting.
 ##' @param yaxt A character which specifies the y axis type. Specifying "n"
 ##'     suppresses plotting.
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -1031,6 +1144,7 @@ plotmomo.dif <- function(x,
                          ylab = "y",
                          xaxt = "s",
                          yaxt = "s",
+                         bg = NULL,
                          ...){
 
     if(!keep.gpar){
@@ -1082,6 +1196,9 @@ plotmomo.dif <- function(x,
         if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
 
         if(!add){
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
             plot(NA,
                  xlim = attr(grid,"xrange"),
                  ylim = attr(grid,"yrange"),
@@ -1091,6 +1208,10 @@ plotmomo.dif <- function(x,
                  yaxt = yaxt,
                  main = main,
                  ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
         }
 
         par <- get.sim.par(par)
@@ -1512,23 +1633,34 @@ plotmomo.data <- function(x,
 ##' @param quantity quantities that can be compared. The following options are
 #'     currently implemented: \code{"taxis"} for the taxis, \code{"dif"} for the
 #'     diffusion, \code{"par"} for the parameters.
+#' @param plot.land logical; If `TRUE`, plot land masses using the function
+##'     [maps::map]. Default: `FALSE`.
+##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
+##'     parameters. Default: `FALSE`.
 ##' @param asp positive number deining the target aspect ratio (columns / rows)
 ##'     of the plot arrangement.
 ##' @param col colors. By default, [momo.cols] are used: `momo.cols(10)`.
 ##' @param lty vector with line types. Default: 1:10.
+##' @param cor scaling parameter for the arrows. By default (`NULL`), not used.
 ##' @param plot.legend logical or integer indicating which legend should be
 ##'     plotted. Default: `1`.
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
+##'
 ##'
 ##' @return Nothing.
 ##'
 plotmomo.compare.one <- function(fit, ...,
                                  quantity = c("pref","taxis",
                                               "dif","par"),
+                                 plot.land = FALSE,
                                  keep.gpar = FALSE,
                                  asp = 2,
                                  col = momo.cols(10),
                                  lty = 1:10,
-                                 plot.legend = 1){
+                                 cor.dif = NULL,
+                                 plot.legend = 1,
+                                 bg = NULL){
 
     if("momo.fit" %in% class(fit) || "momo.sim" %in% class(fit)){
         fitlist <- list(fit, ...)
@@ -1544,12 +1676,14 @@ plotmomo.compare.one <- function(fit, ...,
     if(quantity == "pref"){
         plotmomo.pref(fitlist[[1]], col = col[1],
                        main = "",
-                      keep.gpar = TRUE)
+                      keep.gpar = TRUE,
+                      bg = bg)
         if(n > 1){
             for(i in 2:n){
                 plotmomo.pref(fitlist[[i]], add = TRUE,
                                col = col[i], lty = lty[i],
-                              keep.gpar = TRUE)
+                              keep.gpar = TRUE,
+                              bg = bg)
             }
         }
     }
@@ -1557,12 +1691,16 @@ plotmomo.compare.one <- function(fit, ...,
     if(quantity == "taxis"){
         plotmomo.taxis(fitlist[[1]], col = col[1],
                        main = "",
-                       keep.gpar = TRUE)
+                       keep.gpar = TRUE,
+                       plot.land = plot.land,
+                       bg = bg)
         if(n > 1){
             for(i in 2:n){
                 plotmomo.taxis(fitlist[[i]], add = TRUE,
                                col = col[i], lty = lty[i],
-                               keep.gpar = TRUE)
+                               keep.gpar = TRUE,
+                               plot.land = plot.land,
+                               bg = bg)
             }
         }
     }
@@ -1570,13 +1708,19 @@ plotmomo.compare.one <- function(fit, ...,
     if(quantity == "dif"){
         plotmomo.dif(fitlist[[1]],
                      col = col[1], lty = lty[1],
+                     cor = cor.dif,
                      main = "",
-                     keep.gpar = TRUE)
+                     keep.gpar = TRUE,
+                     plot.land = plot.land,
+                     bg = bg)
         if(n > 1){
             for(i in 2:n){
                 plotmomo.dif(fitlist[[i]], add = TRUE,
                              col = col[i], lty = lty[i],
-                             keep.gpar = TRUE)
+                             cor = cor.dif,
+                             keep.gpar = TRUE,
+                             plot.land = plot.land,
+                             bg = bg)
             }
         }
     }
@@ -1611,7 +1755,11 @@ plotmomo.compare.one <- function(fit, ...,
                 map <- map[!is.na(map)]
                 mapped <- unlist(x$map[map])
                 mapped <- is.na(mapped)
-                pars <- unlist(x$pl[nam])
+                if(is.null(x$pl)){
+                    pars <- unlist(x$opt$par)
+                }else{
+                    pars <- unlist(x$pl[nam])
+                }
                 pars <- pars[!names(pars) %in% names(mapped)[mapped]]
                 sds <- unlist(x$plsd[nam])
                 sds <- sds[!names(sds) %in% names(mapped)[mapped]]
@@ -1628,7 +1776,9 @@ plotmomo.compare.one <- function(fit, ...,
             return(c(pars,lo,hi))
         })
 
-        ylim <- range(unlist(tmp), na.rm = TRUE)
+        r <- range(unlist(tmp), na.rm = TRUE)
+        pad <- 0.1 * diff(r)
+        ylim <- c(r[1] - pad, r[2] + pad)
         xlim <- c(1, max(unique(unlist(lapply(tmp, function(x)
             length(unique(names(x)))))))) + 0.5 * c(-1,1)
 
@@ -1660,7 +1810,13 @@ plotmomo.compare.one <- function(fit, ...,
             mapped <- unlist(fitlist[[i]]$map[map])
             mapped <- is.na(mapped)
 
-            pars <- unlist(fitlist[[i]]$pl[nam])
+            if(is.null(fitlist[[i]]$pl)){
+                pars <- unlist(fitlist[[i]]$opt$par)
+            }else{
+                pars <- unlist(fitlist[[i]]$pl[nam])
+
+            }
+
             pars <- pars[!names(pars) %in% names(mapped)[mapped]]
             sds <- unlist(fitlist[[i]]$plsd[nam])
             sds <- sds[!names(sds) %in% names(mapped)[mapped]]
@@ -1672,8 +1828,19 @@ plotmomo.compare.one <- function(fit, ...,
                 hi[ind] <- exp(pars[ind] + 1.96 * sds[ind])
                 pars[ind] <- exp(pars[ind])
             }
+
         }
 
+
+        labs <- names(pars)
+        names(labs) <- names(mapped)[!mapped]
+        if(any(labs == "logSdObsATS")){
+            names(labs)[labs == "logSdObsATS"] <- "sdObsATS"
+        }
+
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
         plot(seq(pars), pars,
              ty = "n",
              xlim = xlim,
@@ -1681,11 +1848,15 @@ plotmomo.compare.one <- function(fit, ...,
              ylim = ylim,
              xlab = "Parameter",
              ylab = "Value")
-        axis(1, at = seq(pars), labels = names(pars))
+        ## if(!is.null(bg)){
+        ##     usr <- par("usr")
+        ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+        ## }
+        axis(1, at = seq(pars), labels = names(labs))
 
         addi <- seq(-0.1, 0.1, length.out = n)
 
-        if(inherits(fitlist[[i]], "momo.fit")){
+        if(inherits(fitlist[[i]], "momo.fit") && length(lo) > 0){
             arrows(seq(pars) + addi[i], lo,
                    seq(pars) + addi[i], hi,
                    length = 0.1,
@@ -1703,6 +1874,7 @@ plotmomo.compare.one <- function(fit, ...,
                     if(length(ind) > 0){
                         pars[ind] <- exp(pars[ind])
                     }
+                    pars <- pars[match(names(labs), names(pars))]
                 }else if(inherits(fitlist[[i]], "momo.fit")){
 
                     ## TODO: make a get.par function!
@@ -1751,12 +1923,18 @@ plotmomo.compare.one <- function(fit, ...,
 ##' @param quantity quantities that can be compared. The following options are
 ##'     currently implemented: \code{"taxis"} for the taxis, \code{"dif"} for
 ##'     the diffusion, \code{"par"} for the parameters.
+##' @param plot.land logical; If `TRUE`, plot land masses using the function
+##'     [maps::map]. Default: `FALSE`.
 ##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
 ##'     parameters. Default: `FALSE`.
+##' @param col color
+##' @param cor scaling parameter for the arrows. By default (`NULL`), not used.
 ##' @param asp positive number deining the target aspect ratio (columns / rows)
 ##'     of the plot arrangement.
 ##' @param plot.legend logical or integer indicating which legend should be
 ##'     plotted. Default: `1`.
+##' @param bg background color of the graphical window. By default (`NULL`),
+##'     background is transparent.
 ##'
 ##' @return Nothing.
 ##'
@@ -1764,13 +1942,16 @@ plotmomo.compare.one <- function(fit, ...,
 plotmomo.compare <- function(fit, ...,
                              quantity = c("pref","taxis",
                                           "dif","par"),
+                             plot.land = FALSE,
                              keep.gpar = FALSE,
                              col = momo.cols(10),
+                             cor.dif = NULL,
                              asp = 2,
-                             plot.legend = 1){
+                             plot.legend = 1,
+                             bg = NULL){
 
     if("momo.fit" %in% class(fit) || "momo.sim" %in% class(fit)){
-        fitlist <- list(fit, ...)
+        fitlist <- list(fit = fit, ...)
     }else if(inherits(fit, "list")){
         fitlist <- c(fit, ...)
     }else stop("Please provide fitted momo objects either individually or as list.")
@@ -1779,6 +1960,10 @@ plotmomo.compare <- function(fit, ...,
 
     quantity <- match.arg(quantity, several.ok = TRUE)
     nq <- length(quantity)
+
+    if(!is.null(bg)){
+        par(bg = bg)
+    }
 
     if(!keep.gpar){
         opar <- par(no.readonly = TRUE)
@@ -1805,7 +1990,10 @@ plotmomo.compare <- function(fit, ...,
                              quantity = quantity[i],
                              col = col,
                              plot.legend = as.integer(plot.legend) == 2 && i == nq,
-                             keep.gpar = TRUE)
+                             plot.land = plot.land,
+                             keep.gpar = TRUE,
+                             cor.dif = cor.dif,
+                             bg = bg)
         add.lab(LETTERS[i])
     }
 

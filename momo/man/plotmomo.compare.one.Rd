@@ -8,11 +8,14 @@ plotmomo.compare.one(
   fit,
   ...,
   quantity = c("pref", "taxis", "dif", "par"),
+  plot.land = FALSE,
   keep.gpar = FALSE,
   asp = 2,
   col = momo.cols(10),
   lty = 1:10,
-  plot.legend = 1
+  cor.dif = NULL,
+  plot.legend = 1,
+  bg = NULL
 )
 }
 \arguments{
@@ -25,6 +28,12 @@ such (named) fitted objects.}
 currently implemented: \code{"taxis"} for the taxis, \code{"dif"} for the
 diffusion, \code{"par"} for the parameters.}
 
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
+\item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
+parameters. Default: \code{FALSE}.}
+
 \item{asp}{positive number deining the target aspect ratio (columns / rows)
 of the plot arrangement.}
 
@@ -34,6 +43,11 @@ of the plot arrangement.}
 
 \item{plot.legend}{logical or integer indicating which legend should be
 plotted. Default: \code{1}.}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
+
+\item{cor}{scaling parameter for the arrows. By default (\code{NULL}), not used.}
 }
 \value{
 Nothing.

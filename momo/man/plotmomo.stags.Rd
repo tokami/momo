@@ -15,6 +15,7 @@ plotmomo.stags(
   xlab = "x",
   ylab = "y",
   leg.pos = "topright",
+  bg = NULL,
   ...
 )
 }
@@ -45,6 +46,9 @@ are added to existing graphical window. Default: \code{FALSE}.}
 \item{ylab}{a label for the y axis. Default: "y".}
 
 \item{leg.pos}{position of the legend. Default: "topright".}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

@@ -9,10 +9,12 @@ plotmomo.pref.spatial(
   type = "taxis",
   col = hcl.colors(14, "YlOrRd", rev = TRUE),
   ci = 0.95,
+  plot.land = FALSE,
   keep.gpar = FALSE,
   add = FALSE,
   xlab = "x",
   ylab = "y",
+  bg = NULL,
   ...
 )
 }
@@ -27,6 +29,9 @@ plotmomo.pref.spatial(
 
 \item{ci}{level for confidence intervals. Default: \code{0.95}.}
 
+\item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
+\link[maps:map]{maps::map}. Default: \code{FALSE}.}
+
 \item{keep.gpar}{logical; If \code{TRUE}, do not overwrite the graphical
 parameters. Default: \code{FALSE}.}
 
@@ -36,6 +41,9 @@ are added to existing graphical window. Default: \code{FALSE}.}
 \item{xlab}{a label for the x axis. Default: "x".}
 
 \item{ylab}{a label for the y axis. Default: "y".}
+
+\item{bg}{background color of the graphical window. By default (\code{NULL}),
+background is transparent.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

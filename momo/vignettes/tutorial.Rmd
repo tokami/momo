@@ -28,6 +28,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       collapse = TRUE,
                       comment = "#>",
                       fig.show = "hold",
+                      fig.path = "man/figures/",
                       fig.width=8, fig.height=7)
 ```
 
@@ -86,13 +87,13 @@ ctags <- prep.ctags(skjepo.ctags,
                               "rel_lat","recap_lat"),
                     origin = "1899-12-30",
                     speed.limit = 200)
-plotmomo.ctags(ctags, plot.land = TRUE)
+plotmomo.ctags(ctags, plot.land = TRUE, bg = "white")
 
 ## Load atags
 atags <- prep.atags(skjepo.atags,
                     names = c("time","mptlon","mptlat"),
                     origin = "1899-12-30")
-plotmomo.atags(atags, plot.land = TRUE)
+plotmomo.atags(atags, plot.land = TRUE, bg = "white")
 ```
 
 Based on the spatial extent of the tagging data, the next step is to define a
@@ -115,7 +116,7 @@ coarser resolution:
 
 ```{r, eval=TRUE, echo=FALSE, fig.alt = "Spatial grid"}
 grid <- create.grid(grid = skjepo.grid, dxdy = c(10,10))
-plotmomo.grid(grid, plot.land = TRUE)
+plotmomo.grid(grid, plot.land = TRUE, bg = "white")
 ```
 
 Another important component of *momo* is the environmental data, which
@@ -126,7 +127,7 @@ function formats this data into the structure required by the model:
 ## Env data
 env <- prep.env(skjepo.env)
 plotmomo.env(env[,,1:4], plot.land = TRUE,
-             xlab = "lon", ylab = "lat")
+             xlab = "lon", ylab = "lat", bg = "white")
 ```
 
 To speed up the fitting process in this vignette, we use a subset of the
@@ -207,7 +208,10 @@ since the data are simulated and the true parameters are known, we can use the
 preferences and movement patterns.
 
 ```{r, eval=TRUE, echo=FALSE, fig.alt = "Simulated data and model predictions"}
-plotmomo.compare(sim = skjepo, fit = fit)
+plotmomo.compare(sim = skjepo, fit = fit,
+                 plot.land = TRUE,
+                 cor.dif = 0.5,
+                 bg = "white")
 ```
 
 
@@ -228,7 +232,7 @@ grouping by assigning tags to release events based on a specified spatial grid
 and time vector. These events can then be added to the data list for modeling.
 Note that this is step is optional.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 tmp <- get.release.events(dat,
                           grid = create.grid(dat$xrange, dat$yrange, c(1,1)),
                           time.cont = seq(dat$trange[1], dat$trange[2],
