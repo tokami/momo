@@ -2136,7 +2136,7 @@ plotmomo.compare <- function(fit, ...,
                              keep.gpar = TRUE,
                              cor.dif = cor.dif,
                              bg = bg)
-        add.lab(LETTERS[i])
+        if(nq > 1) add.lab(LETTERS[i])
     }
 
     if(as.integer(plot.legend) == 1){
@@ -2182,4 +2182,70 @@ plot.land <- function(xlim, ylim){
                   fill = TRUE, plot = TRUE, add = TRUE,
                   col = adjustcolor(grey(0.7),0.5), ## grey(0.95),
                   border = grey(0.5)), silent = TRUE)
+}
+
+
+
+
+##' Plot tracks
+##'
+##' @description Plotting function that allows to plot tracks.
+##'
+##' @param x list of tracks
+##' @param n Number of samples
+##'
+##' @return Nothing.
+##'
+##' @export
+plotmomo.tracks <- function(x, n = 10){
+
+    xlim <- range(lapply(x, function(x) x$x))
+    ylim <- range(lapply(x, function(x) x$y))
+
+    cols <- momo.cols(2)
+
+    par(mfrow = c(1,2))
+
+    plot(NA, ty  ="n",
+         xlim = xlim,
+         ylim = ylim,
+         xlab = "", ylab = "")
+    ind <- which(sapply(x, function(x) x$state[nrow(x)] == 2))
+    if(length(ind) > 0){
+        for(i in sample(1:length(ind), n)){
+            tmpi <- x[ind][[i]]
+            lines(tmpi$x, tmpi$y,
+                  lwd = 0.3,
+                  col = cols[1])
+            points(tmpi$x[1], tmpi$y[1], col = cols[1], pch = 15)
+            points(tmpi$x[nrow(tmpi)], tmpi$y[nrow(tmpi)], col = cols[1], pch = 17)
+        }
+    }
+    legend("topleft",
+           legend = "Caught",
+           pch = NA, bg = "white")
+    box(lwd = 1.5)
+
+    plot(NA, ty  ="n",
+         xlim = xlim,
+         ylim = ylim,
+         xlab = "", ylab = "")
+    ind <- which(sapply(x, function(x) x$state[nrow(x)] == 3))
+    if(length(ind) > 0){
+        for(i in sample(1:length(ind), n)){
+            tmpi <- x[ind][[i]]
+            lines(tmpi$x, tmpi$y,
+                  lwd = 0.3,
+                  col = cols[2])
+            points(tmpi$x[1], tmpi$y[1], col = cols[2], pch = 15)
+            points(tmpi$x[nrow(tmpi)], tmpi$y[nrow(tmpi)], col = cols[2], pch = 17)
+        }
+    }
+    legend("topleft",
+           legend = "Dead",
+           pch = NA, bg = "white")
+    box(lwd = 1.5)
+
+
+    return(invisible(NULL))
 }

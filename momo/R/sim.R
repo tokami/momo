@@ -349,6 +349,8 @@ sim.env <- function(grid,
 ##'     component. Default: `NULL`.
 ##' @param funcs optional; allows to specify movement functions. If `NULL`
 ##'     (default), the function [get.sim.funcs] is used.
+##' @param save.tracks logical; if `TRUE`, full tracks with all
+##'     intermediate steps are saved. Default: `FALSE`.
 ##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
 ##'
 ##' @return A data frame with simulate mark-recaptured tags.
@@ -374,6 +376,7 @@ sim.ctags <- function(grid,
                       knots.tax = NULL,
                       knots.dif = NULL,
                       funcs = NULL,
+                      save.tracks = FALSE,
                       verbose = TRUE){
 
     flag.const.dif <- ifelse(nrow(par$beta) == 1, TRUE, FALSE)
@@ -451,6 +454,11 @@ sim.ctags <- function(grid,
         xy <- c(x0, y0)
         t <- t0
         state <- ifelse(flag.effort, 1, 2)
+        if(save.tracks){
+            track <- data.frame(t = t, x = xy[1], y = xy[2], state = state)
+        }else{
+            track <- NULL
+        }
         while((t + by) < t1){
             move <- c(0,0)
             if(conf$use.taxis){
@@ -474,9 +482,16 @@ sim.ctags <- function(grid,
                 state <- sample(1:3, 1, prob=c(psurv,
                                                FF/(FF+M)*(1-psurv),
                                                M/(FF+M)*(1-psurv)))
-                if(state != 1) break
+                if(state != 1){
+                    track$state[nrow(track)] <- state
+                    break
+                }
             }
             t <- t + by
+            if(save.tracks){
+                track <- rbind(track,
+                               c(t = t, x = xy[1], y = xy[2], state = state))
+            }
         }
         if(!flag.effort || state == 2){
             t1 <- t
@@ -492,14 +507,31 @@ sim.ctags <- function(grid,
             y1 <- NA
         }
         res <- c(t0 = t0, t1 = t1, x0 = x0, x1 = x1, y0 = y0, y1 = y1)
-        return(res)
+        ret <- list(res = res,
+                    track = track)
+        return(ret)
     }
 
-    res <- as.data.frame(t(replicate(n, doone(by = by))))
+    res.list <- track.list <- vector("list", n)
+    for(i in 1:n){
+        tmp <- doone(by = by)
+        res.list[[i]] <- tmp$res
+        track.list[[i]] <- tmp$track
+    }
+    res <- as.data.frame(do.call(rbind, res.list))
+
+    if(save.tracks){
+        ret <- list(ctags = res,
+                    tracks = track.list)
+    }else{
+        ret <- res
+    }
+
+    ## res <- as.data.frame(t(replicate(n, doone(by = by))))
     ## res <- res[is.na(res$t1) |
     ##            res$t0 != res$t1,]
 
-    return(res)
+    return(ret)
 }
 
 

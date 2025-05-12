@@ -20,6 +20,7 @@ sim.ctags(
   knots.tax = NULL,
   knots.dif = NULL,
   funcs = NULL,
+  save.tracks = FALSE,
   verbose = TRUE
 )
 }
@@ -64,6 +65,9 @@ component. Default: \code{NULL}.}
 
 \item{funcs}{optional; allows to specify movement functions. If \code{NULL}
 (default), the function \link{get.sim.funcs} is used.}
+
+\item{save.tracks}{logical; if \code{TRUE}, full tracks with all
+intermediate steps are saved. Default: \code{FALSE}.}
 
 \item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
 }
