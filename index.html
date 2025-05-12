@@ -96,38 +96,38 @@
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>To get started with <em>momo</em>, load the package, simulate a tagging dataset, and fit the movement model:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">#&gt; Tags recaptured outside of spatial domain: 7. Removing them.</span></span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">#&gt; Tags recaptured outside of spatial domain: 5. Removing them.</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Model built (0.61min). Minimizing neg. loglik.</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt;   0:     3126.1948:  0.00000  0.00000 -4.60517 -4.60517</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   1:     2880.1589: -0.558789 0.577044 -4.27519 -4.10930</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   2:     2618.9609: -0.625390 0.471434 -4.27516 -4.10927</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;   3:     2064.9634: -0.576960 0.432040 -4.27515 -4.10926</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   4:     1966.6060: -0.559572 0.453352 -4.26687 -4.09705</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   5:     1819.3146: -0.524745 0.496032 -4.25039 -4.07273</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   6:     1283.7152: -0.515850 0.436595 -4.23816 -4.06108</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;   7:    -1578.3020: -0.507600 0.454835 -3.75490 -3.51066</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;   8:    -2013.7970: -0.495985 0.449953 -3.15968 -3.93782</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;   9:    -3269.3220: 0.0366531 0.0814680 -2.90563 -3.70788</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;  10:    -3437.7812: -0.151759 -0.0223050 -3.12028 -3.04112</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;  11:    -3443.7330: -0.155842 0.109359 -3.02305 -3.36122</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;  12:    -3505.2133: -0.0683853 0.0588707 -3.11816 -3.28948</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;  13:    -3509.0225: -0.0850029 0.0348561 -3.12076 -3.28721</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;  14:    -3518.0928: -0.0782876 0.0348028 -3.20456 -3.20494</span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;  15:    -3518.9923: -0.0980111 0.0527490 -3.27579 -3.18876</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;  16:    -3524.0503: -0.0859280 0.0446435 -3.29575 -3.19551</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;  17:    -3524.2979: -0.0848467 0.0371043 -3.30097 -3.19808</span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  18:    -3524.9931: -0.0810695 0.0366657 -3.31897 -3.20348</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;  19:    -3526.3258: -0.0845161 0.0419698 -3.37989 -3.21891</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;  20:    -3526.3261: -0.0828945 0.0422953 -3.37670 -3.21630</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  21:    -3526.4819: -0.0830186 0.0416537 -3.37475 -3.21547</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;  22:    -3526.5545: -0.0826753 0.0415480 -3.36648 -3.21222</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;  23:    -3526.5652: -0.0832213 0.0416464 -3.36111 -3.21117</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;  24:    -3526.5671: -0.0831026 0.0416748 -3.36128 -3.21122</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;  25:    -3526.5671: -0.0831466 0.0417000 -3.36149 -3.21123</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;  26:    -3526.5671: -0.0831708 0.0417120 -3.36148 -3.21124</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;  27:    -3526.5671: -0.0831719 0.0417124 -3.36147 -3.21124</span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; Minimization done (0.016min). Model converged. Estimating uncertainty.</span></span></code></pre></div>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Model built (0.83min). Minimizing neg. loglik.</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt;   0:    -3295.9999:  0.00000  0.00000 -4.60517 -4.60517</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   1:    -3343.7354: 0.252603 -0.221448 -4.44081 -4.45347</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   2:    -5136.5907: -0.0151293 -0.152162 -4.07660 -4.14436</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;   3:    -5390.7222: -0.00219382 -0.173481 -3.68787 -3.75329</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   4:    -5395.0961: -0.0433644 -0.146010 -3.67570 -3.77448</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   5:    -5409.3956: -0.0209431 -0.171092 -3.64322 -3.80381</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   6:    -5420.5467: -0.0383744 -0.159877 -3.55973 -3.87300</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;   7:    -5421.5147: -0.0178165 -0.175019 -3.55520 -3.87860</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;   8:    -5423.6450: -0.0185156 -0.154777 -3.54043 -3.88729</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;   9:    -5424.7615: -0.0206635 -0.167597 -3.52638 -3.90567</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;  10:    -5425.0283: -0.0275750 -0.162817 -3.52337 -3.90817</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;  11:    -5425.3096: -0.0207830 -0.162037 -3.51784 -3.91112</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;  12:    -5425.6381: -0.0314227 -0.169760 -3.50555 -3.91558</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;  13:    -5425.7780: -0.0142813 -0.148726 -3.48326 -3.92751</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;  14:    -5426.0136: -0.0152051 -0.157547 -3.48227 -3.93040</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;  15:    -5426.0942: -0.0242188 -0.157902 -3.48153 -3.93287</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;  16:    -5426.3003: -0.0243042 -0.166718 -3.48044 -3.93588</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;  17:    -5426.3443: -0.0262978 -0.167359 -3.47155 -3.93800</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  18:    -5426.3599: -0.0242056 -0.165899 -3.47177 -3.94126</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;  19:    -5426.3641: -0.0247623 -0.165485 -3.47169 -3.94139</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;  20:    -5426.3660: -0.0245207 -0.165744 -3.47076 -3.94273</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  21:    -5426.3675: -0.0244556 -0.165201 -3.46959 -3.94283</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;  22:    -5426.3678: -0.0247224 -0.165322 -3.46953 -3.94312</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;  23:    -5426.3681: -0.0246854 -0.165413 -3.46918 -3.94333</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;  24:    -5426.3683: -0.0246647 -0.165477 -3.46894 -3.94395</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;  25:    -5426.3683: -0.0247056 -0.165505 -3.46873 -3.94392</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;  26:    -5426.3683: -0.0247165 -0.165518 -3.46881 -3.94382</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;  27:    -5426.3683: -0.0247115 -0.165510 -3.46880 -3.94384</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; Minimization done (0.022min). Model converged. Estimating uncertainty.</span></span></code></pre></div>
 <p><img src="reference/figures/unnamed-chunk-4-1.png" alt="Simulated data and model predictions"></p>
 <p>This example illustrates the basic workflow: prepare data (here simulate), fit the model, and access results. For real applications, momo supports multiple types of tagging data, customizable environmental covariates, and both estimation and prediction features.</p>
 <p>Detailed examples and guidance are provided in the package vignettes (see <a href="https://tokami.github.io/momo/" class="uri">https://tokami.github.io/momo/</a>).</p>
