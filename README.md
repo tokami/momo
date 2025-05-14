@@ -29,7 +29,7 @@ Download *momo* from GitHub:
 
 ```R
 # install.packages("remotes")
-remotes::install_github("tokami/momo")
+remotes::install_github("tokami/momo/momo")
 ```
 
 

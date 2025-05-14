@@ -250,7 +250,7 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.ctags
 
-            ## REPORT(resid.ctags)
+            REPORT(resid.ctags)
         }
 
         ## Archival tags
