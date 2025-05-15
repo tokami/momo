@@ -8,7 +8,8 @@
 ##' @param yrange range of the y-dimension of spatial domain. Default: `c(0,1)`.
 ##' @param dxdy resolution of grid in x and y direction. Default: `c(0.1,0.1)`.
 ##' @param select logical; if `TRUE`, allows to select cells in spatial grid.
-##'     Default: `FALSE`.
+##'     Default: `FALSE`. If a vector of length > 1 is provided, the vector is
+##'     interpreted as an index of the selected grid cells of the full grid.
 ##' @param plot.land plot.land logical; If `TRUE`, plot land masses using the
 ##'     function [maps::map]. Default: `FALSE`.
 ##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
@@ -79,7 +80,13 @@ create.grid <- function(xrange = c(0,1),
     celltable <- matrix(rep(NA, ((length(xgr)-1)*(length(ygr)-1))),
                         nrow = (length(xgr)-1))
 
-    if(as.integer(select) != 0){
+    if(length(select) > 1){
+
+        idx <- sort(unique(select))
+        xygrid <- xygrid[idx,]
+        igrid <- igrid[idx,]
+
+    }else if(as.integer(select) != 0){
         opts <- options()
         on.exit(options(opts))
         options(locatorBell = FALSE)
@@ -117,7 +124,8 @@ create.grid <- function(xrange = c(0,1),
                  ylim = yrange,
                  add = TRUE)
             if(plot.land){
-                plot.land(xrange, yrange)
+                plot.land(xrange, yrange,
+                          shift = ifelse(max(xrange) > 180, TRUE, FALSE))
             }
             abline(v = xgr)
             abline(h = ygr)
@@ -1101,4 +1109,59 @@ date.2.decimal.year <- function(dates){
     days_in_year <- ifelse(is_leap, 366, 365)
     dec_year <- year + (doy - 1) / days_in_year
     return(dec_year)
+}
+
+
+
+shift.map <- function(database = "world"){
+  map_data <- maps::map(database, plot = FALSE, fill = TRUE)
+
+  x <- map_data$x
+  y <- map_data$y
+  names <- map_data$names
+
+  na_idx <- which(is.na(x))
+  start_idx <- c(1, na_idx + 1)
+  end_idx <- c(na_idx - 1, length(x))
+
+  x_new <- c()
+  y_new <- c()
+  names_new <- c()
+
+  for (i in seq_along(start_idx)) {
+    xi <- x[start_idx[i]:end_idx[i]]
+    yi <- y[start_idx[i]:end_idx[i]]
+
+    lon_range <- range(xi, na.rm = TRUE)
+    if (lon_range[1] < 0 && lon_range[2] > 0) next
+
+    xi_shifted <- ifelse(xi < 0, xi + 360, xi)
+
+    x_new <- c(x_new, xi_shifted, NA)
+    y_new <- c(y_new, yi, NA)
+    names_new <- c(names_new, names[i])
+  }
+
+  list(x = x_new, y = y_new, names = names_new, range = range(x_new, na.rm = TRUE))
+}
+
+
+
+group.consecutive.ranges <- function(x){
+  x <- sort(unique(x))
+  breaks <- c(0, which(diff(x) != 1), length(x))
+
+  ranges <- mapply(function(i, j) {
+    start <- x[i + 1]
+    end <- x[j]
+    if (start == end) {
+      as.character(start)
+    } else {
+      paste0(start, ":", end)
+    }
+  }, breaks[-length(breaks)], breaks[-1])
+
+  res <- paste0("c(",paste(ranges,collapse = ","), ")")
+
+  return(res)
 }

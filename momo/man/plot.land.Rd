@@ -4,12 +4,16 @@
 \alias{plot.land}
 \title{Plot land masses}
 \usage{
-\method{plot}{land}(xlim, ylim)
+\method{plot}{land}(xlim, ylim, shift = FALSE)
 }
 \arguments{
 \item{xlim}{x limits}
 
 \item{ylim}{y limits}
+
+\item{shift}{logical; If \code{TRUE}, world map is shifted frmo \link{-180,180} to
+\link{0,360} logitudinal range. Note, that polygons crossing the meridian are
+excluded. Default: \code{FALSE}.}
 }
 \value{
 Nothing.

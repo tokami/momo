@@ -112,6 +112,8 @@ fit.momo <- function(dat,
                          plsd = NA,
                          dat = dat,
                          conf = conf,
+                         par = par,
+                         map = map,
                          opt = NA,
                          obj = obj))
 
@@ -137,6 +139,7 @@ fit.momo <- function(dat,
 
     res <- list(dat = dat,
                 conf = conf,
+                par = par,
                 map = map,
                 opt = opt,
                 obj = obj,

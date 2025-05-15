@@ -130,7 +130,7 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
         return(h)
     }
 
-    env2val <- function(env){
+    env2val <- function(env, combine = FALSE){
         "c" <- ADoverload("c")
         "[<-" <- ADoverload("[<-")
         h <- RTMB::matrix(0, nrow(env), ncol(env))
@@ -138,8 +138,11 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
         is <- 1
         for(i in 1:ncol(env)){
             if(!is.empty(S[[i]][[is]])){
-                h <- h + S[[i]][[is]](env[,i])
+                h[,i] <- h[,i] + S[[i]][[is]](env[,i])
             }
+        }
+        if(combine){
+            h <- RTMB::apply(h, 1, sum)
         }
         return(h)
     }

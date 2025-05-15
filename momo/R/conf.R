@@ -71,7 +71,7 @@ def.conf <- function(dat){
                                                     unique(c(x,dat$trange[2])),
                                                     right = FALSE,
                                                     include.lowest = TRUE))
-                              tmp[is.na(tmp)] <- max(tmp, na.rm = TRUE)
+                              tmp[is.na(tmp)] <- min(tmp, na.rm = TRUE)
                               return(tmp)
                           }))
         if(dat$const.dif){

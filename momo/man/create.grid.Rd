@@ -24,7 +24,8 @@ create.grid(
 \item{dxdy}{resolution of grid in x and y direction. Default: \code{c(0.1,0.1)}.}
 
 \item{select}{logical; if \code{TRUE}, allows to select cells in spatial grid.
-Default: \code{FALSE}.}
+Default: \code{FALSE}. If a vector of length > 1 is provided, the vector is
+interpreted as an index of the selected grid cells of the full grid.}
 
 \item{plot.land}{plot.land logical; If \code{TRUE}, plot land masses using the
 function \link[maps:map]{maps::map}. Default: \code{FALSE}.}

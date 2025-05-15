@@ -7,8 +7,9 @@
 plotmomo.pref(
   x,
   type = "taxis",
-  main = "Preference",
-  col = "black",
+  select = NULL,
+  main = NULL,
+  cols = momo.cols(10),
   lwd = 1,
   ci = 0.95,
   keep.gpar = FALSE,
@@ -19,6 +20,8 @@ plotmomo.pref(
   ylim = NULL,
   xlim = NULL,
   return.limits = FALSE,
+  data.range = FALSE,
+  asp = 2,
   ...
 )
 }
@@ -29,8 +32,6 @@ plotmomo.pref(
 "diffusion".}
 
 \item{main}{a main title for the plot. Default: "Preference".}
-
-\item{col}{color of line. Default: "black".}
 
 \item{lwd}{line width. Default: \code{1}.}
 
@@ -57,6 +58,8 @@ background is transparent.}
 limits are returned. Default: \code{FALSE}.}
 
 \item{...}{additional arguments for the function \link{plot}.}
+
+\item{col}{color of line. Default: "black".}
 }
 \value{
 Nothing.

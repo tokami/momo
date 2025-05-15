@@ -88,10 +88,17 @@ prep.ctags <- function(x,
     if(!is.null(speed.limit)){
         tdiff <- as.numeric(res$t1 - res$t0) * 365
         dist <- rep(NA, nrow(res))
+
+        x0 <- ifelse(res$x0 > 180, res$x0 - 360, res$x0)
+        x1 <- ifelse(res$x1 > 180, res$x1 - 360, res$x1)
+        y0 <- res$y0
+        y1 <- res$y1
+
         idx <- which(!is.na(res$x1) & !is.na(res$y1))
+
         for(i in 1:length(idx)){
-            dist[idx[i]] <- geosphere::distm(cbind(res$x0[idx[i]], res$y0[idx[i]]),
-                                                 cbind(res$x1[idx[i]], res$y1[idx[i]]),
+            dist[idx[i]] <- geosphere::distm(cbind(x0[idx[i]], y0[idx[i]]),
+                                                 cbind(x1[idx[i]], y1[idx[i]]),
                                                  fun = geosphere::distGeo) / 1000 ## km
         }
         speed <- dist / tdiff
@@ -693,9 +700,14 @@ setup.momo.data <- function(grid,
     ## Knots
     res$knots.tax <- knots.tax
     res$knots.dif <- knots.dif
-    ## env.obs <- get.env(dat, conf)
-    ## if(is.null(env.obs)){
-    ##     env.obs <- dat$env
+
+    ## if(knots.data.range){
+    ##     env.obs <- get.env(res, def.conf(res))
+    ##     if(is.null(env.obs)){
+    ##         env.obs <- env
+    ##     }
+    ## }else{
+    ##     env.obs <- env
     ## }
     env.obs <- env
     if(is.null(res$knots.tax)){

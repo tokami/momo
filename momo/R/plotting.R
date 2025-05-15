@@ -74,7 +74,7 @@ plotmomo.grid <- function(x,
           ylim = ylims,
           add = TRUE)
     if(plot.land){
-        plot.land()
+        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE))
     }
     labs <- as.numeric(grid$celltable)
     labs <- labs[!is.na(labs)]
@@ -179,7 +179,8 @@ plotmomo.env <- function(x,
         ## }
         image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
         if(plot.land){
-            plot.land(xlims, ylims)
+            plot.land(xlims, ylims,
+                      shift = ifelse(max(xlims) > 180, TRUE, FALSE))
         }
         if(plot.contour) contour(x, y, env[,,i], add = TRUE)
         if(nt > 1) legend("topleft", legend = paste0("Field ", i),
@@ -409,7 +410,7 @@ plotmomo.ctags <- function(x,
            length = 0.1)
     points(ctags$x0, ctags$y0, pch = 16, col = "grey30", cex = 0.8)
     if(plot.land && !add){
-        plot.land(xlims, ylims)
+        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE))
     }
     if(!add){
         box(lwd = 1.5)
@@ -508,7 +509,7 @@ plotmomo.atags <- function(x,
         ## }
     }
     if(plot.land){
-        plot.land(xlims, ylims)
+        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE))
     }
     for(i in 1:length(atags)){
         points(atags[[i]][1,2], atags[[i]][1,3], col = cols[1], pch = 1)
@@ -609,7 +610,7 @@ plotmomo.stags <- function(x,
         ## }
     }
     if(plot.land){
-        plot.land(xlims, ylims)
+        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE))
     }
     for(i in 1:length(stags)){
         points(stags[[i]][1,2], stags[[i]][1,3], col = cols[1], pch = 1)
@@ -662,8 +663,9 @@ plotmomo.stags <- function(x,
 ##' @export
 plotmomo.pref <- function(x,
                           type = "taxis",
-                          main = "Preference",
-                          col = "black",
+                          select = NULL,
+                          main = NULL,
+                          cols = momo.cols(10),
                           lwd = 1,
                           ci = 0.95,
                           keep.gpar = FALSE,
@@ -674,7 +676,11 @@ plotmomo.pref <- function(x,
                           ylim = NULL,
                           xlim = NULL,
                           return.limits = FALSE,
+                          data.range = FALSE,
+                          asp = 2,
                           ...){
+
+    main0 <- main
 
     if(!keep.gpar && !return.limits){
         opar <- par(no.readonly = TRUE)
@@ -688,34 +694,39 @@ plotmomo.pref <- function(x,
         sdr <- x$sdr
         env.pred <- x$dat$env.pred
 
-        ## TODO: make matrices if more than one env field!
-        ## improve this code, convert sdr$values into matrices!
-        ## TODO: make polygon and CI plotting conditional if fit was run with sdreport=TRUE!
-
-        i = 1
-
         if(type == "taxis"){
+
+            if(is.null(select)){
+                select <- 1:ncol(x$par$alpha)
+            }
 
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefT.pred")
-                par.est <- x$pl$alpha[,i,]
+                par.est <- x$pl$alpha[,select,]
             }else{
                 ind <- which(names(x$rep) == "prefT.pred")
-                par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
+                tmp <- matrix(x$opt$par[names(x$opt$par) == "alpha"],
+                              nrow = nrow(x$par$alpha)-1,
+                              ncol = ncol(x$par$alpha))
+                par.est <- cbind(rep(0,ncol(tmp)), tmp)[,select]
             }
-            knots <- x$dat$knots.tax[,i]
+            knots <- x$dat$knots.tax[,select]
 
 
         }else if(type == "diffusion"){
 
+            if(is.null(select)){
+                select <- 1:ncol(x$par$beta)
+            }
+
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefD.pred")
-                par.est <- x$pl$beta[,i]
+                par.est <- x$pl$beta[,select]
             }else{
                 ind <- which(names(x$rep) == "prefD.pred")
                 par.est <- x$opt$par[names(x$opt$par) == "beta"]
             }
-            knots <- x$dat$knots.dif[,i]
+            knots <- x$dat$knots.dif[,select]
 
         }else stop("only taxis and diffusion implemented yet.")
 
@@ -725,46 +736,65 @@ plotmomo.pref <- function(x,
             preflow <- pref - qnorm(ci + (1 - ci)/2) * prefsd
             prefup <- pref + qnorm(ci + (1 - ci)/2) * prefsd
         }else{
-            pref <- x$rep[[ind]]
-            prefsd <- preflow <- prefup <- NULL
+            pref <- x$rep[["prefT.pred"]]
+            prefsd <- preflow <- prefup <- rep(NA, length(pref))
         }
+
+        pref <- matrix(pref, nrow = nrow(env.pred),
+                       ncol = ncol(env.pred))
+        preflow <- matrix(preflow, nrow = nrow(env.pred),
+                          ncol = ncol(env.pred))
+        prefup <- matrix(prefup, nrow = nrow(env.pred),
+                         ncol = ncol(env.pred))
 
         if(is.null(xlim)) xlim <- apply(env.pred, 2, range)
 
-        if(is.null(ylim)) ylim <- range(pref, preflow,
-                                         prefup, na.rm = TRUE)
-        ## if more env fields this should be matrices
+        if(data.range){
+            xlim <- sapply(get.env(x$dat, x$conf), range, na.rm = TRUE)
+        }
+
+        if(is.null(ylim)) ylim <- apply(rbind(apply(pref, 2, range),
+                                              apply(preflow, 2, range),
+                                              apply(prefup, 2, range)),2,range,
+                                        na.rm = TRUE)
         alpha <- 0.3
+        if(is.null(cols)) cols <- momo.cols(length(select))
 
         if(return.limits) return(list(xlim = xlim, ylim = ylim))
 
-        if(!add){
-            if(!is.null(bg)){
-                par(bg = bg)
+        par(mfrow = n2mfrow(length(select), asp))
+
+        for(i in 1:length(select)){
+
+            if(is.null(main0)) main <- names(x$dat$env)[i]
+
+            if(!add){
+                if(!is.null(bg)){
+                    par(bg = bg)
+                }
+                plot(NA, ty = 'n',
+                     xlim = xlim[,i],
+                     ylim = ylim[,i],
+                     xlab = xlab,
+                     ylab = ylab,
+                     main = main,
+                     ...)
             }
-            plot(NA, ty = 'n',
-                 xlim = xlim,
-                 ylim = ylim,
-                 xlab = xlab,
-                 ylab = ylab,
-                 main = main,
-                 ...)
-            ## if(!is.null(bg)){
-            ##     usr <- par("usr")
-            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
-            ## }
+            if(!is.null(sdr)){
+                polygon(c(env.pred[,i], rev(env.pred[,i])),
+                        c(preflow[,i], rev(prefup[,i])),
+                        border = NA,
+                        col = rgb(t(col2rgb(cols[i]))/255, alpha=alpha))
+                ## rug(x$dat$env$env.obs[,inp$env$var[i]])
+            }
+
+            points(knots[,i], par.est[,i],
+                   pch = 16, cex = 1.2, col = cols[i])
+            lines(env.pred[,i], pref[,i], col = cols[i], lwd = lwd)
+
+            if(!add) box(lwd = 1.5)
 
         }
-        polygon(c(env.pred[,i], rev(env.pred[,i])),
-                c(preflow, rev(prefup)),
-                border = NA,
-                col = rgb(t(col2rgb(col))/255, alpha=alpha))
-        ## rug(x$dat$env$env.obs[,inp$env$var[i]]) ## TODO:
-
-        points(knots, par.est, pch = 16, cex = 1.2, col = col)
-        lines(env.pred[,i], pref, col = col, lwd = lwd)
-
-        if(!add) box(lwd = 1.5)
 
     }else if(inherits(x, "momo.sim")){
 
@@ -869,6 +899,9 @@ plotmomo.pref <- function(x,
 ##' @export
 plotmomo.pref.spatial <- function(x,
                                   type = "taxis",
+                                  select = NULL,
+                                  select.y = NULL,
+                                  main = NULL,
                                   col = hcl.colors(14, "YlOrRd", rev = TRUE),
                                   ci = 0.95,
                                   plot.land = FALSE,
@@ -877,7 +910,11 @@ plotmomo.pref.spatial <- function(x,
                                   xlab = "x",
                                   ylab = "y",
                                   bg = NULL,
+                                  asp = 2,
                                   ...){
+
+    main0 <- main
+    select.y0 <- select.y
 
     if(!keep.gpar){
         opar <- par(no.readonly = TRUE)
@@ -890,36 +927,45 @@ plotmomo.pref.spatial <- function(x,
         sdr <- x$sdr
         env.pred <- x$dat$env.pred
 
-        ## TODO: make matrices if more than one env field!
-        ## improve this code, convert sdr$values into matrices!
-        ## TODO: make polygon and CI plotting conditional if fit was run with sdreport=TRUE!
-
-        i = 1
-
         if(type == "taxis"){
+
+            if(is.null(select)){
+                select <- 1:ncol(x$par$alpha)
+            }
 
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefT.pred")
-                par.est <- x$pl$alpha[,i,]
+                par.est <- x$pl$alpha[,select,]
             }else{
                 ind <- which(names(x$rep) == "prefT.pred")
-                par.est <- c(0,x$opt$par[names(x$opt$par) == "alpha"])
+                tmp <- matrix(x$opt$par[names(x$opt$par) == "alpha"],
+                              nrow = nrow(x$par$alpha)-1,
+                              ncol = ncol(x$par$alpha))
+                par.est <- cbind(rep(0,ncol(tmp)), tmp)[,select]
             }
-            knots <- x$dat$knots.tax[,i]
-            if(!is.null(par)) par.true <- par$alpha[,i,]
+            knots <- x$dat$knots.tax[,select]
+            if(!is.null(par)) par.true <- par$alpha[,select,]
 
 
         }else if(type == "diffusion"){
 
+            if(is.null(select)){
+                select <- 1:ncol(x$par$beta)
+            }
+
             if(!is.null(sdr)){
                 ind <- which(names(sdr$value) == "prefD.pred")
-                par.est <- x$pl$beta[,i]
+                par.est <- x$pl$beta[,select]
             }else{
                 ind <- which(names(x$rep) == "prefD.pred")
                 par.est <- x$opt$par[names(x$opt$par) == "beta"]
+                tmp <- matrix(x$opt$par[names(x$opt$par) == "beta"],
+                              nrow = nrow(x$par$beta),
+                              ncol = ncol(x$par$beta))
+                par.est <- tmp[,select]
             }
-            knots <- x$dat$knots.dif[,i]
-            if(!is.null(par)) par.true <- par$beta[,i]
+            knots <- x$dat$knots.dif[,select]
+            if(!is.null(par)) par.true <- par$beta[,select]
 
         }else stop("only taxis and diffusion implemented yet.")
 
@@ -929,55 +975,71 @@ plotmomo.pref.spatial <- function(x,
             preflow <- pref - qnorm(ci + (1 - ci)/2) * prefsd
             prefup <- pref + qnorm(ci + (1 - ci)/2) * prefsd
         }else{
-            pref <- x$rep[[ind]]
+            if(type == "taxis"){
+                pref <- x$rep[["prefT.pred"]]
+            }else if(type == "diffusion"){
+                pref <- x$rep[["prefD.pred"]]
+            }
             prefsd <- preflow <- prefup <- NULL
         }
 
-        xlims <- apply(env.pred, 2, range)
-
-        ylims <- range(pref, preflow, prefup) ## if more env fields this should be matrices
-        if(!is.null(par)) ylims <- range(ylims, par.true)
-
-        cols <- momo.cols(2)
-        alpha <- 0.3
+        pref <- matrix(pref, nrow = nrow(env.pred),
+                       ncol = ncol(env.pred))
+        preflow <- matrix(preflow, nrow = nrow(env.pred),
+                          ncol = ncol(env.pred))
+        prefup <- matrix(prefup, nrow = nrow(env.pred),
+                         ncol = ncol(env.pred))
 
         get.true.pref <- momo:::poly.fun(as.numeric(knots),
                                          as.numeric(par.est))
 
-        i = 1
-        pref.pred <- get.true.pref(as.numeric(x$dat$env[[i]][,,1]))
+        par(mfrow = n2mfrow(length(select), asp))
 
-        mat <- x$dat$env[[i]][,,1]
-        mat[] <- pref.pred
+        for(i in 1:length(select)){
 
-        if(!add){
-    if(!is.null(bg)){
-        par(bg = bg)
-    }
-            plot(NA,
-                 xlim = x$dat$xrange,
-                 ylim = x$dat$yrange,
-                 xlab = xlab,
-                 ylab = ylab,
-                 ...)
-            ## if(!is.null(bg)){
-            ##     usr <- par("usr")
-            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
-            ## }
+            years <- as.numeric(attributes(x$dat$env[[i]])$dimnames[[3]])
+            if(!is.null(select.y0)){
+                indi <- which.min(abs(years - as.numeric(select.y)))
+            }else{
+                indi <- 1
+            }
+
+            if(is.null(main0)) main <- paste0(names(x$dat$env)[i], " (",
+                                              years[indi],")")
+
+            pref.pred <- get.true.pref(as.numeric(x$dat$env[[i]][,,indi]))
+
+            mat <- x$dat$env[[i]][,,1]
+            mat[] <- pref.pred
+
+            if(!add){
+                if(!is.null(bg)){
+                    par(bg = bg)
+                }
+                plot(NA,
+                     xlim = x$dat$xrange,
+                     ylim = x$dat$yrange,
+                     xlab = xlab,
+                     ylab = ylab,
+                     main = main,
+                     ...)
+            }
+
+            if(plot.land){
+                plot.land(x$dat$xrange, x$dat$yrange,
+                          shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
+            }
+
+            image(as.numeric(rownames(mat)),
+                  as.numeric(colnames(mat)),
+                  mat,
+                  xlim = x$dat$xrange,
+                  ylim = x$dat$yrange,
+                  add = TRUE)
+
+            box(lwd=1.5)
+
         }
-
-        if(plot.land){
-            plot.land(x$dat$xrange, x$dat$yrange)
-        }
-
-        image(as.numeric(rownames(mat)),
-              as.numeric(colnames(mat)),
-              mat,
-            xlim = x$dat$xrange,
-            ylim = x$dat$yrange,
-            add = TRUE)
-
-        box(lwd=1.5)
 
     }else{
 
@@ -1024,7 +1086,8 @@ plotmomo.pref.spatial <- function(x,
         pref.pred <- get.true.pref(as.numeric(env[[i]]))
 
         if(plot.land){
-            plot.land(attr(grid,"xrange"), attr(grid,"yrange"))
+            plot.land(attr(grid,"xrange"), attr(grid,"yrange"),
+                      shift = ifelse(max(attr(grid,"xrange")) > 180, TRUE, FALSE))
         }
 
         image(
@@ -1148,7 +1211,8 @@ plotmomo.taxis <- function(x,
                 ## }
             }
             if(plot.land){
-                plot.land(x$dat$xrange, x$dat$yrange)
+                plot.land(x$dat$xrange, x$dat$yrange,
+                          shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
             }
 
             arrows(x$dat$xygrid.pred[,1],
@@ -1314,7 +1378,8 @@ plotmomo.dif <- function(x,
         }
 
         if(plot.land){
-            plot.land(x$dat$xrange, x$dat$yrange)
+            plot.land(x$dat$xrange, x$dat$yrange,
+                      shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
         }
 
         points(x$dat$xygrid.pred[,1],
@@ -2170,13 +2235,21 @@ plotmomo.compare <- function(fit, ...,
 ##'
 ##' @param xlim x limits
 ##' @param ylim y limits
+##' @param shift logical; If `TRUE`, world map is shifted frmo [-180,180] to
+##'     [0,360] logitudinal range. Note, that polygons crossing the meridian are
+##'     excluded. Default: `FALSE`.
 ##'
 ##' @return Nothing.
 ##'
 ##' @importFrom maps map
 ##'
-plot.land <- function(xlim, ylim){
-    try(maps::map("world",
+plot.land <- function(xlim, ylim, shift = FALSE){
+    if(shift){
+        world_map <- shift.map()
+    }else{
+        world_map <- "world"
+    }
+    try(maps::map(world_map,
                   xlim = xlim,
                   ylim = ylim,
                   fill = TRUE, plot = TRUE, add = TRUE,

@@ -1012,6 +1012,14 @@ nll <- function(par, dat){
     REPORT(prefD.pred)
     ADREPORT(prefD.pred)
 
+    ## prefTc.pred <- habitat.tax$env2val(dat$env.pred, combine = TRUE)
+    ## prefDc.pred <- habitat.dif$env2val(dat$env.pred, combine = TRUE)
+
+    ## REPORT(prefTc.pred)
+    ## ADREPORT(prefTc.pred)
+    ## REPORT(prefDc.pred)
+    ## ADREPORT(prefDc.pred)
+
 
     hT.pred <- hTdx.pred <- hTdy.pred <- hD.pred <-
         hAx.pred <- hAy.pred <- matrix(0, ncp, ntp)

@@ -53,7 +53,7 @@ library(momo)
 This introductory tutorial uses a simulated data set included in the package:
 "skjepo". We load it into the R environment with the command `data(skjepo)`.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 data(skjepo)
 ```
 
@@ -78,7 +78,7 @@ filter to flag implausible movements, are also available. For full details on
 how to use each function, refer to their respective help pages (e.g.,
 `help("prep.ctags")`).
 
-```{r, eval=TRUE, echo=FALSE, fig.alt = "Mark-recapture and archival tags"}
+```{r, eval=TRUE, echo=TRUE, fig.alt = "Mark-recapture and archival tags"}
 ## Load ctags
 ctags <- prep.ctags(skjepo.ctags,
                     names = c("date_time","date_caught",
@@ -102,7 +102,7 @@ visualization, and analysis of estimated habitat preferences and movement rates.
 The `create.grid` function offers flexible functionality to define custom grids
 and to manually include or exclude specific grid cells as needed.
 
-```{r, eval=FALSE, echo=FALSE, fig.alt = "Spatial grid"}
+```{r, eval=FALSE, echo=TRUE, fig.alt = "Spatial grid"}
 ## Create a grid based on tagging data
 grid <- create.grid(c(-150, -70), c(-30, 35),
                     dxdy = c(10,10),
@@ -113,7 +113,7 @@ Since manual selection of grid cells is not feasible in this automated vignette,
 we use the grid provided in the skjepo data set, but modify it to create a
 coarser resolution:
 
-```{r, eval=TRUE, echo=FALSE, fig.alt = "Spatial grid"}
+```{r, eval=TRUE, echo=TRUE, fig.alt = "Spatial grid"}
 grid <- create.grid(grid = skjepo.grid, dxdy = c(10,10))
 plotmomo.grid(grid, plot.land = TRUE, bg = "white")
 ```
@@ -122,7 +122,7 @@ Another important component of *momo* is the environmental data, which
 characterizes the habitat preferences of the modeled species. The `prep.env`
 function formats this data into the structure required by the model:
 
-```{r, eval=TRUE, echo=FALSE, fig.alt = "First four environmental fields"}
+```{r, eval=TRUE, echo=TRUE, fig.alt = "First four environmental fields"}
 ## Env data
 env <- prep.env(skjepo.env)
 plotmomo.env(env[,,1:4], plot.land = TRUE,
@@ -132,14 +132,14 @@ plotmomo.env(env[,,1:4], plot.land = TRUE,
 To speed up the fitting process in this vignette, we use a subset of the
 available conventional tag data:
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 ctags <- ctags[sample(1:nrow(ctags),100),]
 ```
 
 The individual data sets can then be combined into a single input object using
 the `setup.momo.data` function.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 ## Combine and check data
 dat <- setup.momo.data(grid = grid,
                        env = env,
@@ -153,7 +153,7 @@ environmental fields are aligned with the model's time steps. It is good
 practice to review this configuration list to ensure that the default settings
 align with the goals and structure of your analysis.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 ## Default configurations
 conf <- def.conf(dat)
 ```
@@ -165,7 +165,7 @@ be consistent with the input data (e.g., the number of environmental fields) and
 the configuration settings (e.g., whether passive advection, taxis, or both are
 used).
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 ## Default parameters
 par <- def.par(dat, conf)
 ```
@@ -182,7 +182,7 @@ complexity and the number of tags, this step may take several minutes. To reduce
 computation time, we disable the calculation of uncertainty estimates by setting
 `do.sdreport = FALSE`.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 ## Fitting movement model
 fit <- fit.momo(dat, conf, par,
                 do.sdreport = FALSE, ## only for vignette
@@ -193,7 +193,7 @@ In addition to the input data lists, the returned object also includes the `obj`
 (from RTMB) and `opt` (from the minimizer). Both contain the estimated parameter
 values and other details relevant to the model fitting.
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=TRUE, echo=TRUE}
 fit$opt$par
 ```
 
@@ -206,7 +206,7 @@ since the data are simulated and the true parameters are known, we can use the
 `plotmomo.compare` function to visualize both the estimated and true habitat
 preferences and movement patterns.
 
-```{r, eval=TRUE, echo=FALSE, fig.alt = "Simulated data and model predictions"}
+```{r, eval=TRUE, echo=TRUE, fig.alt = "Simulated data and model predictions"}
 plotmomo.compare(sim = skjepo, fit = fit,
                  plot.land = TRUE,
                  cor.dif = 0.5,
@@ -231,7 +231,7 @@ grouping by assigning tags to release events based on a specified spatial grid
 and time vector. These events can then be added to the data list for modeling.
 Note that this is step is optional.
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=TRUE}
 tmp <- get.release.events(dat,
                           grid = create.grid(dat$xrange, dat$yrange, c(1,1)),
                           time.cont = seq(dat$trange[1], dat$trange[2],
@@ -246,7 +246,7 @@ the matrix exponential. You can easily switch between the two by setting the
 `use.expm` flag in the configuration list. To use the matrix exponential
 approach, simply set `use.expm = TRUE`.
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=TRUE}
 conf <- def.conf(dat)
 conf$use.expm <- TRUE
 ```
@@ -257,7 +257,7 @@ settings can be generated using the `def.map` function. The resulting map can
 then be passed to `fit.momo` to control which parameters are estimated, fixed, or
 shared.
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=TRUE}
 map <- def.map(dat, conf, par)
 ```
 

@@ -7,6 +7,9 @@
 plotmomo.pref.spatial(
   x,
   type = "taxis",
+  select = NULL,
+  select.y = NULL,
+  main = NULL,
   col = hcl.colors(14, "YlOrRd", rev = TRUE),
   ci = 0.95,
   plot.land = FALSE,
@@ -15,6 +18,7 @@ plotmomo.pref.spatial(
   xlab = "x",
   ylab = "y",
   bg = NULL,
+  asp = 2,
   ...
 )
 }
