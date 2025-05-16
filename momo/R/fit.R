@@ -44,6 +44,8 @@
 ##'
 ##' fit <- fit.momo(skjepo)
 ##'
+##' @importFrom RTMB MakeADFun sdreport
+##'
 ##' @export
 fit.momo <- function(dat,
                      conf = NULL,
@@ -93,6 +95,35 @@ fit.momo <- function(dat,
     tmb.all$use.ukf <- FALSE ## LATER: make option later
 
     if(verbose) writeLines("Building the model, that can take a few minutes.")
+
+
+    ## pre-compute to speed up MakeADFun
+    liv.all <- get.liv(dat$env, dat$xranges, dat$yranges)
+    liv.tax <- liv.all
+    liv.dif <- liv.all
+    liv.adv.x <- liv.all
+    liv.adv.y <- liv.all
+
+    if(tmb.all$use.effort){
+        liv.effort <- get.liv(dat$effort, dat$xranges.eff, dat$yranges.eff)
+    }else{
+        liv.effort <- NULL
+    }
+
+    if(tmb.all$use.boundaries){
+        liv.bound <- get.liv(dat$boundaries,
+                             dat$xranges + c(-1,1) * dat$dxdy[1],
+                             dat$yranges + c(-1,1) * dat$dxdy[2])
+    }else{
+        liv.bound <- NULL
+    }
+
+    tmb.all <- c(tmb.all, list(liv.tax = liv.tax,
+                               liv.dif = liv.dif,
+                               liv.adv.x = liv.adv.x,
+                               liv.adv.y = liv.adv.y,
+                               liv.effort = liv.effort,
+                               liv.bound = liv.bound))
 
     t1 <- Sys.time()
     obj <- RTMB::MakeADFun(func = cmb(nll, tmb.all),
@@ -154,6 +185,11 @@ fit.momo <- function(dat,
 
     if(do.sdreport){
         res <- add.sdreport(res)
+
+        if(verbose) writeLines(paste0("SDreporting done (",
+                                      res$times[which(names(res$times) == "sdreport")],
+                                      "min)."))
+
     }
 
     if(do.report){

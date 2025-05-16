@@ -438,13 +438,13 @@ get.map <- function(x){
 }
 
 pfx <- function(x, eps=0.01){
-  eps * log(exp(x/eps) + 1)
+  return(eps * log(exp(x/eps) + 1))
 }
 
 smooth.identity <- function(x, from=0, to=1){
   z <- (x - from) / (to - from)
   y <- 1 - pfx(1 - pfx(z))
-  y * (to - from) + from
+  return(y * (to - from) + from)
 }
 
 
@@ -464,7 +464,7 @@ matexpo <- function(mat, log2steps){
 }
 
 
-poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
+poly.fun.old <- function(xp, yp, deriv = FALSE, adv = FALSE){
 
     if(adv){
 
@@ -534,6 +534,53 @@ poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
 }
 
 
+poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
+
+    if(adv){
+        ## Simple linear case
+        val <- yp[1]
+        f <- function(x) x * val
+        df <- function(x) rep(val, length(x))
+    }else{
+        if(length(xp) == 1){
+            ## For one knot return knot value (e.g. constant diffusion)
+            val <- yp[1]
+            f <- function(x) val
+            df <- function(x) rep(val, length(x))
+        }else{
+            ## Solve for polynomial coefficients
+            n <- length(xp)
+            A <- outer(xp, 0:(n-1), "^")
+            alpha <- RTMB::solve(A, yp)
+
+            f <- function(x){
+                ## Evaluate polynomial: sum(alpha[j+1] * x^j)
+                v <- outer(x, 0:(n-1), "^")
+                as.vector(v %*% alpha)
+                ## as.vector(alpha[1] + sum(alpha[-1] * x^(1:(n-1))))
+            }
+
+            df <- function(x){
+                ## Evaluate derivative: sum(j * alpha[j+1] * x^(j-1))
+                if (n == 2) {
+                  rep(alpha[2], length(x))  # Linear case
+                }else{
+                  j <- 1:(n-1)
+                  v <- outer(x, j - 1, "^")
+                  as.vector(v %*% (j * alpha[-1]))
+                }
+                ## as.vector(alpha[2] +
+                ##           sum(alpha[-c(1:2)] *
+                ##               (2:(n-1)) * x^(1:(n-2))))
+            }
+        }
+  }
+
+  if (!deriv) return(f) else return(df)
+}
+
+
+
 
 add.class <- function(x, class){
     if(!inherits(x, class)){
@@ -596,30 +643,36 @@ get.env.funcs <- function(dat, conf, par){
 
 
     ## Setup habitat objects ---------------------------------
-    ## habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
-    ##                          conf$ienv$tax, dat$time.cont,
-    ##                          env.func.tax, env.dfunc.tax)
-    ## habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
-    ##                          conf$ienv$dif, dat$time.cont,
-    ##                          env.func.dif, env.dfunc.dif)
-    ## habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
-    ##                            conf$ienv$adv.x, dat$time.cont,
-    ##                            env.func.adv.x, env.dfunc.adv)
-    ## habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
-    ##                            conf$ienv$adv.y, dat$time.cont,
-    ##                            env.func.adv.y, env.dfunc.adv)
+    liv.all <- get.liv(dat$env, dat$xranges, dat$yranges)
+    liv.tax <- liv.all
+    liv.dif <- liv.all
+    liv.adv.x <- liv.all
+    liv.adv.y <- liv.all
 
-    ## TRY:
-    habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
+    if(conf$use.effort){
+        liv.effort <- get.liv(dat$effort, dat$xranges.eff, dat$yranges.eff)
+    }else{
+        liv.effort <- NULL
+    }
+
+    if(conf$use.boundaries){
+        liv.bound <- get.liv(dat$boundaries,
+                             dat$xranges + c(-1,1) * dat$dxdy[1],
+                             dat$yranges + c(-1,1) * dat$dxdy[2])
+    }else{
+        liv.bound <- NULL
+    }
+
+    habitat.tax <- habi.full(liv.tax, dat$xranges, dat$yranges,
                              conf$ienv$tax, dat$time.cont,
                              env.func.tax, env.dfunc.tax, conf$ienvS$tax)
-    habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.dif <- habi.full(liv.dif, dat$xranges, dat$yranges,
                              conf$ienv$dif, dat$time.cont,
                              env.func.dif, env.dfunc.dif, conf$ienvS$dif)
-    habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.adv.x <- habi.full(liv.adv.x, dat$xranges, dat$yranges,
                                conf$ienv$adv.x, dat$time.cont,
                                env.func.adv.x, env.dfunc.adv, confienvS$adv)
-    habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.adv.y <- habi.full(liv.adv.y, dat$xranges, dat$yranges,
                                conf$ienv$adv.y, dat$time.cont,
                                env.func.adv.y, env.dfunc.adv, conf$ienvS$adv)
 
@@ -1164,4 +1217,9 @@ group.consecutive.ranges <- function(x){
   res <- paste0("c(",paste(ranges,collapse = ","), ")")
 
   return(res)
+}
+
+
+t2index <- function(t, time.cont){
+    findInterval(t, time.cont, rightmost.closed = TRUE)
 }

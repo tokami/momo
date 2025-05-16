@@ -451,7 +451,7 @@ sim.ctags <- function(grid,
         }
         x0 <- runif(1, xrange.rel[1], xrange.rel[2])
         y0 <- runif(1, yrange.rel[1], yrange.rel[2])
-        xy <- c(x0, y0)
+        xy <- matrix(c(x0, y0),1,2)
         t <- t0
         state <- ifelse(flag.effort, 1, 2)
         if(save.tracks){
@@ -657,7 +657,7 @@ sim.atags <- function(grid,
         }
         x0 <- runif(1, xrange.rel[1], xrange.rel[2])
         y0 <- runif(1, yrange.rel[1], yrange.rel[2])
-        xy <- c(x0, y0)
+        xy <- matrix(c(x0, y0),1,2)
         ret <- matrix(NA, nrow = 1, ncol = 3)
         ret[1,] <- c(t0, x0, y0)
         t <- t0

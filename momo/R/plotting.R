@@ -788,8 +788,13 @@ plotmomo.pref <- function(x,
                 ## rug(x$dat$env$env.obs[,inp$env$var[i]])
             }
 
-            points(knots[,i], par.est[,i],
-                   pch = 16, cex = 1.2, col = cols[i])
+            if(length(select) > 1){
+                points(knots[,i], par.est[,i],
+                       pch = 16, cex = 1.2, col = cols[i])
+            }else{
+                points(knots, par.est,
+                       pch = 16, cex = 1.2, col = cols[i])
+            }
             lines(env.pred[,i], pref[,i], col = cols[i], lwd = lwd)
 
             if(!add) box(lwd = 1.5)
@@ -993,7 +998,9 @@ plotmomo.pref.spatial <- function(x,
         get.true.pref <- momo:::poly.fun(as.numeric(knots),
                                          as.numeric(par.est))
 
-        par(mfrow = n2mfrow(length(select), asp))
+        if(!keep.gpar){
+            par(mfrow = n2mfrow(length(select), asp))
+        }
 
         for(i in 1:length(select)){
 
@@ -1193,9 +1200,9 @@ plotmomo.taxis <- function(x,
         for(i in 1:ncol(tax.x)){
 
             if(!add){
-    if(!is.null(bg)){
-        par(bg = bg)
-    }
+                if(!is.null(bg)){
+                    par(bg = bg)
+                }
                 plot(NA,
                      xlim = x$dat$xrange,
                      ylim = x$dat$yrange,

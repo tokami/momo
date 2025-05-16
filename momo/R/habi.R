@@ -1,30 +1,7 @@
-##' Full habitat function
-##'
-##' @description Creates a light habitat class that is being used within
-##'     \emph{momo}.
-##'
-##' @param FIELDS A list with 3-D array fields that are used for interpolation,
-##'     where the first 2 dimensions span the x and y direction of the spatial
-##'     field and the third dimension indicates the time dimension.
-##' @param XR Limits of the 2-D fields in x direction.
-##' @param YR Limits of the 2-D fields in y direction.
-##' @param ienv Indicator matrix mapping each model time step to the time steps
-##'     of each field. The first dimension corresponds to the number of fields
-##'     and the second to the number of model time steps.
-##' @param time.cont Vector with continuous model time steps.
-##' @param S List of smooth functions relating fields to habitat preference
-##'     functions.
-##' @param dS List of derivatives of smooth functions relating fields to habitat
-##'     preference functions.
-##' @param ienvS Indicator matrix mapping each model time step to the time step
-##'     of each spline. The first dimension corresponds to the number of splines
-##'     and the second to the number of model time steps.
-##'
-##' @return List with functions.
-##'
-##' @importFrom abind abind
-##'
-habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
+
+
+
+get.liv <- function(FIELDS, XR, YR){
 
     nenv <- length(FIELDS)
 
@@ -73,20 +50,61 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
                                                        ylim = YR[i,],
                                                        R = 1)))
 
+    res <- list(LIV = LIV,
+                LIVdx = LIVdx,
+                LIVdy = LIVdy)
+
+    return(res)
+}
+
+
+
+##' Full habitat function
+##'
+##' @description Creates a light habitat class that is being used within
+##'     \emph{momo}.
+##'
+##' @param FIELDS A list with 3-D array fields that are used for interpolation,
+##'     where the first 2 dimensions span the x and y direction of the spatial
+##'     field and the third dimension indicates the time dimension.
+##' @param XR Limits of the 2-D fields in x direction.
+##' @param YR Limits of the 2-D fields in y direction.
+##' @param ienv Indicator matrix mapping each model time step to the time steps
+##'     of each field. The first dimension corresponds to the number of fields
+##'     and the second to the number of model time steps.
+##' @param time.cont Vector with continuous model time steps.
+##' @param S List of smooth functions relating fields to habitat preference
+##'     functions.
+##' @param dS List of derivatives of smooth functions relating fields to habitat
+##'     preference functions.
+##' @param ienvS Indicator matrix mapping each model time step to the time step
+##'     of each spline. The first dimension corresponds to the number of splines
+##'     and the second to the number of model time steps.
+##'
+##' @return List with functions.
+##'
+##' @importFrom abind abind
+##'
+habi.full <- function(liv, XR, YR, ienv, time.cont, S, dS, ienvS){
+    "c" <- ADoverload("c")
+    "[<-" <- ADoverload("[<-")
+
+    LIV <- liv$LIV
+    LIVdx <- liv$LIVdx
+    LIVdy <- liv$LIVdy
+
+    nenv <- length(LIV)
+
     val <- function(xy, t){
-        "c" <- ADoverload("c")
-        "[<-" <- ADoverload("[<-")
-        if(!inherits(xy, "matrix") && !inherits(xy, "data.frame")) xy <- RTMB::matrix(xy, 1, 2)
+        t.index <- t2index(t, time.cont)
         h <- rep(0, nrow(xy))
         for(i in 1:nenv){
-            it <- ienv[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
-            is <- ienvS[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
+            it <- ienv[i,t.index]
+            is <- ienvS[i,t.index]
             if(!is.empty(S[[i]][[is]]) && it != 0){
-                for(c in 1:nrow(xy)){
-                    h[c] <- h[c] + S[[i]][[is]](LIV[[i]][[it]](
-                        smooth.identity(xy[c,1], XR[i,1], XR[i,2]),
-                        smooth.identity(xy[c,2], YR[i,1], YR[i,2])))
-                }
+                h <- h + S[[i]][[is]](LIV[[i]][[it]](xy[,1], xy[,2]))
+                    ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                    ## smooth.identity(xy[,2], YR[i,1], YR[i,2])))
             }
         }
         return(h)
@@ -94,46 +112,40 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
 
 
     grad <- function(xy, t){
-        "c" <- ADoverload("c")
-        "[<-" <- ADoverload("[<-")
-        if(!inherits(xy, "matrix") && !inherits(xy, "data.frame")) xy <- RTMB::matrix(xy, 1, 2)
-        dh <- RTMB::matrix(0, nrow(xy), 2)
-        dxytmp <- c(0,0)
+        t.index <- t2index(t, time.cont)
+        dh <- dxytmp <- RTMB::matrix(0, nrow(xy), 2)
         for(i in 1:nenv){
-            it <- ienv[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
-            is <- ienvS[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
+            it <- ienv[i,t.index]
+            is <- ienvS[i,t.index]
             if(!is.empty(dS[[i]][[is]]) && it != 0){
-                for(c in 1:nrow(xy)){
-                    dxytmp[1] <- LIVdx[[i]][[it]](
-                        smooth.identity(xy[c,1], XR[i,1], XR[i,2]),
-                        smooth.identity(xy[c,2], YR[i,1], YR[i,2]))
-                    dxytmp[2] <- LIVdy[[i]][[it]](
-                        smooth.identity(xy[c,1], XR[i,1], XR[i,2]),
-                        smooth.identity(xy[c,2], YR[i,1], YR[i,2]))
-                    dh[c,] <- dh[c,] + dS[[i]][[is]](LIV[[i]][[it]](
-                        smooth.identity(xy[c,1], XR[i,1], XR[i,2]),
-                        smooth.identity(xy[c,2], YR[i,1], YR[i,2]))) * dxytmp
-                }
+                dxytmp[,1] <- LIVdx[[i]][[it]](xy[,1], xy[,2])
+                ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
+                dxytmp[,2] <- LIVdy[[i]][[it]](xy[,1], xy[,2])
+                ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
+                dh <- dh + dS[[i]][[is]](LIV[[i]][[it]](xy[,1], xy[,2])) * dxytmp
+                ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))) * dxytmp
             }
         }
         return(dh)
     }
 
     valF <- function(xy, t){
+        t.index <- t2index(t, time.cont)
         h <- 0
         for(i in 1:nenv){
-            it <- ienv[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
-            h <- h + LIV[[i]][[it]](
-                smooth.identity(xy[1], XR[i,1], XR[i,2]),
-                smooth.identity(xy[2], YR[i,1], YR[i,2]))
+            it <- ienv[i,t.index]
+            h <- h + LIV[[i]][[it]](xy[,1], xy[,2])
+                ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
         }
         return(h)
     }
 
     env2val <- function(env, combine = FALSE){
-        "c" <- ADoverload("c")
-        "[<-" <- ADoverload("[<-")
-        h <- RTMB::matrix(0, nrow(env), ncol(env))
+        h <- matrix(0, nrow(env), ncol(env))
         ## HERE: env for each season?
         is <- 1
         for(i in 1:ncol(env)){
@@ -142,17 +154,12 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
             }
         }
         if(combine){
-            h <- RTMB::apply(h, 1, sum)
+            h <- apply(h, 1, sum)
         }
         return(h)
     }
 
     res <- list(
-        LIV = LIV,
-        LIVdx = LIVdx,
-        LIVdy = LIVdy,
-        S = S,
-        dS = dS,
         val = val,
         grad = grad,
         valF = valF,
@@ -179,38 +186,28 @@ habi.full <- function(FIELDS, XR, YR, ienv, time.cont, S, dS, ienvS){
 ##'
 ##' @return List with functions.
 ##'
-habi.light <- function(FIELDS, XR, YR, ienv, time.cont){
+habi.light <- function(liv, XR, YR, ienv, time.cont){
+    "c" <- ADoverload("c")
+    "[<-" <- ADoverload("[<-")
 
-    nenv <- length(FIELDS)
+    LIV <- liv$LIV
 
-    LIV <- lapply(1:nenv,
-                  function(i)
-                      lapply(1:dim(FIELDS[[i]])[3],
-                             function(j)
-                                 RTMB::interpol2Dfun(FIELDS[[i]][,,1],
-                                                     xlim = XR[i,],
-                                                     ylim = YR[i,],
-                                                     R = 1)))
+    nenv <- length(LIV)
 
     val <- function(xy, t){
-        "c" <- ADoverload("c")
-        "[<-" <- ADoverload("[<-")
-        if(!inherits(xy, "matrix") && !inherits(xy, "data.frame")) xy <- RTMB::matrix(xy, 1, 2)
+        t.index <- t2index(t, time.cont)
         h <- rep(0, nrow(xy))
         for(i in 1:nenv){
-            it <- ienv[i,as.integer(cut(t, time.cont, include.lowest = TRUE))]
+            it <- ienv[i,t.index]
             if(it != 0){
-                for(c in 1:nrow(xy)){
-                    h[c] <- h[c] + LIV[[i]][[it]](
-                        smooth.identity(xy[c,1], XR[i,1], XR[i,2]),
-                        smooth.identity(xy[c,2], YR[i,1], YR[i,2]))
-                }
+                h <- h + LIV[[i]][[it]](xy[,1], xy[,2])
+                    ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
+                    ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
             }
         }
         return(h)
     }
 
-    res <- list(LIV = LIV,
-                val = val)
+    res <- list(val = val)
     return(res)
 }

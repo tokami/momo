@@ -39,6 +39,11 @@ nll <- function(par, dat){
     ne <- length(dat$effort)
     ncem <- nc + ne + 1
 
+    ## Variables
+    I2 <- diag(2)
+    ## move0 <- numeric(2)
+    move0 <- matrix(0, 1, 2)
+
 
     ## Setup environmental functions --------------------------
     env.func.tax <- env.func.dif <-
@@ -49,7 +54,9 @@ nll <- function(par, dat){
         env.func.tax[[i]] <- env.dfunc.tax[[i]] <- vector("list", dim(par$alpha)[3])
         for(j in 1:dim(par$alpha)[3]){
             env.func.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j])
-            env.dfunc.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j], deriv = TRUE)
+            env.dfunc.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i],
+                                                par$alpha[,i,j],
+                                                deriv = TRUE)
         }
 
         env.func.dif[[i]] <- env.dfunc.dif[[i]] <- vector("list", dim(par$beta)[3])
@@ -57,7 +64,8 @@ nll <- function(par, dat){
             env.func.dif[[i]][[j]] <- poly.fun(dat$knots.dif[,i], par$beta[,i,j])
         }
 
-        env.func.adv.x[[i]] <- env.func.adv.y[[i]] <- env.dfunc.adv[[i]] <- vector("list", dim(par$gamma)[3])
+        env.func.adv.x[[i]] <- env.func.adv.y[[i]] <-
+            env.dfunc.adv[[i]] <- vector("list", dim(par$gamma)[3])
         for(j in 1:dim(par$gamma)[3]){
             env.func.adv.x[[i]][[j]] <- poly.fun(NULL, par$gamma[1,i,j], adv = TRUE)
             env.func.adv.y[[i]][[j]] <- poly.fun(NULL, par$gamma[2,i,j], adv = TRUE)
@@ -65,29 +73,29 @@ nll <- function(par, dat){
     }
 
     ## Setup habitat objects ---------------------------------
-    habitat.tax <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.tax <- habi.full(dat$liv.tax, dat$xranges, dat$yranges,
                              dat$ienv$tax, dat$time.cont,
                              env.func.tax, env.dfunc.tax, dat$ienvS$tax)
-    habitat.dif <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.dif <- habi.full(dat$liv.dif, dat$xranges, dat$yranges,
                              dat$ienv$dif, dat$time.cont,
                              env.func.dif, env.dfunc.dif, dat$ienvS$dif)
-    habitat.adv.x <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.adv.x <- habi.full(dat$liv.adv.x, dat$xranges, dat$yranges,
                                dat$ienv$adv.x, dat$time.cont,
                                env.func.adv.x, env.dfunc.adv, dat$ienvS$adv)
-    habitat.adv.y <- habi.full(dat$env, dat$xranges, dat$yranges,
+    habitat.adv.y <- habi.full(dat$liv.adv.y, dat$xranges, dat$yranges,
                                dat$ienv$adv.y, dat$time.cont,
                                env.func.adv.y, env.dfunc.adv, dat$ienvS$adv)
 
     if(flag.effort){
-        effort <- habi.light(dat$effort, dat$xranges.eff, dat$yranges.eff,
+        effort <- habi.light(dat$liv.effort, dat$xranges.eff, dat$yranges.eff,
                              dat$ieff, dat$time.cont)
     }
 
     if(dat$use.boundaries){
-    bound <- habi.light(dat$boundaries,
-                             dat$xranges + c(-1,1) * dat$dxdy[1],
-                             dat$yranges + c(-1,1) * dat$dxdy[2],
-                        dat$ibound, dat$time.cont)
+        bound <- habi.light(dat$liv.bound,
+                            dat$xranges + c(-1,1) * dat$dxdy[1],
+                            dat$yranges + c(-1,1) * dat$dxdy[2],
+                            dat$ibound, dat$time.cont)
     }
 
 
@@ -128,7 +136,7 @@ nll <- function(par, dat){
                         ut <- unscented.transform(mxy[t,], P)
                         sigmaPred <- ut$chi
                         for(sp in 1:ncol(sigmaPred)){
-                            move <- numeric(2)
+                            move <- move0
                             if(dat$use.taxis){
                                 move <- move + habitat.tax$grad(sigmaPred[,sp],
                                                                 ts[t]) * dat$ddt
@@ -146,28 +154,32 @@ nll <- function(par, dat){
                         }
                         mxy[t+1,] <- ut$Wm %*% t(sigmaPred)
                         devs <- sigmaPred - RTMB::matrix(mxy[t+1,], nrow(sigmaPred), ncol(sigmaPred))
-                        dif <- diag(2) * exp(habitat.dif$val(mxy[t,], ts[t]))
+                        dif <- I2 * exp(habitat.dif$val(mxy[t,,drop = FALSE],
+                                                             ts[t]))
                         if(dat$use.boundaries){
-                            dif <- dif * bound$val(mxy[t,], ts[t])
+                            dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
                         }
                         P <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dat$ddt
                         vxy[t+1,] <- diag(P)
                     }else{
                         ## classic KF
-                        move <- numeric(2)
+                        move <- move0
                         if(dat$use.taxis){
-                            move <- move + habitat.tax$grad(mxy[t,], ts[t]) * dat$ddt
+                            move <- move + habitat.tax$grad(mxy[t,,drop = FALSE],
+                                                            ts[t]) * dat$ddt
                         }
                         if(dat$use.advection){
-                            move <- move + c(habitat.adv.x$val(mxy[t,], ts[t]),
-                                             habitat.adv.y$val(mxy[t,], ts[t])) * dat$ddt
+                            move <- move + c(habitat.adv.x$val(mxy[t,,drop = FALSE],
+                                                               ts[t]),
+                                             habitat.adv.y$val(mxy[t,,drop = FALSE],
+                                                               ts[t])) * dat$ddt
                         }
                         if(dat$use.boundaries){
-                            move <- move * bound$val(mxy[t,], ts[t])
+                            move <- move * bound$val(mxy[t,,drop = FALSE], ts[t])
                         }
-                        dif <- exp(habitat.dif$val(mxy[t,], ts[t]))
+                        dif <- exp(habitat.dif$val(mxy[t,,drop = FALSE], ts[t]))
                         if(dat$use.boundaries){
-                            dif <- dif * bound$val(mxy[t,], ts[t])
+                            dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
                         }
                         mxy[t+1,] <- mxy[t,] + move
                         vxy[t+1,] <- vxy[t,] + 2 * dif * dat$ddt
@@ -250,7 +262,7 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.ctags
 
-            REPORT(resid.ctags)
+            ## REPORT(resid.ctags)
         }
 
         ## Archival tags
@@ -273,7 +285,7 @@ nll <- function(par, dat){
 
                     obsvar <- exp(2 * par$logSdObsATS)
                     lastt <- as.numeric(tag[1,1])
-                    lastxy <- as.numeric(tag[1,2:3])
+                    lastxy <- as.matrix(tag[1,2:3,drop = FALSE])
 
                     if(dat$use.ukf){
                         P <- diag(c(dat$var.init.kf,dat$var.init.kf))
@@ -297,7 +309,7 @@ nll <- function(par, dat){
                             ut <- unscented.transform(lastxy, P)
                             sigmaPred <- ut$chi
                             for(sp in 1:ncol(sigmaPred)){
-                                move <- numeric(2)
+                                move <- move0
                                 if(dat$use.taxis){
                                     move <- move + habitat.tax$grad(sigmaPred[,sp],
                                                                     tag[r,1]) * dt
@@ -315,7 +327,7 @@ nll <- function(par, dat){
                             }
                             predxy <- ut$Wm %*% t(sigmaPred)
                             devs <- sigmaPred - RTMB::matrix(predxy, nrow(sigmaPred), ncol(sigmaPred))
-                            dif <- diag(2) * exp(habitat.dif$val(lastxy, tag[r,1]))
+                            dif <- I2 * exp(habitat.dif$val(lastxy, tag[r,1]))
                             if(dat$use.boundaries){
                                 dif <- dif * bound$val(lastxy, tag[r,1])
                             }
@@ -332,7 +344,7 @@ nll <- function(par, dat){
                             var <- diag(F)
                         }else{
                             ## classic KF
-                            move <- numeric(2)
+                            move <- move0
                             if(dat$use.taxis){
                                 move <- move + habitat.tax$grad(lastxy, tag[r,1]) * dt
                             }
@@ -410,8 +422,8 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.atags
 
-            REPORT(resid.atags)
-            REPORT(resid.atags.fine)
+            ## REPORT(resid.atags)
+            ## REPORT(resid.atags.fine)
         }
 
         ## Mark-resight tags (e.g. rings)
@@ -428,7 +440,7 @@ nll <- function(par, dat){
 
                 tag <- dat$stags[[r]]
                 resid.stags.fine[[r]] <- matrix(NA_real_, nrow(tag), 3)
-                lastxy <- as.numeric(tag[1,2:3])
+                lastxy <- as.matrix(tag[1,2:3])
                 ts <- seq(tag$t[1], tag$t[nrow(tag)], by = dat$ddt)
                 nts <- length(ts)
                 dt <- dat$ddt
@@ -450,7 +462,7 @@ nll <- function(par, dat){
                         ut <- unscented.transform(lastxy, P)
                         sigmaPred <- ut$chi
                         for(sp in 1:ncol(sigmaPred)){
-                            move <- numeric(2)
+                            move <- move0
                             if(dat$use.taxis){
                                 move <- move + habitat.tax$grad(sigmaPred[,sp],
                                                                 ts[t]) * dt
@@ -468,12 +480,11 @@ nll <- function(par, dat){
                         }
                         predxy <- ut$Wm %*% t(sigmaPred)
                         devs <- sigmaPred - RTMB::matrix(predxy, nrow(sigmaPred), ncol(sigmaPred))
-                        dif <- diag(2) * exp(habitat.dif$val(lastxy, ts[t]))
+                        dif <- I2 * exp(habitat.dif$val(lastxy, ts[t]))
                         if(dat$use.boundaries){
                             dif <- dif * bound$val(lastxy, ts[t])
                         }
                         PP <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dt
-                        browser()
                         if(r == nrows.tag){
                             F <- PP
                         }else{
@@ -486,8 +497,9 @@ nll <- function(par, dat){
                         var <- diag(F)
                     }else{
                         ## classic KF
-                        move <- numeric(2)
+                        move <- move0
                         if(dat$use.taxis){
+                            browser()
                             move <- move + habitat.tax$grad(lastxy, ts[t]) * dt
                         }
                         if(dat$use.advection){
@@ -557,8 +569,8 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.stags
 
-            REPORT(resid.stags)
-            REPORT(resid.stags.fine)
+            ## REPORT(resid.stags)
+            ## REPORT(resid.stags.fine)
         }
 
     }else{
@@ -785,7 +797,7 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.ctags
 
-            REPORT(resid.ctags)
+            ## REPORT(resid.ctags)
         }
 
         ## Archival tags
@@ -992,8 +1004,8 @@ nll <- function(par, dat){
 
             nll <- nll - loglik.atags
 
-            REPORT(resid.atags)
-            REPORT(resid.atags.fine)
+            ## REPORT(resid.atags)
+            ## REPORT(resid.atags.fine)
 
         } ## use.atags
 
