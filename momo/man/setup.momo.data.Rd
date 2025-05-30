@@ -17,6 +17,7 @@ setup.momo.data(
   trange = NULL,
   dt = NULL,
   time.cont = NULL,
+  boundary.grid = NULL,
   verbose = TRUE
 )
 }
@@ -54,6 +55,9 @@ set to 0.1.}
 
 \item{time.cont}{optional; allows to provide a vector representing the model
 time. Default: \code{NULL}.}
+
+\item{boundary.grid}{optional; allows to provide a list of class momo.grid with
+boundary effects. Default: \code{NULL}.}
 
 \item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
 }

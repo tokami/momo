@@ -5,6 +5,7 @@
 ##' @param x a grid or a list of class `momo.data`, `momo.sim`, or `momo.fit`.
 ##' @param main a main title for the plot. Default: "Grid".
 ##' @param labels logical; If `TRUE` (default), plot numbers in cells.
+##' @param plot.grid logical; If `TRUE` (default), grid is plotted.
 ##' @param plot.land logical; If `TRUE`, plot land masses using the function
 ##'     [maps::map]. Default: `FALSE`.
 ##' @param keep.gpar logical; If `TRUE`, do not overwrite the graphical
@@ -26,6 +27,7 @@
 plotmomo.grid <- function(x,
                           main = "Grid",
                           labels = TRUE,
+                          plot.grid = TRUE,
                           plot.land = FALSE,
                           keep.gpar = FALSE,
                           xlab = "x",
@@ -74,13 +76,16 @@ plotmomo.grid <- function(x,
           ylim = ylims,
           add = TRUE)
     if(plot.land){
-        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE))
+        plot.land(xlims, ylims, shift = ifelse(max(xlims) > 180, TRUE, FALSE),
+                  col = "grey80")
     }
     labs <- as.numeric(grid$celltable)
     labs <- labs[!is.na(labs)]
     if(labels) text(grid$xygrid[,1], grid$xygrid[,2], labs)
+    if(plot.grid){
     abline(v = attributes(grid)$xgr)
     abline(h = attributes(grid)$ygr)
+    }
     box(lwd = 1.5)
 
     return(invisible(NULL))
@@ -343,6 +348,7 @@ plotmomo.effort <- function(x,
 ##' @param ylab a label for the y axis. Default: "y".
 ##' @param bg background color of the graphical window. By default (`NULL`),
 ##'     background is transparent.
+##' @param col Color of arrows. Default: `adjustcolor("grey60",0.4)`.
 ##' @param ... additional arguments for the function [plot].
 ##'
 ##' @return Nothing.
@@ -363,6 +369,7 @@ plotmomo.ctags <- function(x,
                            xlab = "x",
                            ylab = "y",
                            bg = NULL,
+                           col = adjustcolor("grey60",0.4),
                            ...){
 
     if(inherits(x, "momo.sim") || inherits(x, "momo.data")){
@@ -406,7 +413,7 @@ plotmomo.ctags <- function(x,
         ## }
     }
     arrows(ctags$x0, ctags$y0, ctags$x1, ctags$y1,
-           col = adjustcolor("grey60",0.4),
+           col = col,
            length = 0.1)
     points(ctags$x0, ctags$y0, pch = 16, col = "grey30", cex = 0.8)
     if(plot.land && !add){
@@ -495,9 +502,9 @@ plotmomo.atags <- function(x,
     cols <- momo.cols(2)
 
     if(!add){
-    if(!is.null(bg)){
-        par(bg = bg)
-    }
+        if(!is.null(bg)){
+            par(bg = bg)
+        }
         plot(0,0, ty = "n", main = main,
              xlim = xlims,
              ylim = ylims,
@@ -708,7 +715,7 @@ plotmomo.pref <- function(x,
                 tmp <- matrix(x$opt$par[names(x$opt$par) == "alpha"],
                               nrow = nrow(x$par$alpha)-1,
                               ncol = ncol(x$par$alpha))
-                par.est <- cbind(rep(0,ncol(tmp)), tmp)[,select]
+                par.est <- rbind(rep(0,ncol(tmp)), tmp)[,select]
             }
             knots <- x$dat$knots.tax[,select]
 
@@ -762,7 +769,12 @@ plotmomo.pref <- function(x,
 
         if(return.limits) return(list(xlim = xlim, ylim = ylim))
 
+    if(!keep.gpar && !return.limits){
         par(mfrow = n2mfrow(length(select), asp))
+    }
+
+        if(!inherits(ylim,"matrix")) ylim <- as.matrix(ylim)
+
 
         for(i in 1:length(select)){
 
@@ -946,7 +958,7 @@ plotmomo.pref.spatial <- function(x,
                 tmp <- matrix(x$opt$par[names(x$opt$par) == "alpha"],
                               nrow = nrow(x$par$alpha)-1,
                               ncol = ncol(x$par$alpha))
-                par.est <- cbind(rep(0,ncol(tmp)), tmp)[,select]
+                par.est <- rbind(rep(0,ncol(tmp)), tmp)[,select]
             }
             knots <- x$dat$knots.tax[,select]
             if(!is.null(par)) par.true <- par$alpha[,select,]
@@ -985,7 +997,7 @@ plotmomo.pref.spatial <- function(x,
             }else if(type == "diffusion"){
                 pref <- x$rep[["prefD.pred"]]
             }
-            prefsd <- preflow <- prefup <- NULL
+            prefsd <- preflow <- prefup <- pref
         }
 
         pref <- matrix(pref, nrow = nrow(env.pred),
@@ -1014,7 +1026,21 @@ plotmomo.pref.spatial <- function(x,
             if(is.null(main0)) main <- paste0(names(x$dat$env)[i], " (",
                                               years[indi],")")
 
-            pref.pred <- get.true.pref(as.numeric(x$dat$env[[i]][,,indi]))
+            xenv <- as.numeric(rownames(x$dat$env[[i]][,,indi]))
+            yenv <- as.numeric(colnames(x$dat$env[[i]][,,indi]))
+            xyenv <- expand.grid(xenv, yenv)
+            xgrid <- x$dat$xgr
+            ygrid <- x$dat$ygr
+
+            indix <- as.integer(cut(xyenv[,1], xgrid, include.lowest = TRUE))
+            indiy <- as.integer(cut(xyenv[,2], ygrid, include.lowest = TRUE))
+
+            envi <- x$dat$env[[i]][,,indi]
+
+            isna <- x$dat$celltable[cbind(indix,indiy)]
+            envi[is.na(isna)] <- NA
+
+            pref.pred <- get.true.pref(as.numeric(envi))
 
             mat <- x$dat$env[[i]][,,1]
             mat[] <- pref.pred
@@ -1032,17 +1058,17 @@ plotmomo.pref.spatial <- function(x,
                      ...)
             }
 
-            if(plot.land){
-                plot.land(x$dat$xrange, x$dat$yrange,
-                          shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
-            }
-
             image(as.numeric(rownames(mat)),
                   as.numeric(colnames(mat)),
                   mat,
                   xlim = x$dat$xrange,
                   ylim = x$dat$yrange,
                   add = TRUE)
+
+            if(plot.land){
+                plot.land(x$dat$xrange, x$dat$yrange,
+                          shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
+            }
 
             box(lwd=1.5)
 
@@ -1210,7 +1236,7 @@ plotmomo.taxis <- function(x,
                      ylab = ylab,
                      xaxt = xaxt,
                      yaxt = yaxt,
-                     main = "",
+                     main = main,
                      ...)
                 ## if(!is.null(bg)){
                 ##     usr <- par("usr")
@@ -2245,12 +2271,16 @@ plotmomo.compare <- function(fit, ...,
 ##' @param shift logical; If `TRUE`, world map is shifted frmo [-180,180] to
 ##'     [0,360] logitudinal range. Note, that polygons crossing the meridian are
 ##'     excluded. Default: `FALSE`.
+##' @param col Color of landmasses. Default: `adjustcolor(grey(0.7), 0.5)`.
+##' @param border Color of borders. Default: `grey(0.5)`.
 ##'
 ##' @return Nothing.
 ##'
 ##' @importFrom maps map
 ##'
-plot.land <- function(xlim, ylim, shift = FALSE){
+plot.land <- function(xlim, ylim, shift = FALSE,
+                      col = adjustcolor(grey(0.7), 0.5),
+                      border = grey(0.5)){
     if(shift){
         world_map <- shift.map()
     }else{
@@ -2260,8 +2290,8 @@ plot.land <- function(xlim, ylim, shift = FALSE){
                   xlim = xlim,
                   ylim = ylim,
                   fill = TRUE, plot = TRUE, add = TRUE,
-                  col = adjustcolor(grey(0.7),0.5), ## grey(0.95),
-                  border = grey(0.5)), silent = TRUE)
+                  col = col,
+                  border = border), silent = TRUE)
 }
 
 

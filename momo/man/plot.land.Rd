@@ -4,7 +4,13 @@
 \alias{plot.land}
 \title{Plot land masses}
 \usage{
-\method{plot}{land}(xlim, ylim, shift = FALSE)
+\method{plot}{land}(
+  xlim,
+  ylim,
+  shift = FALSE,
+  col = adjustcolor(grey(0.7), 0.5),
+  border = grey(0.5)
+)
 }
 \arguments{
 \item{xlim}{x limits}
@@ -14,6 +20,10 @@
 \item{shift}{logical; If \code{TRUE}, world map is shifted frmo \link{-180,180} to
 \link{0,360} logitudinal range. Note, that polygons crossing the meridian are
 excluded. Default: \code{FALSE}.}
+
+\item{col}{Color of landmasses. Default: \code{adjustcolor(grey(0.7), 0.5)}.}
+
+\item{border}{Color of borders. Default: \code{grey(0.5)}.}
 }
 \value{
 Nothing.

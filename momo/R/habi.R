@@ -1,23 +1,40 @@
 
 
 
-get.liv <- function(FIELDS, XR, YR){
+get.liv <- function(FIELDS, XR, YR) {
 
     nenv <- length(FIELDS)
 
-    dxfield <- function(field, xr){
+    dxfield <- function(field, xr) {
         nr <- nrow(field)
         nc <- ncol(field)
-        ret <- left <- right <- matrix(NA_real_, nr, nc)
-        onedx <- (xr[2] - xr[1]) / nr ## before / (nr - 1) WHY:?
-        ret[2:(nr-1),] <- (field[3:nr,] - field[1:(nr-2),]) / (2 * onedx)
-        ## Account for edges and NA in maps (land, islands)
-        left[1:(nr-1),] <- (field[2:nr,] - field[1:(nr-1),]) / onedx
-        right[2:nr,] <- (field[2:nr,] - field[1:(nr-1),]) / onedx
-        comb <- rowMeans(abind::abind(left, right, along = 3), dims = 2, na.rm = TRUE)
-        ret[is.na(ret)] <- comb[is.na(ret)]
+        ret <- matrix(NA_real_, nr, nc)
+
+        onedx <- (xr[2] - xr[1]) / (nr - 1) ## as xr cell centers
+
+        for (i in 1:nr) {
+            for (j in 1:nc) {
+                val <- field[i, j]
+                if (is.na(val)) next
+
+                left <- if (i > 1) field[i - 1, j] else NA_real_
+                right <- if (i < nr) field[i + 1, j] else NA_real_
+
+                if (!is.na(left) && !is.na(right)) {
+                    ret[i, j] <- (right - left) / (2 * onedx)
+                } else if (!is.na(right)) {
+                    ret[i, j] <- (right - val) / onedx
+                } else if (!is.na(left)) {
+                    ret[i, j] <- (val - left) / onedx
+                }
+            }
+        }
+
+       ret[is.na(ret)] <- 0
+
         return(ret)
     }
+
 
     dyfield <- function(field, yr){
         t(dxfield(t(field), yr))
@@ -50,7 +67,19 @@ get.liv <- function(FIELDS, XR, YR){
                                                        ylim = YR[i,],
                                                        R = 1)))
 
+    LIV0 <- lapply(1:nenv,
+                  function(i)
+                      lapply(1:dim(FIELDS[[i]])[3],
+                             function(j){
+                                 fieldi <- FIELDS[[i]][,,j]
+                                 fieldi[is.na(fieldi)] <- 0
+                                 RTMB::interpol2Dfun(fieldi,
+                                                     xlim = XR[i,],
+                                                     ylim = YR[i,],
+                                                     R = 1)}))
+
     res <- list(LIV = LIV,
+                LIV0 = LIV0,
                 LIVdx = LIVdx,
                 LIVdy = LIVdy)
 
@@ -90,6 +119,7 @@ habi.full <- function(liv, XR, YR, ienv, time.cont, S, dS, ienvS){
     "[<-" <- ADoverload("[<-")
 
     LIV <- liv$LIV
+    LIV0 <- liv$LIV0
     LIVdx <- liv$LIVdx
     LIVdy <- liv$LIVdy
 
@@ -101,8 +131,8 @@ habi.full <- function(liv, XR, YR, ienv, time.cont, S, dS, ienvS){
         for(i in 1:nenv){
             it <- ienv[i,t.index]
             is <- ienvS[i,t.index]
-            if(!is.empty(S[[i]][[is]]) && it != 0){
-                h <- h + S[[i]][[is]](LIV[[i]][[it]](xy[,1], xy[,2]))
+            if(!is.empty(S[[i]]) && !is.empty(S[[i]][[is]]) && it != 0){
+                h <- h + S[[i]][[is]](LIV0[[i]][[it]](xy[,1], xy[,2]))  ## HERE: LIV
                     ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
                     ## smooth.identity(xy[,2], YR[i,1], YR[i,2])))
             }
@@ -110,21 +140,20 @@ habi.full <- function(liv, XR, YR, ienv, time.cont, S, dS, ienvS){
         return(h)
     }
 
-
     grad <- function(xy, t){
         t.index <- t2index(t, time.cont)
         dh <- dxytmp <- RTMB::matrix(0, nrow(xy), 2)
         for(i in 1:nenv){
             it <- ienv[i,t.index]
             is <- ienvS[i,t.index]
-            if(!is.empty(dS[[i]][[is]]) && it != 0){
+            if(!is.empty(dS[[i]]) && !is.empty(dS[[i]][[is]]) && it != 0){
                 dxytmp[,1] <- LIVdx[[i]][[it]](xy[,1], xy[,2])
                 ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
                 ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
                 dxytmp[,2] <- LIVdy[[i]][[it]](xy[,1], xy[,2])
                 ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
                 ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))
-                dh <- dh + dS[[i]][[is]](LIV[[i]][[it]](xy[,1], xy[,2])) * dxytmp
+                dh <- dh + dS[[i]][[is]](LIV0[[i]][[it]](xy[,1], xy[,2])) * dxytmp  ## HERE: LIV
                 ## smooth.identity(xy[,1], XR[i,1], XR[i,2]),
                 ## smooth.identity(xy[,2], YR[i,1], YR[i,2]))) * dxytmp
             }
@@ -146,10 +175,9 @@ habi.full <- function(liv, XR, YR, ienv, time.cont, S, dS, ienvS){
 
     env2val <- function(env, combine = FALSE){
         h <- matrix(0, nrow(env), ncol(env))
-        ## HERE: env for each season?
-        is <- 1
         for(i in 1:ncol(env)){
-            if(!is.empty(S[[i]][[is]])){
+            is <- ienvS[i,1] ## HERE: find better solution for seasonal splines
+            if(!is.empty(S[[i]]) && !is.empty(S[[i]][[is]])){
                 h[,i] <- h[,i] + S[[i]][[is]](env[,i])
             }
         }

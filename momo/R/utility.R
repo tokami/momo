@@ -420,7 +420,7 @@ momo.cols <- function(n = 1, alpha = 1, type = NULL){
 
 
 is.empty <- function(x){
-    length(x) == 0
+    is.null(x) || length(x) == 0
 }
 
 check.that.list <- function(x){
@@ -536,6 +536,8 @@ poly.fun.old <- function(xp, yp, deriv = FALSE, adv = FALSE){
 
 poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
 
+    if(!adv && length(xp) > 1 && all(diff(xp) == 0)) return(NULL)
+
     if(adv){
         ## Simple linear case
         val <- yp[1]
@@ -543,7 +545,7 @@ poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
         df <- function(x) rep(val, length(x))
     }else{
         if(length(xp) == 1){
-            ## For one knot return knot value (e.g. constant diffusion)
+            ## For one knot return parameter (e.g. constant diffusion)
             val <- yp[1]
             f <- function(x) val
             df <- function(x) rep(val, length(x))
@@ -628,12 +630,10 @@ get.env.funcs <- function(dat, conf, par){
             env.func.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j])
             env.dfunc.tax[[i]][[j]] <- poly.fun(dat$knots.tax[,i], par$alpha[,i,j], deriv = TRUE)
         }
-
         env.func.dif[[i]] <- env.dfunc.dif[[i]] <- vector("list", dim(par$beta)[3])
         for(j in 1:dim(par$beta)[3]){
             env.func.dif[[i]][[j]] <- poly.fun(dat$knots.dif[,i], par$beta[,i,j])
         }
-
         env.func.adv.x[[i]] <- env.func.adv.y[[i]] <- env.dfunc.adv[[i]] <- vector("list", dim(par$gamma)[3])
         for(j in 1:dim(par$gamma)[3]){
             env.func.adv.x[[i]][[j]] <- poly.fun(NULL, par$gamma[1,i,j], adv = TRUE)
@@ -643,7 +643,16 @@ get.env.funcs <- function(dat, conf, par){
 
 
     ## Setup habitat objects ---------------------------------
-    liv.all <- get.liv(dat$env, dat$xranges, dat$yranges)
+
+    ## TODO: build in check that envs are equally spaced grid (maybe put in check function)
+    dxdy <- cbind(do.call(rbind, lapply(dat$env, function(x)
+        diff(as.numeric(attributes(x)$dimnames[[1]]))[1])),
+        do.call(rbind, lapply(dat$env, function(x)
+        diff(as.numeric(attributes(x)$dimnames[[2]]))[1])))
+
+    liv.all <- get.liv(dat$env,
+                       dat$xranges + c(1,-1) * dxdy[,1]/2,
+                       dat$yranges + c(1,-1) * dxdy[,2]/2)
     liv.tax <- liv.all
     liv.dif <- liv.all
     liv.adv.x <- liv.all
@@ -656,9 +665,14 @@ get.env.funcs <- function(dat, conf, par){
     }
 
     if(conf$use.boundaries){
-        liv.bound <- get.liv(dat$boundaries,
-                             dat$xranges + c(-1,1) * dat$dxdy[1],
-                             dat$yranges + c(-1,1) * dat$dxdy[2])
+        liv.bound <- get.liv(list(array(dat$boundaries,
+                                   dim = c(nrow(dat$boundaries),
+                                           ncol(dat$boundaries),1))),
+                             matrix(dat$boundary.xrange + c(1,-1) *
+                                    dat$boundary.dxdy[1]/2,1,2),
+                             matrix(dat$boundary.yrange+ c(1,-1) *
+                                    dat$boundary.dxdy[2]/2,1,2))
+        liv.bound
     }else{
         liv.bound <- NULL
     }
@@ -691,7 +705,7 @@ get.env.funcs <- function(dat, conf, par){
                 tax = taxis.fun)
 
     if(conf$use.effort){
-        effort <- habi.light(dat$effort, dat$xranges.eff,
+        effort <- habi.light(liv.effort, dat$xranges.eff,
                              dat$yranges.eff,
                              dat$ieff, dat$time.cont)
 
@@ -704,9 +718,11 @@ get.env.funcs <- function(dat, conf, par){
 
 
     if(conf$use.boundaries){
-        bound <- habi.light(conf$boundaries,
-                            dat$xranges,## + c(-1,1) * dat$dxdy[1],
-                            dat$yranges,## + c(-1,1) * dat$dxdy[2],
+        bound <- habi.light(liv.bound,
+                            dat$boundary.xrange + c(1,-1) *
+                                    dat$boundary.dxdy[1]/2,
+                            dat$boundary.yrange + c(1,-1) *
+                                    dat$boundary.dxdy[2]/2,
                             conf$ibound, dat$time.cont)
         bound.fun <- function(xy, t){
             bound$val(xy, t)

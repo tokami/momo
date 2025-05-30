@@ -35,7 +35,7 @@ def.conf <- function(dat){
     conf$est.var.atags <- FALSE
     conf$est.n <- FALSE
     conf$pred.move <- TRUE
-    conf$use.boundaries <- FALSE
+    conf$use.boundaries <- ifelse(!is.null(dat$boundaries), TRUE, FALSE)
     conf$use.rel.events <- FALSE
 
     ## Env
@@ -57,7 +57,8 @@ def.conf <- function(dat){
         ##     return(res)
         ## })
         ## ienv.tax <- matrix(ienv, nenv, length(dat$time.cont))
-        tmp <- sapply(dat$env,
+
+        tmp <- lapply(dat$env,
                       function(x)
                           if(!is.null(attributes(x)$dimnames[[3]])){
                               as.numeric(attributes(x)$dimnames[[3]])
@@ -65,7 +66,7 @@ def.conf <- function(dat){
                               seq(dat$trange[1], dat$trange[2],
                                   length.out = dim(x)[3]+1)
                           })
-        ienv.tax <- t(apply(tmp, 2,
+        ienv.tax.list <- lapply(tmp,
                           function(x){
                               tmp <- as.integer(cut(dat$time.cont,
                                                     unique(c(x,dat$trange[2])),
@@ -73,7 +74,10 @@ def.conf <- function(dat){
                                                     include.lowest = TRUE))
                               tmp[is.na(tmp)] <- min(tmp, na.rm = TRUE)
                               return(tmp)
-                          }))
+                          })
+
+        ienv.tax <- do.call(rbind, ienv.tax.list)
+
         if(dat$const.dif){
             ienv.dif <- matrix(1, nenv, length(dat$time.cont))
         }else{

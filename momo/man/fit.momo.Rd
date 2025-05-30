@@ -17,6 +17,8 @@ fit.momo(
   do.report = TRUE,
   use.expm = NULL,
   use.rel.events = NULL,
+  dbg = FALSE,
+  control = NULL,
   verbose = TRUE,
   ...
 )
@@ -61,6 +63,8 @@ Default: \code{NULL}.}
 \item{use.rel.events}{logical; allows to overwrite setting in configuration
 list (\code{conf$use.rel.events}). If \code{NULL}, setting from configuration list
 is used. Default: \code{NULL}.}
+
+\item{dbg}{allows to run fit.momo in debugging mode. Default: \code{FALSE}.}
 
 \item{verbose}{if \code{TRUE}, print information to console. Default: \code{TRUE}.}
 

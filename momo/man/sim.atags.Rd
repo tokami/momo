@@ -20,6 +20,7 @@ sim.atags(
   knots.tax = NULL,
   knots.dif = NULL,
   funcs = NULL,
+  boundary.grid = NULL,
   verbose = TRUE
 )
 }
@@ -64,6 +65,9 @@ component. Default: \code{NULL}.}
 
 \item{funcs}{optional; allows to specify movement functions. If \code{NULL}
 (default), the function \link{get.sim.funcs} is used.}
+
+\item{boundary.grid}{optional; allows to provide a list of class momo.grid
+with boundary effects. Default: \code{NULL}.}
 
 \item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
 }

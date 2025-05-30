@@ -34,6 +34,7 @@
 ##' @param use.rel.events logical; allows to overwrite setting in configuration
 ##'     list (`conf$use.rel.events`). If `NULL`, setting from configuration list
 ##'     is used. Default: `NULL`.
+##' @param dbg allows to run fit.momo in debugging mode. Default: `FALSE`.
 ##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
 ##' @param ... extra arguments to [RTMB::MakeADFun].
 ##'
@@ -59,6 +60,8 @@ fit.momo <- function(dat,
                      do.report = TRUE,
                      use.expm = NULL,
                      use.rel.events = NULL,
+                     dbg = FALSE,
+                     control = NULL,
                      verbose = TRUE,
                      ...){
 
@@ -111,9 +114,14 @@ fit.momo <- function(dat,
     }
 
     if(tmb.all$use.boundaries){
-        liv.bound <- get.liv(dat$boundaries,
-                             dat$xranges + c(-1,1) * dat$dxdy[1],
-                             dat$yranges + c(-1,1) * dat$dxdy[2])
+        liv.bound <- get.liv(list(array(dat$boundaries,
+                                   dim = c(nrow(dat$boundaries),
+                                           ncol(dat$boundaries),1))),
+                             matrix(dat$boundary.xrange,1,2),
+                             matrix(dat$boundary.yrange,1,2))
+        ## this is for buffer zone around normal grid:
+        ## dat$xranges + c(-1,1) * dat$dxdy[1],
+        ## dat$yranges + c(-1,1) * dat$dxdy[2])
     }else{
         liv.bound <- NULL
     }
@@ -125,6 +133,8 @@ fit.momo <- function(dat,
                                liv.effort = liv.effort,
                                liv.bound = liv.bound))
 
+    tmb.all$dbg <- dbg
+
     t1 <- Sys.time()
     obj <- RTMB::MakeADFun(func = cmb(nll, tmb.all),
                            parameters = par,
@@ -133,8 +143,12 @@ fit.momo <- function(dat,
                            ...)
     t2 <- Sys.time()
 
-    lower2 <- rep(-Inf, length(obj$par))
-    upper2 <- rep(Inf, length(obj$par))
+    ## browser()
+    ## obj$fn(obj$par-2)
+    ## obj$gr(obj$par-2)
+
+    lower2 <- rep(-1e10, length(obj$par))
+    upper2 <- rep(1e10, length(obj$par)) ## upper boundary needed for diffusion!
     for(nn in names(lower)) lower2[names(obj$par) == nn] <- lower[[nn]]
     for(nn in names(upper)) upper2[names(obj$par) == nn] <- upper[[nn]]
 
@@ -153,11 +167,28 @@ fit.momo <- function(dat,
                                                              units = "mins")),2),
                                   "min). Minimizing neg. loglik."))
 
+    ## default list
+    ctrl <- list(trace = as.integer(verbose),
+                     eval.max = 2000,
+                     iter.max = 1000,
+                     rel.tol = rel.tol)
+
+    if(is.null(control)){
+        ind0 <- names(control) %in% names(ctrl)
+        ind <- match(names(control), names(ctrl[ind0]))
+        ## overwrite
+        if(length(ind) > 0){
+            ctrl[ind] <- ctrl[ind0]
+        }
+        ## add
+        if(length(which(!ind0)) > 0){
+            ctrl <- c(ctrl,
+                      control[!(names(control) %in% names(ctrl[!ind0]))])
+        }
+    }
+
     opt <- nlminb(obj$par, obj$fn, obj$gr,
-                  control = list(trace = as.integer(verbose),
-                                 eval.max = 2000,
-                                 iter.max = 1000,
-                                 rel.tol = rel.tol),
+                  control = ctrl,
                   lower = lower2,
                   upper = upper2)
     t3 <- Sys.time()
@@ -167,6 +198,7 @@ fit.momo <- function(dat,
                                                              units = "mins")),2),
                                   "min). Model ", "not "[opt$convergence],
                                   "converged. Estimating uncertainty."))
+
 
     res <- list(dat = dat,
                 conf = conf,

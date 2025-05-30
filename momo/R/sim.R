@@ -565,6 +565,8 @@ sim.ctags <- function(grid,
 ##'     component. Default: `NULL`.
 ##' @param funcs optional; allows to specify movement functions. If `NULL`
 ##'     (default), the function [get.sim.funcs] is used.
+##' @param boundary.grid optional; allows to provide a list of class momo.grid
+##'     with boundary effects. Default: `NULL`.
 ##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
 ##'
 ##' @return A data frame with simulate archival tags.
@@ -590,6 +592,7 @@ sim.atags <- function(grid,
                       knots.tax = NULL,
                       knots.dif = NULL,
                       funcs = NULL,
+                      boundary.grid = NULL,
                       verbose = TRUE){
 
     flag.env <- ifelse(is.null(env), FALSE, TRUE)
@@ -601,7 +604,7 @@ sim.atags <- function(grid,
     ## Dimensions
     if(is.null(trange) && is.null(env)){
         trange <- c(0,1)
-    }else if(!is.null(env)){
+    }else if(is.null(trange) && !is.null(env)){
         if(!is.null(attributes(env[[1]])$dimnames[[3]])){
             ## stop("Implement to simulate tags from dates in env, but dates could have any format.")
             trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
@@ -633,9 +636,12 @@ sim.atags <- function(grid,
                            knots.tax = knots.tax,
                            knots.dif = knots.dif,
                            trange = trange,
+                           boundary.grid = boundary.grid,
                            dt = dt)
+
     conf <- def.conf(dat)
 
+    conf$ienvS$tax <- matrix(c(1,2), byrow = TRUE, 3, ncol(conf$ienvS$tax))
 
     ## Parameters
     par <- get.sim.par(par)
@@ -677,7 +683,20 @@ sim.atags <- function(grid,
                 move <- move * funcs$bound(xy, t)
             }
             ## Move
-            xy <- xy + move
+            xy.new <- xy + move
+            if(conf$use.boundaries){
+                if(all(!is.na(xy.new)) &&
+                   !is.na(funcs$bound(xy.new, t)) &&
+                   funcs$bound(xy.new, t) <= 0){
+                    xy.new <- xy + (-1 * move)
+                    ## browser()
+                    ## xy
+                    ## points(xy[1,1], xy[1,2], col = 3)
+                    ## points(xy[1,1]+move[1,2], xy[1,2]+move[1,2], col = 2)
+                    ## points(xy.new[1,1], xy.new[1,2], col = 6)
+                }
+            }
+            xy <- xy.new
             if(flag.effort){
                 FF <- funcs$fish.mort(xy, t)
                 M <- funcs$nat.mort(xy, t)

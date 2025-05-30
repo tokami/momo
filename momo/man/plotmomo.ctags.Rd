@@ -15,6 +15,7 @@ plotmomo.ctags(
   xlab = "x",
   ylab = "y",
   bg = NULL,
+  col = adjustcolor("grey60", 0.4),
   ...
 )
 }
@@ -46,6 +47,8 @@ are added to existing graphical window. Default: \code{FALSE}.}
 
 \item{bg}{background color of the graphical window. By default (\code{NULL}),
 background is transparent.}
+
+\item{col}{Color of arrows. Default: \code{adjustcolor("grey60",0.4)}.}
 
 \item{...}{additional arguments for the function \link{plot}.}
 }

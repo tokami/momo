@@ -8,6 +8,7 @@ plotmomo.grid(
   x,
   main = "Grid",
   labels = TRUE,
+  plot.grid = TRUE,
   plot.land = FALSE,
   keep.gpar = FALSE,
   xlab = "x",
@@ -22,6 +23,8 @@ plotmomo.grid(
 \item{main}{a main title for the plot. Default: "Grid".}
 
 \item{labels}{logical; If \code{TRUE} (default), plot numbers in cells.}
+
+\item{plot.grid}{logical; If \code{TRUE} (default), grid is plotted.}
 
 \item{plot.land}{logical; If \code{TRUE}, plot land masses using the function
 \link[maps:map]{maps::map}. Default: \code{FALSE}.}

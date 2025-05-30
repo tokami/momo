@@ -93,8 +93,10 @@ nll <- function(par, dat){
 
     if(dat$use.boundaries){
         bound <- habi.light(dat$liv.bound,
-                            dat$xranges + c(-1,1) * dat$dxdy[1],
-                            dat$yranges + c(-1,1) * dat$dxdy[2],
+                            dat$boundary.xrange,
+                            dat$boundary.yrange,
+                            ## dat$xranges + c(-1,1) * dat$dxdy[1],
+                            ## dat$yranges + c(-1,1) * dat$dxdy[2],
                             dat$ibound, dat$time.cont)
     }
 
@@ -156,15 +158,18 @@ nll <- function(par, dat){
                         devs <- sigmaPred - RTMB::matrix(mxy[t+1,], nrow(sigmaPred), ncol(sigmaPred))
                         dif <- I2 * exp(habitat.dif$val(mxy[t,,drop = FALSE],
                                                              ts[t]))
-                        if(dat$use.boundaries){
-                            dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
+                        ## }
                         P <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dat$ddt
                         vxy[t+1,] <- diag(P)
                     }else{
                         ## classic KF
                         move <- move0
                         if(dat$use.taxis){
+                            ## browser()
+                            ## plotmomo.env(env[[1]], 1:2, keep.gpar = TRUE, plot.land = TRUE)
+                            ## points(mxy[1,1], mxy[1,2])
                             move <- move + habitat.tax$grad(mxy[t,,drop = FALSE],
                                                             ts[t]) * dat$ddt
                         }
@@ -178,9 +183,9 @@ nll <- function(par, dat){
                             move <- move * bound$val(mxy[t,,drop = FALSE], ts[t])
                         }
                         dif <- exp(habitat.dif$val(mxy[t,,drop = FALSE], ts[t]))
-                        if(dat$use.boundaries){
-                            dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     dif <- dif * bound$val(mxy[t,,drop = FALSE], ts[t])
+                        ## }
                         mxy[t+1,] <- mxy[t,] + move
                         vxy[t+1,] <- vxy[t,] + 2 * dif * dat$ddt
                     }
@@ -217,6 +222,24 @@ nll <- function(par, dat){
                                                            include.lowest = TRUE)))
                             mxy.t <- mxy[idx.t+1,]
                             vxy.t <- vxy[idx.t+1,]
+
+                            if(dat$dbg > 0){
+                                writeLines(paste0("tag: ", idx[j],
+                                                  " - t0: ",
+                                                  round(dat$ctags$t0[idx[j]],3),
+                                                  " - x0: ",
+                                                  round(dat$ctags$x0[idx[j]],3),
+                                                  " - y0: ",
+                                                  round(dat$ctags$y0[idx[j]],3)
+                                                  ))
+                                print(" - loglik: ")
+                                print(as.numeric(loglik.ctags))
+                                print(" -  x: ")
+                                print(as.numeric(dnorm(x1, mxy.t[1], sqrt(vxy.t[1]), TRUE)))
+                                print(" - y: ")
+                                print(as.numeric(dnorm(y1, mxy.t[2], sqrt(vxy.t[2]), TRUE)))
+                            }
+
 
                             ## Likelihood
                             loglik.ctags <- loglik.ctags +
@@ -328,9 +351,9 @@ nll <- function(par, dat){
                             predxy <- ut$Wm %*% t(sigmaPred)
                             devs <- sigmaPred - RTMB::matrix(predxy, nrow(sigmaPred), ncol(sigmaPred))
                             dif <- I2 * exp(habitat.dif$val(lastxy, tag[r,1]))
-                            if(dat$use.boundaries){
-                                dif <- dif * bound$val(lastxy, tag[r,1])
-                            }
+                            ## if(dat$use.boundaries){
+                            ##     dif <- dif * bound$val(lastxy, tag[r,1])
+                            ## }
                             PP <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dt
                             if(r == nrows.tag){
                                 F <- PP
@@ -356,9 +379,9 @@ nll <- function(par, dat){
                                 move <- move * bound$val(lastxy, tag[r,1])
                             }
                             dif <- exp(habitat.dif$val(lastxy, tag[r,1]))
-                            if(dat$use.boundaries){
-                                dif <- dif * bound$val(lastxy, tag[r,1])
-                            }
+                            ## if(dat$use.boundaries){
+                            ##     dif <- dif * bound$val(lastxy, tag[r,1])
+                            ## }
                             predxy <- lastxy + move
                             PP <- P + 2 * dif * dt
                             if(r == nrows.tag){
@@ -481,9 +504,9 @@ nll <- function(par, dat){
                         predxy <- ut$Wm %*% t(sigmaPred)
                         devs <- sigmaPred - RTMB::matrix(predxy, nrow(sigmaPred), ncol(sigmaPred))
                         dif <- I2 * exp(habitat.dif$val(lastxy, ts[t]))
-                        if(dat$use.boundaries){
-                            dif <- dif * bound$val(lastxy, ts[t])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     dif <- dif * bound$val(lastxy, ts[t])
+                        ## }
                         PP <- devs %*% RTMB::diag(ut$Wc[1,]) %*% t(devs) + 2 * dif * dt
                         if(r == nrows.tag){
                             F <- PP
@@ -510,9 +533,9 @@ nll <- function(par, dat){
                             move <- move * bound$val(lastxy, ts[t])
                         }
                         dif <- exp(habitat.dif$val(lastxy, ts[t]))
-                        if(dat$use.boundaries){
-                            dif <- dif * bound$val(lastxy, ts[t])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     dif <- dif * bound$val(lastxy, ts[t])
+                        ## }
                         predxy <- lastxy + move
                         PP <- P + 2 * dif * dt
                     }
@@ -633,10 +656,10 @@ nll <- function(par, dat){
                         ## Diffusion rate --------------------
                         hD <- exp(habitat.dif$val(dat$xygrid,
                                                   dat$time.cont[itabs])) * dt.ctags[t-1]
-                        if(dat$use.boundaries){
-                            hD <- hD * bound$val(dat$xygrid,
-                                                 dat$time.cont[itabs])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     hD <- hD * bound$val(dat$xygrid,
+                        ##                          dat$time.cont[itabs])
+                        ## }
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-
@@ -857,10 +880,10 @@ nll <- function(par, dat){
                         ## Diffusion rate --------------------
                         hD <- exp(habitat.dif$val(dat$xygrid,
                                                   dat$time.cont[itabs])) * dt.atags
-                        if(dat$use.boundaries){
-                            hD <- hD * bound$val(dat$xygrid,
-                                                 dat$time.cont[itabs])
-                        }
+                        ## if(dat$use.boundaries){
+                        ##     hD <- hD * bound$val(dat$xygrid,
+                        ##                          dat$time.cont[itabs])
+                        ## }
                         for(j in 2:ncol(dat$nextTo)){
                             ind <- which(!is.na(dat$nextTo[,j]))
                             Dstar[cbind(ind, dat$nextTo[ind,j])] <-

@@ -413,6 +413,8 @@ prep.effort <- function(x,
 ##'     set to 0.1.
 ##' @param time.cont optional; allows to provide a vector representing the model
 ##'     time. Default: `NULL`.
+##' @param boundary.grid optional; allows to provide a list of class momo.grid with
+##'     boundary effects. Default: `NULL`.
 ##' @param verbose if `TRUE`, print information to console. Default: `TRUE`.
 ##'
 ##' @return A list with all data required to fit \emph{momo}.
@@ -454,6 +456,7 @@ setup.momo.data <- function(grid,
                             trange = NULL,
                             dt = NULL,
                             time.cont = NULL,
+                            boundary.grid = NULL,
                             verbose = TRUE){
 
     res <- list()
@@ -504,8 +507,10 @@ setup.momo.data <- function(grid,
     ## Env
     res$env <- env
     if(!is.null(env)){
-        res$xranges <- matrix(res$xrange, nrow = length(env), ncol = 2, byrow = TRUE)
-        res$yranges <- matrix(res$yrange, nrow = length(env), ncol = 2, byrow = TRUE)
+        res$xranges <- do.call(rbind, lapply(env, function(x) range(as.numeric(attributes(x)$dimnames[[1]]))))
+        res$yranges <- do.call(rbind, lapply(env, function(x) range(as.numeric(attributes(x)$dimnames[[2]]))))
+        ## res$xranges <- matrix(res$xrange, nrow = length(env), ncol = 2, byrow = TRUE)
+        ## res$yranges <- matrix(res$yrange, nrow = length(env), ncol = 2, byrow = TRUE)
     }
 
     ## ctags
@@ -730,6 +735,13 @@ setup.momo.data <- function(grid,
                                          quantile(as.numeric(x),
                                                   c(0.05, 0.5, 0.95), na.rm = TRUE))
         }
+    }
+
+    if(!is.null(boundary.grid)){
+        res$boundaries <- boundary.grid$celltable
+        res$boundary.xrange <- attributes(boundary.grid)$xrange
+        res$boundary.yrange <- attributes(boundary.grid)$yrange
+        res$boundary.dxdy <- attributes(boundary.grid)$dxdy
     }
 
 
