@@ -57,6 +57,7 @@ get.liv <- function(FIELDS, XR, YR) {
                                                        xlim = XR[i,],
                                                        ylim = YR[i,],
                                                        R = 1)))
+
     LIVdy <- lapply(1:nenv,
                     function(i)
                         lapply(1:dim(FIELDS[[i]])[3],

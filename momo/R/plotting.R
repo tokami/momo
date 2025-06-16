@@ -1007,8 +1007,6 @@ plotmomo.pref.spatial <- function(x,
         prefup <- matrix(prefup, nrow = nrow(env.pred),
                          ncol = ncol(env.pred))
 
-        get.true.pref <- momo:::poly.fun(as.numeric(knots),
-                                         as.numeric(par.est))
 
         if(!keep.gpar){
             par(mfrow = n2mfrow(length(select), asp))
@@ -1039,6 +1037,9 @@ plotmomo.pref.spatial <- function(x,
 
             isna <- x$dat$celltable[cbind(indix,indiy)]
             envi[is.na(isna)] <- NA
+
+            get.true.pref <- momo:::poly.fun(as.numeric(knots[,i]),
+                                             as.numeric(par.est[,i]))
 
             pref.pred <- get.true.pref(as.numeric(envi))
 

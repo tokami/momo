@@ -641,10 +641,18 @@ sim.atags <- function(grid,
 
     conf <- def.conf(dat)
 
-    conf$ienvS$tax <- matrix(c(1,2), byrow = TRUE, 3, ncol(conf$ienvS$tax))
+    ## Where is this coming from?
+    ## conf$ienvS$tax <- matrix(c(1,2), byrow = TRUE, 3, ncol(conf$ienvS$tax))
+
+    ## needed for montagus' harrier
+    ## conf$ienvS$tax <- matrix(rep(c(1,2), length.out = ncol(conf$ienvS$tax)),
+    ##                          byrow = TRUE, 1, ncol(conf$ienvS$tax))
 
     ## Parameters
     par <- get.sim.par(par)
+
+    funcs$tax(matrix(c(1,20),1,2), 2021)
+    plotmomo.env(res)
 
     ## Functions
     funcs <- get.sim.funcs(funcs, dat, conf, env, par)

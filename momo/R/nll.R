@@ -463,7 +463,7 @@ nll <- function(par, dat){
 
                 tag <- dat$stags[[r]]
                 resid.stags.fine[[r]] <- matrix(NA_real_, nrow(tag), 3)
-                lastxy <- as.matrix(tag[1,2:3])
+                lastxy <- as.matrix(tag[1,2:3,drop = FALSE])
                 ts <- seq(tag$t[1], tag$t[nrow(tag)], by = dat$ddt)
                 nts <- length(ts)
                 dt <- dat$ddt
@@ -522,7 +522,6 @@ nll <- function(par, dat){
                         ## classic KF
                         move <- move0
                         if(dat$use.taxis){
-                            browser()
                             move <- move + habitat.tax$grad(lastxy, ts[t]) * dt
                         }
                         if(dat$use.advection){

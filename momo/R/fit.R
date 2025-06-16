@@ -147,8 +147,11 @@ fit.momo <- function(dat,
     ## obj$fn(obj$par-2)
     ## obj$gr(obj$par-2)
 
-    lower2 <- rep(-1e10, length(obj$par))
-    upper2 <- rep(1e10, length(obj$par)) ## upper boundary needed for diffusion!
+    ## lower2 <- rep(-1e10, length(obj$par))
+    ## upper2 <- rep(1e10, length(obj$par)) ## upper boundary needed for diffusion!
+    ## TODO: but not for all parameters! improve
+    lower2 <- rep(-Inf, length(obj$par))
+    upper2 <- rep(Inf, length(obj$par))
     for(nn in names(lower)) lower2[names(obj$par) == nn] <- lower[[nn]]
     for(nn in names(upper)) upper2[names(obj$par) == nn] <- upper[[nn]]
 
