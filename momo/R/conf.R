@@ -78,6 +78,8 @@ def.conf <- function(dat){
 
         ienv.tax <- do.call(rbind, ienv.tax.list)
 
+        ## print(rbind(dat$time.cont, ienv.tax))
+
         if(dat$const.dif){
             ienv.dif <- matrix(1, nenv, length(dat$time.cont))
         }else{

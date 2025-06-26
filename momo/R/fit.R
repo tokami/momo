@@ -99,26 +99,28 @@ fit.momo <- function(dat,
 
     if(verbose) writeLines("Building the model, that can take a few minutes.")
 
-
     ## pre-compute to speed up MakeADFun
-    liv.all <- get.liv(dat$env, dat$xranges, dat$yranges)
+    liv.all <- get.liv(dat$env)
+
     liv.tax <- liv.all
     liv.dif <- liv.all
     liv.adv.x <- liv.all
     liv.adv.y <- liv.all
 
     if(tmb.all$use.effort){
-        liv.effort <- get.liv(dat$effort, dat$xranges.eff, dat$yranges.eff)
+        liv.effort <- get.liv(dat$effort) ## , dat$xranges.eff, dat$yranges.eff)
     }else{
         liv.effort <- NULL
     }
 
     if(tmb.all$use.boundaries){
+        ## TODO: make sure there are dimnames in this!
+        browser()
         liv.bound <- get.liv(list(array(dat$boundaries,
                                    dim = c(nrow(dat$boundaries),
-                                           ncol(dat$boundaries),1))),
-                             matrix(dat$boundary.xrange,1,2),
-                             matrix(dat$boundary.yrange,1,2))
+                                           ncol(dat$boundaries),1))))
+                             ## matrix(dat$boundary.xrange,1,2),
+                             ## matrix(dat$boundary.yrange,1,2))
         ## this is for buffer zone around normal grid:
         ## dat$xranges + c(-1,1) * dat$dxdy[1],
         ## dat$yranges + c(-1,1) * dat$dxdy[2])

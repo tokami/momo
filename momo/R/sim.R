@@ -1,3 +1,21 @@
+##' Rescale an env field
+##'
+##' @description Rescale an env field
+##'
+##' @param env field
+##' @param zrange range
+##' @param i NULL
+##'
+##' @return Rescaled env field
+rescale.env <- function(env, zrange, i = NULL){
+    env.range <- range(unlist(env), na.rm = TRUE)
+    envi <- if(!is.null(i)) env[[i]] else env
+    res <- (envi - env.range[1]) /
+        (env.range[2] - env.range[1]) * (zrange[2] - zrange[1]) + zrange[1]
+    return(res)
+}
+
+
 ##' Simulate a simple data set
 ##'
 ##' @description `sim.momo` allows to quickly simulate all data sets and
@@ -114,13 +132,14 @@ sim.momo <- function(fit = NULL,
                    matern = matern,
                    diagonal = diagonal)
 
+    attributes(env)$dimnames[[3]] <- as.character(seq(trange[1], trange[2], length.out = nt))
 
     par.out <- list(alpha = array(sim.alpha(0.01, 0.2, n.alpha),  ## 0.01-0.04
                               dim = c(n.alpha,1,1)))
     if(const.dif){
-        par.out$beta <- array(log(runif(1, 0.005, 0.05)), dim = c(1,1,1)) ## 0.02 - 0.1
+        par.out$beta <- array(log(runif(1, 0.005, 0.08)), dim = c(1,1,1)) ## 0.02 - 0.1
     }else{
-        par.out$beta <- array(log(runif(3, 0.005, 0.05)), dim = c(3,1,1))
+        par.out$beta <- array(log(runif(3, 0.005, 0.08)), dim = c(3,1,1))
     }
     par.out$logSdObsATS <- log(runif(1, 0.005, 0.05))
     par.out$logSdObsSTS <- log(runif(1, 0.005, 0.05))
@@ -272,14 +291,6 @@ sim.env <- function(grid,
 
     if(is.null(rho_s)){
         rho_s <- mean(attr(grid,"dxdy")) / 0.125
-    }
-
-    rescale.env <- function(env, zrange, i = NULL){
-        env.range <- range(unlist(env), na.rm = TRUE)
-        envi <- if(!is.null(i)) env[[i]] else env
-        res <- (envi - env.range[1]) /
-            (env.range[2] - env.range[1]) * (zrange[2] - zrange[1]) + zrange[1]
-        return(res)
     }
 
     get.env.one <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
@@ -641,6 +652,7 @@ sim.atags <- function(grid,
 
     conf <- def.conf(dat)
 
+
     ## Where is this coming from?
     ## conf$ienvS$tax <- matrix(c(1,2), byrow = TRUE, 3, ncol(conf$ienvS$tax))
 
@@ -650,9 +662,6 @@ sim.atags <- function(grid,
 
     ## Parameters
     par <- get.sim.par(par)
-
-    funcs$tax(matrix(c(1,20),1,2), 2021)
-    plotmomo.env(res)
 
     ## Functions
     funcs <- get.sim.funcs(funcs, dat, conf, env, par)

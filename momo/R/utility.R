@@ -569,7 +569,7 @@ poly.fun <- function(xp, yp, deriv = FALSE, adv = FALSE){
                 }else{
                   j <- 1:(n-1)
                   v <- outer(x, j - 1, "^")
-                  as.vector(v %*% (j * alpha[-1]))
+                    as.vector(v %*% (j * alpha[-1]))
                 }
                 ## as.vector(alpha[2] +
                 ##           sum(alpha[-c(1:2)] *
@@ -650,28 +650,29 @@ get.env.funcs <- function(dat, conf, par){
         do.call(rbind, lapply(dat$env, function(x)
         diff(as.numeric(attributes(x)$dimnames[[2]]))[1])))
 
-    liv.all <- get.liv(dat$env,
-                       dat$xranges + c(1,-1) * dxdy[,1]/2,
-                       dat$yranges + c(1,-1) * dxdy[,2]/2)
+    liv.all <- get.liv(dat$env)
+                       ## dat$xranges + c(1,-1) * dxdy[,1]/2,
+                       ## dat$yranges + c(1,-1) * dxdy[,2]/2)
     liv.tax <- liv.all
     liv.dif <- liv.all
     liv.adv.x <- liv.all
     liv.adv.y <- liv.all
 
     if(conf$use.effort){
-        liv.effort <- get.liv(dat$effort, dat$xranges.eff, dat$yranges.eff)
+        liv.effort <- get.liv(dat$effort) ## , dat$xranges.eff, dat$yranges.eff)
     }else{
         liv.effort <- NULL
     }
 
     if(conf$use.boundaries){
+        browser()
         liv.bound <- get.liv(list(array(dat$boundaries,
                                    dim = c(nrow(dat$boundaries),
-                                           ncol(dat$boundaries),1))),
-                             matrix(dat$boundary.xrange + c(1,-1) *
-                                    dat$boundary.dxdy[1]/2,1,2),
-                             matrix(dat$boundary.yrange+ c(1,-1) *
-                                    dat$boundary.dxdy[2]/2,1,2))
+                                           ncol(dat$boundaries),1))))
+                             ## matrix(dat$boundary.xrange + c(1,-1) *
+                             ##        dat$boundary.dxdy[1]/2,1,2),
+                             ## matrix(dat$boundary.yrange+ c(1,-1) *
+                             ##        dat$boundary.dxdy[2]/2,1,2))
         liv.bound
     }else{
         liv.bound <- NULL

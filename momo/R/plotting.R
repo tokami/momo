@@ -182,7 +182,9 @@ plotmomo.env <- function(x,
         ##     usr <- par("usr")
         ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
         ## }
-        image(x, y, env[,,i], col = terrain.colors(100), add = TRUE)
+        image(x, y, env[,,i],
+              col = terrain.colors(100),
+              add = TRUE)
         if(plot.land){
             plot.land(xlims, ylims,
                       shift = ifelse(max(xlims) > 180, TRUE, FALSE))
@@ -802,10 +804,10 @@ plotmomo.pref <- function(x,
 
             if(length(select) > 1){
                 points(knots[,i], par.est[,i],
-                       pch = 16, cex = 1.2, col = cols[i])
+                       pch = 16, cex = 1.2) ##, col = cols[i])
             }else{
                 points(knots, par.est,
-                       pch = 16, cex = 1.2, col = cols[i])
+                       pch = 16, cex = 1.2) ##, col = cols[i])
             }
             lines(env.pred[,i], pref[,i], col = cols[i], lwd = lwd)
 
@@ -827,11 +829,16 @@ plotmomo.pref <- function(x,
 
         par <- get.sim.par(par)
         env <- check.that.list(env)
+
+        trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
+        if(diff(trange) == 0) trange[2] <- trange[1] + 1
+
         dat <- setup.momo.data(grid,
                                env,
-                               trange = c(0,
-                                          max(sapply(env,
-                                                     function(x) dim(x)[3]))),
+                               trange = trange,
+                               ## trange = c(0,
+                               ##            max(sapply(env,
+                               ##                       function(x) dim(x)[3]))),
                                knots.tax = dat$knots.tax,
                                knots.dif = dat$knots.dif)
         conf <- def.conf(dat)
@@ -878,11 +885,11 @@ plotmomo.pref <- function(x,
             ## }
         }
         lines(env.pred[,i], pref,
-              col = col,
+              col = cols[i],
               lwd = lwd)
         points(knots, par,
-               col = col,
-               pch = 15, cex = 1.2)
+               ## col = col,
+               pch = 16, cex = 1.5)
         if(!add) box(lwd = 1.5)
     }
 }
@@ -1074,6 +1081,65 @@ plotmomo.pref.spatial <- function(x,
             box(lwd=1.5)
 
         }
+
+    }else if(inherits(x, "momo.sim")){
+
+        grid <- x$grid
+        env <- x$env
+        par <- x$par
+        dat <- x$dat
+        knots.tax <- dat$knots.tax
+        funcs <- NULL
+
+        if(is.null(par)) stop("No parameters provided! Use par = list() to specify parameters for taxis.")
+
+        if(!add){
+            if(!is.null(bg)){
+                par(bg = bg)
+            }
+            plot(NA,
+                 xlim = attr(grid,"xrange"),
+                 ylim = attr(grid,"yrange"),
+                 xlab = xlab,
+                 ylab = ylab,
+                 ...)
+            ## if(!is.null(bg)){
+            ##     usr <- par("usr")
+            ##     rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+            ## }
+        }
+
+        par <- get.sim.par(par)
+        env <- check.that.list(env)
+        dat <- setup.momo.data(grid, env, trange = c(0,
+                                                     max(sapply(env,
+                                                                function(x) dim(x)[3]))))
+        conf <- def.conf(dat)
+        funcs <- get.sim.funcs(funcs, dat, conf, env, par)
+
+        ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
+        ##     funcs$tax(xy,NA)))
+
+        get.true.pref <- momo:::poly.fun(as.numeric(knots.tax),
+                                         as.numeric(x$par.sim$alpha))
+
+        i = 1
+        pref.pred <- get.true.pref(as.numeric(env[[i]]))
+
+        if(plot.land){
+            plot.land(attr(grid,"xrange"), attr(grid,"yrange"),
+                      shift = ifelse(max(attr(grid,"xrange")) > 180, TRUE, FALSE))
+        }
+
+        image(
+            matrix(pref.pred, attr(grid, "nx"),
+                   attr(grid,"ny")),
+            xlim = attr(grid,"xrange"),
+            ylim = attr(grid,"yrange"),
+            add = TRUE)
+
+        if(!add) box(lwd = 1.5)
+
 
     }else{
 
@@ -1278,8 +1344,10 @@ plotmomo.taxis <- function(x,
             plot(NA,
                  xlim = attr(grid,"xrange"),
                  ylim = attr(grid,"yrange"),
-                 xlab = "x",
-                 ylab = "y",
+                 xlab = xlab,
+                 ylab = ylab,
+                 xaxt = xaxt,
+                 yaxt = yaxt,
                  main = main,
                  ...)
             ## if(!is.null(bg)){
@@ -1288,12 +1356,22 @@ plotmomo.taxis <- function(x,
             ## }
         }
 
+        if(plot.land){
+            plot.land(x$dat$xrange, x$dat$yrange,
+                      shift = ifelse(max(x$dat$xrange) > 180, TRUE, FALSE))
+        }
+
         par <- get.sim.par(par)
         env <- check.that.list(env)
+
+        trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
+        if(diff(trange) == 0) trange[2] <- trange[1] + 1
+
         dat <- setup.momo.data(grid, env,
-                               trange = c(0,
-                                          max(sapply(env,
-                                                     function(x) dim(x)[3]))),
+                               trange = trange,
+                               ## trange = c(0,
+                               ##            max(sapply(env,
+                               ##                       function(x) dim(x)[3]))),
                                knots.tax = dat$knots.tax,
                                knots.dif = dat$knots.dif)
 
@@ -1305,27 +1383,53 @@ plotmomo.taxis <- function(x,
         ## uv.true <- t(apply(x$dat$xygrid, 1, function(xy)
         ##     funcs$tax(xy,NA)))
         hTdx.true <- sapply(dat$time.cont.pred,
-                            function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[1]))
+                            function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(t(x),t)[1]))
         hTdy.true <- sapply(dat$time.cont.pred,
-                            function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(x,t)[2]))
-        uv.true <- matrix(NA, nrow(dat$xygrid.pred), 2)
-        uv.true[,1] <- rowMeans(hTdx.true)
-        uv.true[,2] <- rowMeans(hTdy.true)
-        arrows(dat$xygrid.pred[,1],
-               dat$xygrid.pred[,2],
-               dat$xygrid.pred[,1]+uv.true[,1] * cor,
-               dat$xygrid.pred[,2]+uv.true[,2] * cor,
-               ## col = momo.cols(1, alpha, type = "true"),
-               col = col,
-               lwd = lwd,
-               length = .1)
-        ## uv.true <- t(apply(x$xygrid, 1, function(xy)
-        ##     taxis.fun(xy,1)))
-        ## arrows(x$xygrid[,1],
-        ##        x$xygrid[,2],
-        ##        x$xygrid[,1]+uv.true[,1],
-        ##        x$xygrid[,2]+uv.true[,2],
-        ##        length=.1)
+                            function(t) apply(dat$xygrid.pred, 1, function(x) funcs$tax(t(x),t)[2]))
+
+        if(average){
+            if(length(select) > 1){
+                tax.x <- apply(hTdx.true[,select], 1, mean, na.rm = TRUE)
+                tax.y <- apply(hTdy.true[,select], 1, mean, na.rm = TRUE)
+            }else{
+                tax.x <- hTdx.true[,select]
+                tax.y <- hTdy.true[,select]
+            }
+        }else{
+            tax.x <- hTdx.true[,select]
+            tax.y <- hTdy.true[,select]
+        }
+
+
+        if(!inherits(tax.x, "matrix")){
+            tax.x <- as.matrix(tax.x)
+            tax.y <- as.matrix(tax.y)
+        }
+
+
+        ## uv.true <- matrix(NA, nrow(dat$xygrid.pred), 2)
+        ## uv.true[,1] <- rowMeans(hTdx.true)
+        ## uv.true[,2] <- rowMeans(hTdy.true)
+
+        for(i in 1:ncol(tax.x)){
+
+            arrows(dat$xygrid.pred[,1],
+                   dat$xygrid.pred[,2],
+                   dat$xygrid.pred[,1] + tax.x[,i] * cor,
+                   dat$xygrid.pred[,2] + tax.y[,i] * cor,
+                   ## col = momo.cols(1, alpha, type = "true"),
+                   col = col,
+                   lwd = lwd,
+                   length = .1)
+            ## uv.true <- t(apply(x$xygrid, 1, function(xy)
+            ##     taxis.fun(xy,1)))
+            ## arrows(x$xygrid[,1],
+            ##        x$xygrid[,2],
+            ##        x$xygrid[,1]+uv.true[,1],
+            ##        x$xygrid[,2]+uv.true[,2],
+            ##        length=.1)
+
+        }
 
         if(!add) box(lwd = 1.5)
     }
@@ -1453,10 +1557,15 @@ plotmomo.dif <- function(x,
 
         par <- get.sim.par(par)
         env <- check.that.list(env)
+
+        trange <- range(as.numeric(attributes(env[[1]])$dimnames[[3]]))
+        if(diff(trange) == 0) trange[2] <- trange[1] + 1
+
         dat <- setup.momo.data(grid, env,
-                               trange = c(0,
-                                          max(sapply(env,
-                                                     function(x) dim(x)[3]))),
+                               trange = trange,
+                               ## trange = c(0,
+                               ##            max(sapply(env,
+                               ##                       function(x) dim(x)[3]))),
                                knots.tax = dat$knots.tax,
                                knots.dif = dat$knots.dif)
 
@@ -1468,7 +1577,7 @@ plotmomo.dif <- function(x,
 
         D.true <- sapply(dat$time.cont.pred,
                          function(t) apply(dat$xygrid.pred, 1,
-                                           function(x) exp(funcs$dif(x,t)[1])))
+                                           function(x) exp(funcs$dif(as.matrix(x),t)[1])))
 
         if(is.null(cor)){
             cor <- min(diff(dat$xrange)/2,

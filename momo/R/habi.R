@@ -1,16 +1,20 @@
 
 
 
-get.liv <- function(FIELDS, XR, YR) {
+get.liv <- function(FIELDS) {
 
     nenv <- length(FIELDS)
+
+    ## NEW: allows different dimensions for each env grid, but requires dimnames!
+    XR <- t(sapply(FIELDS, function(x) range(as.numeric(attributes(x)$dimnames[[1]]))))
+    YR <- t(sapply(FIELDS, function(x) range(as.numeric(attributes(x)$dimnames[[2]]))))
 
     dxfield <- function(field, xr) {
         nr <- nrow(field)
         nc <- ncol(field)
         ret <- matrix(NA_real_, nr, nc)
 
-        onedx <- (xr[2] - xr[1]) / (nr - 1) ## as xr cell centers
+        onedx <- (xr[2] - xr[1]) / nr ## (nr - 1) ## as xr cell centers ## TODO: CHECK:
 
         for (i in 1:nr) {
             for (j in 1:nc) {
@@ -39,6 +43,7 @@ get.liv <- function(FIELDS, XR, YR) {
     dyfield <- function(field, yr){
         t(dxfield(t(field), yr))
     }
+
 
     LIV <- lapply(1:nenv,
                   function(i)
