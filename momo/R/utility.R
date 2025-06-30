@@ -192,6 +192,70 @@ create.grid <- function(xrange = c(0,1),
 
 
 
+##' Add buffer
+##'
+##' @description Add a buffer zone around a grid of class `momo.grid`.
+##'
+##' @param grid Grid of class `momo.grid` as returned by the function
+##'     [create.grid].
+##'
+##' @return A list of class `momo.grid` with a information about the spatial
+##'     domain and grid.
+##'
+add.buffer <- function(grid){
+
+    gridin <- grid
+
+    dxdy <- attr(gridin, "dxdy")
+    xrange <- attributes(grid)$xrange + c(-dxdy[1], dxdy[1])
+    yrange <- attributes(grid)$yrange + c(-dxdy[2], dxdy[2])
+    xgr <- c(attributes(grid)$xgr[1] - dxdy[1],
+             attributes(grid)$xgr,
+             attributes(grid)$xgr[length(attributes(grid)$xgr)] +
+                             dxdy[1])
+    ygr <- c(attributes(grid)$ygr[1] - dxdy[2],
+             attributes(grid)$ygr,
+             attributes(grid)$ygr[length(attributes(grid)$ygr)] +
+                             dxdy[2])
+    xcen <- c(attributes(grid)$xcen[1] - dxdy[1],
+             attributes(grid)$xcen,
+             attributes(grid)$xcen[length(attributes(grid)$xcen)] +
+                             dxdy[1])
+    ycen <- c(attributes(grid)$ycen[1] - dxdy[2],
+             attributes(grid)$ycen,
+             attributes(grid)$ycen[length(attributes(grid)$ycen)] +
+                             dxdy[2])
+    nx <- attributes(grid)$nx + 2
+    ny <- attributes(grid)$ny + 2
+
+    ## TODO: does not account for islands
+    xygrid <- expand.grid(x = xcen, y = ycen)
+    igrid <- expand.grid(idx = 1:length(xcen), idy = 1:length(ycen))
+    celltable <- matrix(rep(NA, ((length(xgr)-1)*(length(ygr)-1))),
+                        nrow = (length(xgr)-1))
+    celltable[cbind(igrid$idx,igrid$idy)] <- 1:nrow(igrid)
+
+    grid <- list(xygrid = xygrid,
+                 igrid = igrid,
+                 celltable = celltable)
+    attributes(grid) <- list(names = attributes(grid)$names,
+                             xrange = xrange,
+                             yrange = yrange,
+                             dxdy = dxdy,
+                             xgr = xgr,
+                             ygr = ygr,
+                             xcen = xcen,
+                             ycen = ycen,
+                             nx = length(xcen),
+                             ny = length(ycen))
+
+    ## Return
+    grid <- add.class(grid, "momo.grid")
+    return(grid)
+}
+
+
+
 ##' Get dimensions from tagging data
 ##'
 ##' @description `get.dim` extracts the time and spatial dimensions from tagging

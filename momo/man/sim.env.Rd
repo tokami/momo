@@ -16,6 +16,7 @@ sim.env(
   zrange = c(20, 28),
   matern = TRUE,
   diagonal = FALSE,
+  sim.buffer = TRUE,
   verbose = TRUE
 )
 }
@@ -45,6 +46,9 @@ used for simulation of environmental fields.}
 
 \item{diagonal}{logical; if \code{TRUE}, diagonal neighbours are considered in
 neighbouring structure. Default: \code{FALSE}.}
+
+\item{sim.buffer}{logical; if \code{TRUE} extends the provided grid so that the
+2D interpolation function does not return \code{NaN} close to the boundary.}
 
 \item{verbose}{If \code{TRUE}, print information to console. Default: \code{TRUE}.}
 }

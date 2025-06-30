@@ -130,7 +130,8 @@ sim.momo <- function(fit = NULL,
                    rho_s = rho_s, delta = delta,
                    zrange = zrange,
                    matern = matern,
-                   diagonal = diagonal)
+                   diagonal = diagonal,
+                   sim.buffer = TRUE)
 
     attributes(env)$dimnames[[3]] <- as.character(seq(trange[1], trange[2], length.out = nt))
 
@@ -265,6 +266,8 @@ sim.momo <- function(fit = NULL,
 ##'     used for simulation of environmental fields.
 ##' @param diagonal logical; if `TRUE`, diagonal neighbours are considered in
 ##'     neighbouring structure. Default: `FALSE`.
+##' @param sim.buffer logical; if `TRUE` extends the provided grid so that the
+##'     2D interpolation function does not return `NaN` close to the boundary.
 ##' @param verbose If `TRUE`, print information to console. Default: `TRUE`.
 ##'
 ##' @return A list with simulated environmental fields.
@@ -284,16 +287,18 @@ sim.env <- function(grid,
                     zrange = c(20,28),
                     matern = TRUE,
                     diagonal = FALSE,
+                    sim.buffer = TRUE,
                     verbose = TRUE){
 
-    nx <- nrow(grid$celltable)
-    ny <- ncol(grid$celltable)
+    if(sim.buffer){
+        grid <- add.buffer(grid)
+    }
 
     if(is.null(rho_s)){
         rho_s <- mean(attr(grid,"dxdy")) / 0.125
     }
 
-    get.env.one <- function(nx, ny, sd, h, nu, rho, delta, matern, diagonal){
+    get.env.one <- function(grid, sd, h, nu, rho, delta, matern, diagonal){
 
         ## Generate a random field
         rf <- rnorm(nrow(grid$xygrid), 0, sd = sd)
@@ -302,18 +307,20 @@ sim.env <- function(grid,
         Q <- get.precision.matrix(grid, h, nu, rho, delta, matern, diagonal)
         L <- chol(Q)
         S <- solve(L, rf)
-        rf.smooth <- matrix(NA, nrow = nx, ncol = ny)
+        rf.smooth <- matrix(NA,
+                            nrow = attr(grid,"nx"),
+                            ncol = attr(grid,"ny"))
         rf.smooth[!is.na(grid$celltable)] <- S
 
         return(rf.smooth)
     }
 
     env0 <- env <- vector("list", nt)
-    env0[[1]] <- get.env.one(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
+    env0[[1]] <- get.env.one(grid, sd, h, nu, rho_s, delta, matern, diagonal)
     if(nt > 1){
         for(i in 2:nt){
             env0[[i]] <- rho_t * env0[[i-1]] + sqrt(1 - rho_t^2) *
-                get.env.one(nx, ny, sd, h, nu, rho_s, delta, matern, diagonal)
+                get.env.one(grid, sd, h, nu, rho_s, delta, matern, diagonal)
         }
     }
 
