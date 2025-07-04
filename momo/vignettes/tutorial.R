@@ -51,9 +51,6 @@ plotmomo.env(env[,,1:4], plot.land = TRUE,
              xlab = "lon", ylab = "lat", bg = "white")
 
 ## ----eval=TRUE, echo=TRUE-----------------------------------------------------
-ctags <- ctags[sample(1:nrow(ctags),100),]
-
-## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 ## Combine and check data
 dat <- setup.momo.data(grid = grid,
                        env = env,

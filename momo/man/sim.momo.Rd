@@ -31,7 +31,7 @@ sim.momo(
   knots.dif = NULL,
   correct.peclet = FALSE,
   use.ctags = TRUE,
-  n.ctags = 500,
+  n.ctags = 2000,
   use.atags = TRUE,
   n.atags = 50,
   trange.rel = c(0, 0.2),

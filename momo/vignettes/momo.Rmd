@@ -63,11 +63,12 @@ library(momo)
 ```
 
 A data set containing all required information can quickly be created by the
-function `sim.momo`:
+function `sim.momo`. We reduce the number of simulated tags here to speed up the
+generation of the vignette.
 
 ```{r, eval = TRUE, echo = FALSE, fig.alt = ""}
 # Simulate a data set with tagging data
-sim <- sim.momo()
+sim <- sim.momo(n.ctags = 200, n.atags = 20)
 ```
 
 The main function to estimate movement paramters is `fit.momo`:

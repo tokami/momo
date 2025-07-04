@@ -43,7 +43,7 @@
 ##' @examples
 ##' data(skjepo)
 ##'
-##' fit <- fit.momo(skjepo)
+##' fit <- fit.momo(skjepo, do.sdreport = FALSE)
 ##'
 ##' @importFrom RTMB MakeADFun sdreport
 ##'

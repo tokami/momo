@@ -24,7 +24,7 @@ library(momo)
 
 ## ----eval = TRUE, echo = FALSE, fig.alt = ""----------------------------------
 # Simulate a data set with tagging data
-sim <- sim.momo()
+sim <- sim.momo(n.ctags = 200, n.atags = 20)
 
 ## ----eval = TRUE, echo = FALSE, fig.alt = ""----------------------------------
 # Fit the movement model
