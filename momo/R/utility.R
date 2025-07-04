@@ -228,11 +228,48 @@ add.buffer <- function(grid){
     nx <- attributes(grid)$nx + 2
     ny <- attributes(grid)$ny + 2
 
-    ## TODO: does not account for islands
+
+
     xygrid <- expand.grid(x = xcen, y = ycen)
     igrid <- expand.grid(idx = 1:length(xcen), idy = 1:length(ycen))
     celltable <- matrix(rep(NA, ((length(xgr)-1)*(length(ygr)-1))),
                         nrow = (length(xgr)-1))
+    celltable[cbind(igrid$idx,igrid$idy)] <- 1:nrow(igrid)
+
+    ## account for NAs
+    mask <- is.na(gridin$celltable)
+    mask.buffer <- matrix(FALSE,
+                             nrow = nrow(celltable),
+                          ncol = ncol(celltable))
+    is.buffer <- mask.buffer
+    is.buffer[c(1,nrow(is.buffer)),] <- TRUE
+    is.buffer[,c(1,ncol(is.buffer))] <- TRUE
+    mask.buffer[2:(nrow(mask)+1), 2:(ncol(mask)+1)] <- mask
+
+    up    <- rbind(FALSE, mask.buffer[-nrow(mask.buffer), ])
+    down  <- rbind(mask.buffer[-1, ], FALSE)
+    left  <- cbind(FALSE, mask.buffer[, -ncol(mask.buffer)])
+    right <- cbind(mask.buffer[, -1], FALSE)
+
+    mask2 <- ((mask.buffer | up | down | left | right) & is.buffer) | mask.buffer
+
+    ## correction for corners
+    mask2[1,1] <- ifelse(mask2[1,2] & mask2[2,1], TRUE, FALSE)
+    mask2[1,ncol(mask2)] <- ifelse(mask2[1,ncol(mask2)-1] & mask2[2,ncol(mask2)],
+                                   TRUE, FALSE)
+    mask2[nrow(mask2),ncol(mask2)] <- ifelse(mask2[nrow(mask2)-1,ncol(mask2)] &
+                                             mask2[nrow(mask2),ncol(mask2)-1],
+                                             TRUE, FALSE)
+    mask2[nrow(mask2),1] <- ifelse(mask2[nrow(mask2)-1,1] &
+                                             mask2[nrow(mask2),2],
+                                             TRUE, FALSE)
+
+    celltable[mask2] <- NA
+
+    igrid <- as.data.frame(which(!is.na(celltable),arr.ind = TRUE))
+    colnames(igrid) <- c("idx","idy")
+    xygrid <- data.frame(x = xgr[igrid[,1]],
+                         y = ygr[igrid[,2]])
     celltable[cbind(igrid$idx,igrid$idy)] <- 1:nrow(igrid)
 
     grid <- list(xygrid = xygrid,

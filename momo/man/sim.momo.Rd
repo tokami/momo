@@ -34,7 +34,7 @@ sim.momo(
   n.ctags = 500,
   use.atags = TRUE,
   n.atags = 50,
-  trange.rel = NULL,
+  trange.rel = c(0, 0.2),
   xrange.rel = c(0.4, 0.6),
   yrange.rel = c(0.4, 0.6),
   verbose = TRUE

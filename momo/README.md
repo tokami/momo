@@ -63,4 +63,8 @@ The development of *momo* was cofunded by the European Union.
 
 ------------------------------------------------------------------------
 
-<img src="man/figures/EN_Co-fundedbytheEU_RGB_POS.png" width="250" />
+<figure>
+<img src="man/figures/EN_Co-fundedbytheEU_RGB_POS.png" width="250"
+alt="Co-funded by the EU logo" />
+<figcaption aria-hidden="true">Co-funded by the EU logo</figcaption>
+</figure>
