@@ -65,20 +65,14 @@ momo."></head><body>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">habi.full</span><span class="op">(</span><span class="va">FIELDS</span>, <span class="va">XR</span>, <span class="va">YR</span>, <span class="va">ienv</span>, <span class="va">time.cont</span>, <span class="va">S</span>, <span class="va">dS</span>, <span class="va">ienvS</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">habi.full</span><span class="op">(</span><span class="va">liv</span>, <span class="va">XR</span>, <span class="va">YR</span>, <span class="va">ienv</span>, <span class="va">time.cont</span>, <span class="va">S</span>, <span class="va">dS</span>, <span class="va">ienvS</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-fields">FIELDS<a class="anchor" aria-label="anchor" href="#arg-fields"></a></dt>
-<dd><p>A list with 3-D array fields that are used for interpolation,
-where the first 2 dimensions span the x and y direction of the spatial
-field and the third dimension indicates the time dimension.</p></dd>
-
-
-<dt id="arg-xr">XR<a class="anchor" aria-label="anchor" href="#arg-xr"></a></dt>
+<dl><dt id="arg-xr">XR<a class="anchor" aria-label="anchor" href="#arg-xr"></a></dt>
 <dd><p>Limits of the 2-D fields in x direction.</p></dd>
 
 
@@ -110,6 +104,12 @@ preference functions.</p></dd>
 <dd><p>Indicator matrix mapping each model time step to the time step
 of each spline. The first dimension corresponds to the number of splines
 and the second to the number of model time steps.</p></dd>
+
+
+<dt id="arg-fields">FIELDS<a class="anchor" aria-label="anchor" href="#arg-fields"></a></dt>
+<dd><p>A list with 3-D array fields that are used for interpolation,
+where the first 2 dimensions span the x and y direction of the spatial
+field and the third dimension indicates the time dimension.</p></dd>
 
 </dl></div>
     <div class="section level2">

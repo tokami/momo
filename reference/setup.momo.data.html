@@ -81,6 +81,7 @@ required to fit the movement model (<a href="fit.momo.html">fit.momo</a>).</p>
 <span>  trange <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  time.cont <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  boundary.grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -145,6 +146,11 @@ set to 0.1.</p></dd>
 <dt id="arg-time-cont">time.cont<a class="anchor" aria-label="anchor" href="#arg-time-cont"></a></dt>
 <dd><p>optional; allows to provide a vector representing the model
 time. Default: <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-boundary-grid">boundary.grid<a class="anchor" aria-label="anchor" href="#arg-boundary-grid"></a></dt>
+<dd><p>optional; allows to provide a list of class momo.grid with
+boundary effects. Default: <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

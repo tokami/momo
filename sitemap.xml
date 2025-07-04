@@ -7,6 +7,7 @@
 <url><loc>https://tokami.github.io/momo/authors.html</loc></url>
 <url><loc>https://tokami.github.io/momo/index.html</loc></url>
 <url><loc>https://tokami.github.io/momo/news/index.html</loc></url>
+<url><loc>https://tokami.github.io/momo/reference/add.buffer.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/add.lab.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/add.report.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/add.sdreport.html</loc></url>
@@ -47,11 +48,13 @@
 <url><loc>https://tokami.github.io/momo/reference/plotmomo.sim.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/plotmomo.stags.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/plotmomo.taxis.html</loc></url>
+<url><loc>https://tokami.github.io/momo/reference/plotmomo.tracks.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/prep.atags.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/prep.ctags.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/prep.effort.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/prep.env.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/prep.stags.html</loc></url>
+<url><loc>https://tokami.github.io/momo/reference/rescale.env.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/setup.momo.data.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/sim.alpha.html</loc></url>
 <url><loc>https://tokami.github.io/momo/reference/sim.atags.html</loc></url>

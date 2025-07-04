@@ -92,10 +92,10 @@ components required to fit the movement model, <a href="fit.momo.html">fit.momo<
 <span>  knots.dif <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  correct.peclet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  use.ctags <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  n.ctags <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  n.ctags <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  use.atags <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  n.atags <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  trange.rel <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  trange.rel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
 <span>  xrange.rel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.6</span><span class="op">)</span>,</span>
 <span>  yrange.rel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.6</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -264,6 +264,7 @@ of the spatial domain in which tags are released. Default: <code>c(0.4,0.6)</cod
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu">sim.momo</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Tags recaptured outside of spatial domain: 20. Removing them.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

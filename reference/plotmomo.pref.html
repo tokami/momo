@@ -68,8 +68,9 @@ any covariate.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plotmomo.pref</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"taxis"</span>,</span>
-<span>  main <span class="op">=</span> <span class="st">"Preference"</span>,</span>
-<span>  col <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  select <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cols <span class="op">=</span> <span class="fu"><a href="momo.cols.html">momo.cols</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>,</span>
 <span>  lwd <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  ci <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  keep.gpar <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -80,6 +81,8 @@ any covariate.</p>
 <span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return.limits <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  data.range <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  asp <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -99,10 +102,6 @@ any covariate.</p>
 
 <dt id="arg-main">main<a class="anchor" aria-label="anchor" href="#arg-main"></a></dt>
 <dd><p>a main title for the plot. Default: "Preference".</p></dd>
-
-
-<dt id="arg-col">col<a class="anchor" aria-label="anchor" href="#arg-col"></a></dt>
-<dd><p>color of line. Default: "black".</p></dd>
 
 
 <dt id="arg-lwd">lwd<a class="anchor" aria-label="anchor" href="#arg-lwd"></a></dt>
@@ -151,6 +150,10 @@ limits are returned. Default: <code>FALSE</code>.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments for the function <a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a>.</p></dd>
+
+
+<dt id="arg-col">col<a class="anchor" aria-label="anchor" href="#arg-col"></a></dt>
+<dd><p>color of line. Default: "black".</p></dd>
 
 </dl></div>
     <div class="section level2">

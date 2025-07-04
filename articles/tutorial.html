@@ -105,6 +105,8 @@ package to model fine-scale movement based on tagging data.</p>
 <p>This introductory tutorial uses a simulated data set included in the
 package: “skjepo”. We load it into the R environment with the command
 <code>data(skjepo)</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">skjepo</span><span class="op">)</span></span></code></pre></div>
 <p>This command loads not only the main list object <code>skjepo</code>
 (of class <code>momo.sim</code>), which contains all required simulated
 data and can be used right away to fit the model, but also four
@@ -128,7 +130,22 @@ automatically convert date fields to the required format. Additional
 features, such as a speed filter to flag implausible movements, are also
 available. For full details on how to use each function, refer to their
 respective help pages (e.g., <code><a href="../reference/prep.ctags.html">help("prep.ctags")</a></code>).</p>
-<pre><code><span><span class="co">#&gt; Removing 5 recaptured tags for which release time is after recapture time (t0 &gt; t1).</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Load ctags</span></span>
+<span><span class="va">ctags</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep.ctags.html">prep.ctags</a></span><span class="op">(</span><span class="va">skjepo.ctags</span>,</span>
+<span>                    names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"date_time"</span>,<span class="st">"date_caught"</span>,</span>
+<span>                              <span class="st">"rel_lon"</span>,<span class="st">"recap_lon"</span>,</span>
+<span>                              <span class="st">"rel_lat"</span>,<span class="st">"recap_lat"</span><span class="op">)</span>,</span>
+<span>                    origin <span class="op">=</span> <span class="st">"1899-12-30"</span>,</span>
+<span>                    speed.limit <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Removing 5 recaptured tags for which release time is after recapture time (t0 &gt; t1).</span></span>
+<span><span class="fu"><a href="../reference/plotmomo.ctags.html">plotmomo.ctags</a></span><span class="op">(</span><span class="va">ctags</span>, plot.land <span class="op">=</span> <span class="cn">TRUE</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Load atags</span></span>
+<span><span class="va">atags</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep.atags.html">prep.atags</a></span><span class="op">(</span><span class="va">skjepo.atags</span>,</span>
+<span>                    names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>,<span class="st">"mptlon"</span>,<span class="st">"mptlat"</span><span class="op">)</span>,</span>
+<span>                    origin <span class="op">=</span> <span class="st">"1899-12-30"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plotmomo.atags.html">plotmomo.atags</a></span><span class="op">(</span><span class="va">atags</span>, plot.land <span class="op">=</span> <span class="cn">TRUE</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-3-1.png" alt="Mark-recapture and archival tags" width="768"><img src="tutorial_files/figure-html/unnamed-chunk-3-2.png" alt="Mark-recapture and archival tags" width="768"></p>
 <p>Based on the spatial extent of the tagging data, the next step is to
 define a spatial grid. While the Kalman filter approach does not require
@@ -138,31 +155,54 @@ visualization, and analysis of estimated habitat preferences and
 movement rates. The <code>create.grid</code> function offers flexible
 functionality to define custom grids and to manually include or exclude
 specific grid cells as needed.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Create a grid based on tagging data</span></span>
+<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create.grid.html">create.grid</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">150</span>, <span class="op">-</span><span class="fl">70</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">30</span>, <span class="fl">35</span><span class="op">)</span>,</span>
+<span>                    dxdy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span>,</span>
+<span>                    select <span class="op">=</span> <span class="fl">2</span>, plot.land <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Since manual selection of grid cells is not feasible in this
 automated vignette, we use the grid provided in the skjepo data set, but
 modify it to create a coarser resolution:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create.grid.html">create.grid</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">skjepo.grid</span>, dxdy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plotmomo.grid.html">plotmomo.grid</a></span><span class="op">(</span><span class="va">grid</span>, plot.land <span class="op">=</span> <span class="cn">TRUE</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-5-1.png" alt="Spatial grid" width="768"></p>
 <p>Another important component of <em>momo</em> is the environmental
 data, which characterizes the habitat preferences of the modeled
 species. The <code>prep.env</code> function formats this data into the
 structure required by the model:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Env data</span></span>
+<span><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep.env.html">prep.env</a></span><span class="op">(</span><span class="va">skjepo.env</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plotmomo.env.html">plotmomo.env</a></span><span class="op">(</span><span class="va">env</span><span class="op">[</span>,,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, plot.land <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>             xlab <span class="op">=</span> <span class="st">"lon"</span>, ylab <span class="op">=</span> <span class="st">"lat"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tutorial_files/figure-html/unnamed-chunk-6-1.png" alt="First four environmental fields" width="768"></p>
-<p>To speed up the fitting process in this vignette, we use a subset of
-the available conventional tag data:</p>
 <p>The individual data sets can then be combined into a single input
 object using the <code>setup.momo.data</code> function.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Combine and check data</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setup.momo.data.html">setup.momo.data</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">grid</span>,</span>
+<span>                       env <span class="op">=</span> <span class="va">env</span>,</span>
+<span>                       ctags <span class="op">=</span> <span class="va">ctags</span>,</span>
+<span>                       atags <span class="op">=</span> <span class="va">atags</span><span class="op">)</span></span></code></pre></div>
 <p>The <code>def.conf</code> function generates a list of default
 configuration settings, including flags that control which model
 functionalities are activated and how environmental fields are aligned
 with the model’s time steps. It is good practice to review this
 configuration list to ensure that the default settings align with the
 goals and structure of your analysis.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Default configurations</span></span>
+<span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/def.conf.html">def.conf</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span></code></pre></div>
 <p>Similarly, the <code>def.par</code> function generates a list of
 default model parameters and their initial values. While users can
 adjust the initial values as needed, caution is required when modifying
 parameter dimensions. These dimensions must be consistent with the input
 data (e.g., the number of environmental fields) and the configuration
 settings (e.g., whether passive advection, taxis, or both are used).</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Default parameters</span></span>
+<span><span class="va">par</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/def.par.html">def.par</a></span><span class="op">(</span><span class="va">dat</span>, <span class="va">conf</span><span class="op">)</span></span></code></pre></div>
 <p>With all necessary input data prepared, the model is now ready to be
 fitted using <em>momo</em>.</p>
 </div>
@@ -172,77 +212,58 @@ fitted using <em>momo</em>.</p>
 </h2>
 <p>The model is fitted using the <code>fit.momo</code> function.
 Depending on the model’s complexity and the number of tags, this step
-may take several minutes. To reduce computation time, we disable the
-calculation of uncertainty estimates by setting
-<code>do.sdreport = FALSE</code>.</p>
-<pre><code><span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
-<span><span class="co">#&gt; Model built (0.49min). Minimizing neg. loglik.</span></span>
-<span><span class="co">#&gt;   0:     1595143.9:  0.00000  0.00000 -4.60517 -4.60517</span></span>
-<span><span class="co">#&gt;   1:     635104.70: -0.00109162 0.00103431 -3.80611 -4.00393</span></span>
-<span><span class="co">#&gt;   2:     304398.49: -0.00321421 0.00304836 -3.65852 -3.01488</span></span>
-<span><span class="co">#&gt;   3:     170499.70: -0.0452335 0.0429272 -3.57747 -2.01986</span></span>
-<span><span class="co">#&gt;   4:     69216.328: -0.0488214 0.0463318 -2.68219 -1.57439</span></span>
-<span><span class="co">#&gt;   5:     39735.044: -0.0693510 0.0658124 -1.74462 -1.92105</span></span>
-<span><span class="co">#&gt;   6:     16219.655: -0.0717639 0.0681009 -0.957443 -1.30433</span></span>
-<span><span class="co">#&gt;   7:     8947.6279: -0.0944541 0.0896236 0.0237874 -1.49461</span></span>
-<span><span class="co">#&gt;   8:     5023.3234: -0.0783233 0.0743135 0.700975 -0.759138</span></span>
-<span><span class="co">#&gt;   9:     3583.2798: -0.0822662 0.0780472  1.69448 -0.872793</span></span>
-<span><span class="co">#&gt;  10:     3081.8592: -0.0855251 0.0811369  2.56455 -1.36571</span></span>
-<span><span class="co">#&gt;  11:     3051.9565: -0.293328 0.277865  2.56205 -2.32389</span></span>
-<span><span class="co">#&gt;  12:     3044.8443: -0.848239 0.802450  3.03697 -2.76131</span></span>
-<span><span class="co">#&gt;  13:     3012.0243: -1.17703  1.11384  2.85028 -2.66093</span></span>
-<span><span class="co">#&gt;  14:     3010.1656: -1.53914  1.45674  2.81434 -2.66349</span></span>
-<span><span class="co">#&gt;  15:     3007.8178: -2.82995  2.67935  2.79499 -2.69077</span></span>
-<span><span class="co">#&gt;  16:     2999.9149: -7.99253  7.57087  2.75921 -2.80270</span></span>
-<span><span class="co">#&gt;  17:     2976.7818: -27.8526  26.3966  2.68642 -3.23978</span></span>
-<span><span class="co">#&gt;  18:     2946.0280: -60.1889  57.0742  2.64521 -4.00469</span></span>
-<span><span class="co">#&gt;  19:     2913.7132: -112.051  106.308  2.65744 -5.32466</span></span>
-<span><span class="co">#&gt;  20:     2905.8012: -121.241  115.077  2.71608 -5.61794</span></span>
-<span><span class="co">#&gt;  21:     2904.0295: -121.952  115.825  2.76101 -5.68303</span></span>
-<span><span class="co">#&gt;  22:     2904.0208: -121.797  115.724  2.76409 -5.68283</span></span>
-<span><span class="co">#&gt;  23:     2904.0198: -121.738  115.717  2.76436 -5.68219</span></span>
-<span><span class="co">#&gt;  24:     2904.0081: -121.094  115.835  2.76634 -5.67661</span></span>
-<span><span class="co">#&gt;  25:     2903.9865: -119.987  116.381  2.76854 -5.66987</span></span>
-<span><span class="co">#&gt;  26:     2903.9253: -117.072  118.439  2.77231 -5.65739</span></span>
-<span><span class="co">#&gt;  27:     2903.7655: -109.572  124.805  2.77852 -5.63446</span></span>
-<span><span class="co">#&gt;  28:     2903.3677: -91.0385  142.337  2.78805 -5.59320</span></span>
-<span><span class="co">#&gt;  29:     2902.3888: -45.8686  187.979  2.80182 -5.51761</span></span>
-<span><span class="co">#&gt;  30:     2900.0575:  62.0671  301.698  2.81974 -5.37694</span></span>
-<span><span class="co">#&gt;  31:     2895.2515:  289.507  548.648  2.83529 -5.14487</span></span>
-<span><span class="co">#&gt;  32:     2887.5615:  663.247  966.839  2.83249 -4.88191</span></span>
-<span><span class="co">#&gt;  33:     2878.3964:  1104.80  1483.86  2.80062 -4.81514</span></span>
-<span><span class="co">#&gt;  34:     2872.4940:  1473.44  1944.38  2.75515 -5.08352</span></span>
-<span><span class="co">#&gt;  35:     2872.1677:  1494.81  1981.95  2.74499 -5.22060</span></span>
-<span><span class="co">#&gt;  36:     2872.1532:  1471.98  1955.95  2.74421 -5.23014</span></span>
-<span><span class="co">#&gt;  37:     2872.1500:  1459.32  1940.98  2.74322 -5.22813</span></span>
-<span><span class="co">#&gt;  38:     2872.1499:  1459.06  1940.54  2.74299 -5.22607</span></span>
-<span><span class="co">#&gt;  39:     2872.1499:  1459.31  1940.78  2.74295 -5.22539</span></span>
-<span><span class="co">#&gt;  40:     2872.1499:  1459.42  1940.90  2.74293 -5.22495</span></span>
-<span><span class="co">#&gt;  41:     2872.1499:  1459.82  1941.31  2.74288 -5.22279</span></span>
-<span><span class="co">#&gt;  42:     2872.1499:  1460.33  1941.85  2.74281 -5.21823</span></span>
-<span><span class="co">#&gt;  43:     2872.1497:  1461.28  1942.84  2.74268 -5.20521</span></span>
-<span><span class="co">#&gt;  44:     2872.1493:  1462.90  1944.53  2.74246 -5.17064</span></span>
-<span><span class="co">#&gt;  45:     2872.1479:  1466.36  1948.12  2.74196 -5.06348</span></span>
-<span><span class="co">#&gt;  46:     2872.1368:  1478.68  1960.88  2.74012 -4.59055</span></span>
-<span><span class="co">#&gt;  47:     2870.9765:  1528.04  2011.87  2.73283 -2.65781</span></span>
-<span><span class="co">#&gt;  48:     2870.8166:  1530.01  2013.91  2.72877 -2.58037</span></span>
-<span><span class="co">#&gt;  49:     2870.4629:  1530.01  2013.91  2.70643 -2.58006</span></span>
-<span><span class="co">#&gt;  50:     2869.8001:  1530.01  2013.92  2.68294 -2.22345</span></span>
-<span><span class="co">#&gt;  51:     2869.6850:  1529.76  2013.66  2.67056 -2.22491</span></span>
-<span><span class="co">#&gt;  52:     2869.6831:  1529.51  2013.40  2.66937 -2.22428</span></span>
-<span><span class="co">#&gt;  53:     2869.5788:  1483.80  1966.14  2.67656 -2.26811</span></span>
-<span><span class="co">#&gt;  54:     2869.5028:  1460.08  1939.75  2.66629 -2.19116</span></span>
-<span><span class="co">#&gt;  55:     2869.4992:  1445.76  1923.06  2.66391 -2.18644</span></span>
-<span><span class="co">#&gt;  56:     2869.4992:  1446.64  1924.07  2.66420 -2.18598</span></span>
-<span><span class="co">#&gt;  57:     2869.4992:  1446.77  1924.23  2.66424 -2.18641</span></span>
-<span><span class="co">#&gt;  58:     2869.4992:  1446.74  1924.19  2.66423 -2.18633</span></span>
-<span><span class="co">#&gt; Minimization done (0.024min). Model converged. Estimating uncertainty.</span></span></code></pre>
+may take up to several minutes. <!-- To reduce -->
+<!-- computation time, we disable the calculation of uncertainty estimates by setting -->
+<!-- `do.sdreport = FALSE`. --></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Fitting movement model</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit.momo.html">fit.momo</a></span><span class="op">(</span><span class="va">dat</span>, <span class="va">conf</span>, <span class="va">par</span>,</span>
+<span>                verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
+<span><span class="co">#&gt; Model built (0.45min). Minimizing neg. loglik.</span></span>
+<span><span class="co">#&gt;   0:     682413.23:  0.00000  0.00000 -4.60517 -4.60517</span></span>
+<span><span class="co">#&gt;   1:     274130.56: 0.00201513 -0.00117605 -3.69945 -4.18130</span></span>
+<span><span class="co">#&gt;   2:     132959.07: 0.00197879 -0.00115354 -2.76794 -4.54501</span></span>
+<span><span class="co">#&gt;   3:     52328.431: 0.00229383 -0.00133538 -1.81275 -4.84101</span></span>
+<span><span class="co">#&gt;   4:     21296.061: 0.00277962 -0.00161583 -0.981465 -5.39686</span></span>
+<span><span class="co">#&gt;   5:     9941.5062: 0.00471052 -0.00273759 -0.316932 -6.14411</span></span>
+<span><span class="co">#&gt;   6:     5014.8350: 0.0327866 -0.0190843 0.287029 -6.94046</span></span>
+<span><span class="co">#&gt;   7:     3021.4051: 0.443979 -0.258134 0.818318 -7.64154</span></span>
+<span><span class="co">#&gt;   8:     2373.9336:  1.21803 -0.702434  1.22646 -7.83352</span></span>
+<span><span class="co">#&gt;   9:     2230.8501:  2.05938 -1.18188  1.47352 -7.86861</span></span>
+<span><span class="co">#&gt;  10:     2213.1776:  2.92545 -1.67317  1.56591 -7.87305</span></span>
+<span><span class="co">#&gt;  11:     2203.3360:  5.79576 -3.28848  1.60218 -7.87351</span></span>
+<span><span class="co">#&gt;  12:     2181.1125:  14.8685 -8.29767  1.64373 -7.87109</span></span>
+<span><span class="co">#&gt;  13:     2136.5525:  41.3195 -22.5225  1.67776 -7.85958</span></span>
+<span><span class="co">#&gt;  14:     2106.5853:  68.0829 -36.1505  1.64369 -7.84474</span></span>
+<span><span class="co">#&gt;  15:     2095.6572:  81.1008 -41.4915  1.57976 -7.83591</span></span>
+<span><span class="co">#&gt;  16:     2091.1410:  80.5704 -39.1838  1.53704 -7.83534</span></span>
+<span><span class="co">#&gt;  17:     2089.1312:  79.7761 -36.9528  1.52091 -7.83613</span></span>
+<span><span class="co">#&gt;  18:     2083.6567:  80.5589 -29.7066  1.48243 -7.83896</span></span>
+<span><span class="co">#&gt;  19:     2078.1346:  84.0380 -23.3020  1.46048 -7.84166</span></span>
+<span><span class="co">#&gt;  20:     2057.3740:  102.114 -0.428340  1.40481 -7.85163</span></span>
+<span><span class="co">#&gt;  21:     2007.9947:  163.228  62.5823  1.29849 -7.87969</span></span>
+<span><span class="co">#&gt;  22:     1959.3637:  228.722  121.027  1.24916 -7.90668</span></span>
+<span><span class="co">#&gt;  23:     1869.0727:  371.270  236.010  1.24538 -7.96205</span></span>
+<span><span class="co">#&gt;  24:     1828.7456:  450.492  296.689  1.33283 -7.99501</span></span>
+<span><span class="co">#&gt;  25:     1821.4997:  480.202  314.181  1.38549 -8.00484</span></span>
+<span><span class="co">#&gt;  26:     1820.5589:  486.836  313.645  1.39781 -8.00405</span></span>
+<span><span class="co">#&gt;  27:     1820.2523:  486.814  308.443  1.40038 -8.00061</span></span>
+<span><span class="co">#&gt;  28:     1820.2083:  484.469  304.736  1.39898 -7.99834</span></span>
+<span><span class="co">#&gt;  29:     1820.2053:  483.342  303.748  1.39821 -7.99774</span></span>
+<span><span class="co">#&gt;  30:     1820.2051:  483.090  303.623  1.39809 -7.99762</span></span>
+<span><span class="co">#&gt;  31:     1820.2051:  483.079  303.626  1.39809 -7.99757</span></span>
+<span><span class="co">#&gt;  32:     1820.2051:  483.079  303.627  1.39810 -7.99752</span></span>
+<span><span class="co">#&gt; Minimization done (0.065min). Model converged. Estimating uncertainty.</span></span>
+<span><span class="co">#&gt; SDreporting done (0.73min).</span></span></code></pre></div>
 <p>In addition to the input data lists, the returned object also
 includes the <code>obj</code> (from RTMB) and <code>opt</code> (from the
 minimizer). Both contain the estimated parameter values and other
 details relevant to the model fitting.</p>
-<pre><code><span><span class="co">#&gt;       alpha       alpha        beta logSdObsATS </span></span>
-<span><span class="co">#&gt; 1446.738562 1924.188935    2.664225   -2.186326</span></span></code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">par</span></span>
+<span><span class="co">#&gt;       alpha       alpha        beta logSdObsATS </span></span>
+<span><span class="co">#&gt;  483.078746  303.626605    1.398095   -7.997517</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="results">
@@ -253,7 +274,12 @@ results. In this example, since the data are simulated and the true
 parameters are known, we can use the <code>plotmomo.compare</code>
 function to visualize both the estimated and true habitat preferences
 and movement patterns.</p>
-<p><img src="tutorial_files/figure-html/unnamed-chunk-13-1.png" alt="Simulated data and model predictions" width="768"></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotmomo.compare.html">plotmomo.compare</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">skjepo</span>, fit <span class="op">=</span> <span class="va">fit</span>,</span>
+<span>                 plot.land <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                 cor.dif <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>                 bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-12-1.png" alt="Simulated data and model predictions" width="768"></p>
 </div>
 <div class="section level2">
 <h2 id="advanced-settings">
@@ -275,6 +301,13 @@ efficiency. The <code>get.release.event</code> function enables this
 grouping by assigning tags to release events based on a specified
 spatial grid and time vector. These events can then be added to the data
 list for modeling. Note that this is step is optional.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get.release.events.html">get.release.events</a></span><span class="op">(</span><span class="va">dat</span>,</span>
+<span>                          grid <span class="op">=</span> <span class="fu"><a href="../reference/create.grid.html">create.grid</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">xrange</span>, <span class="va">dat</span><span class="op">$</span><span class="va">yrange</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                          time.cont <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">trange</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">dat</span><span class="op">$</span><span class="va">trange</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>                                          <span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">52</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">trange</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="va">rel.events</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">$</span><span class="va">rel.events</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="va">ctags</span><span class="op">$</span><span class="va">rel.event</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">$</span><span class="va">idx</span></span></code></pre></div>
 <p>By default, <em>momo</em> uses the Kalman filter approach as
 described in <span class="citation">Mildenberger, Maunder, and Nielsen
 (in prep)</span>. However, it also supports an alternative method based
@@ -282,11 +315,16 @@ on the matrix exponential. You can easily switch between the two by
 setting the <code>use.expm</code> flag in the configuration list. To use
 the matrix exponential approach, simply set
 <code>use.expm = TRUE</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/def.conf.html">def.conf</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span>
+<span><span class="va">conf</span><span class="op">$</span><span class="va">use.expm</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span></code></pre></div>
 <p>Lastly, it may be useful to map parameters, for example, to estimate
 a single value for both directions of passive advection. A list of
 default mapping settings can be generated using the <code>def.map</code>
 function. The resulting map can then be passed to <code>fit.momo</code>
 to control which parameters are estimated, fixed, or shared.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/def.map.html">def.map</a></span><span class="op">(</span><span class="va">dat</span>, <span class="va">conf</span>, <span class="va">par</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="summary">

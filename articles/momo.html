@@ -119,37 +119,44 @@ github as follows.</p>
 <p>After successful installation, the package can be loaded into the R
 environment.</p>
 <p>A data set containing all required information can quickly be created
-by the function <code>sim.momo</code>:</p>
+by the function <code>sim.momo</code>. We reduce the number of simulated
+tags here to speed up the generation of the vignette.</p>
+<pre><code><span><span class="co">#&gt; Tags recaptured outside of spatial domain: 2. Removing them.</span></span></code></pre>
 <p>The main function to estimate movement paramters is
 <code>fit.momo</code>:</p>
 <pre><code><span><span class="co">#&gt; Building the model, that can take a few minutes.</span></span>
-<span><span class="co">#&gt; Model built (0.86min). Minimizing neg. loglik.</span></span>
-<span><span class="co">#&gt;   0:     2040.7811:  0.00000  0.00000 -4.60517 -4.60517</span></span>
-<span><span class="co">#&gt;   1:    -3958.2184: 0.134768 0.0784963 -4.21435 -3.69801</span></span>
-<span><span class="co">#&gt;   2:    -4394.1899: 0.145189 0.108319 -4.19797 -3.46092</span></span>
-<span><span class="co">#&gt;   3:    -4568.8670: 0.154734 0.139031 -4.20776 -3.22354</span></span>
-<span><span class="co">#&gt;   4:    -4581.9356: 0.209635 0.0854202 -4.40137 -3.10478</span></span>
-<span><span class="co">#&gt;   5:    -4598.5780: 0.194024 0.127696 -4.40719 -3.11522</span></span>
-<span><span class="co">#&gt;   6:    -4602.6505: 0.171190 0.160692 -4.42585 -3.12989</span></span>
-<span><span class="co">#&gt;   7:    -4605.3023: 0.174264 0.135774 -4.46450 -3.12286</span></span>
-<span><span class="co">#&gt;   8:    -4607.0883: 0.163610 0.151826 -4.50616 -3.11467</span></span>
-<span><span class="co">#&gt;   9:    -4607.8753: 0.161538 0.133854 -4.53531 -3.14623</span></span>
-<span><span class="co">#&gt;  10:    -4608.6757: 0.174395 0.148252 -4.57178 -3.12453</span></span>
-<span><span class="co">#&gt;  11:    -4608.9788: 0.162360 0.145236 -4.57152 -3.12963</span></span>
-<span><span class="co">#&gt;  12:    -4609.0007: 0.162483 0.143173 -4.57146 -3.12938</span></span>
-<span><span class="co">#&gt;  13:    -4609.0043: 0.160492 0.143560 -4.57128 -3.12894</span></span>
-<span><span class="co">#&gt;  14:    -4609.0085: 0.160770 0.142432 -4.57124 -3.12890</span></span>
-<span><span class="co">#&gt;  15:    -4609.0094: 0.160459 0.142695 -4.57124 -3.12871</span></span>
-<span><span class="co">#&gt;  16:    -4609.0095: 0.160230 0.142362 -4.57113 -3.12887</span></span>
-<span><span class="co">#&gt;  17:    -4609.0096: 0.160141 0.142593 -4.57097 -3.12897</span></span>
-<span><span class="co">#&gt;  18:    -4609.0097: 0.160163 0.142505 -4.57075 -3.12878</span></span>
-<span><span class="co">#&gt;  19:    -4609.0097: 0.160119 0.142489 -4.57072 -3.12890</span></span>
-<span><span class="co">#&gt;  20:    -4609.0097: 0.160160 0.142471 -4.57059 -3.12887</span></span>
-<span><span class="co">#&gt;  21:    -4609.0097: 0.160131 0.142514 -4.57059 -3.12887</span></span>
-<span><span class="co">#&gt;  22:    -4609.0097: 0.160144 0.142496 -4.57054 -3.12888</span></span>
-<span><span class="co">#&gt;  23:    -4609.0097: 0.160128 0.142486 -4.57054 -3.12888</span></span>
-<span><span class="co">#&gt;  24:    -4609.0097: 0.160128 0.142486 -4.57054 -3.12888</span></span>
-<span><span class="co">#&gt; Minimization done (0.018min). Model converged. Estimating uncertainty.</span></span></code></pre>
+<span><span class="co">#&gt; Model built (0.17min). Minimizing neg. loglik.</span></span>
+<span><span class="co">#&gt;   0:    -2434.0237:  0.00000  0.00000 -4.60517 -4.60517</span></span>
+<span><span class="co">#&gt;   1:    -2608.0937: 0.171398 -0.0273620 -4.58787 -4.58901</span></span>
+<span><span class="co">#&gt;   2:    -3047.8299: 0.166949 0.151171 -4.43194 -4.42346</span></span>
+<span><span class="co">#&gt;   3:    -3106.6748: 0.127748 0.159510 -4.40384 -4.38615</span></span>
+<span><span class="co">#&gt;   4:    -3284.7400: 0.0663369 0.0683784 -4.18602 -4.07924</span></span>
+<span><span class="co">#&gt;   5:    -3287.2529: 0.162739 0.101829 -4.16035 -4.05326</span></span>
+<span><span class="co">#&gt;   6:    -3317.9744: 0.117172 0.127496 -4.14949 -4.04412</span></span>
+<span><span class="co">#&gt;   7:    -3324.1211: 0.0989804 0.149304 -4.10648 -4.02739</span></span>
+<span><span class="co">#&gt;   8:    -3330.4545: 0.125984 0.138405 -4.00758 -4.06084</span></span>
+<span><span class="co">#&gt;   9:    -3332.2347: 0.0950957 0.138814 -3.91070 -4.09832</span></span>
+<span><span class="co">#&gt;  10:    -3336.2445: 0.123086 0.162112 -3.94747 -4.00310</span></span>
+<span><span class="co">#&gt;  11:    -3338.4418: 0.115797 0.129171 -3.94117 -3.99878</span></span>
+<span><span class="co">#&gt;  12:    -3339.0523: 0.107799 0.134275 -3.93895 -3.99756</span></span>
+<span><span class="co">#&gt;  13:    -3339.2467: 0.112095 0.136022 -3.93145 -3.99322</span></span>
+<span><span class="co">#&gt;  14:    -3339.4762: 0.107608 0.137607 -3.91452 -4.00195</span></span>
+<span><span class="co">#&gt;  15:    -3339.5912: 0.112363 0.134167 -3.89744 -4.00968</span></span>
+<span><span class="co">#&gt;  16:    -3339.6298: 0.106368 0.129076 -3.89594 -3.99174</span></span>
+<span><span class="co">#&gt;  17:    -3339.7803: 0.109894 0.139981 -3.88248 -4.00030</span></span>
+<span><span class="co">#&gt;  18:    -3339.8138: 0.110077 0.134612 -3.86580 -4.00917</span></span>
+<span><span class="co">#&gt;  19:    -3339.8372: 0.109931 0.135610 -3.86923 -4.00562</span></span>
+<span><span class="co">#&gt;  20:    -3339.8430: 0.109622 0.135832 -3.87097 -4.00380</span></span>
+<span><span class="co">#&gt;  21:    -3339.8435: 0.109868 0.135656 -3.87112 -4.00360</span></span>
+<span><span class="co">#&gt;  22:    -3339.8440: 0.109640 0.135757 -3.87133 -4.00339</span></span>
+<span><span class="co">#&gt;  23:    -3339.8450: 0.109849 0.135711 -3.87192 -4.00292</span></span>
+<span><span class="co">#&gt;  24:    -3339.8465: 0.109751 0.135901 -3.87323 -4.00211</span></span>
+<span><span class="co">#&gt;  25:    -3339.8473: 0.109669 0.135707 -3.87465 -4.00151</span></span>
+<span><span class="co">#&gt;  26:    -3339.8475: 0.109706 0.135741 -3.87546 -4.00102</span></span>
+<span><span class="co">#&gt;  27:    -3339.8475: 0.109690 0.135714 -3.87541 -4.00106</span></span>
+<span><span class="co">#&gt;  28:    -3339.8475: 0.109692 0.135717 -3.87541 -4.00106</span></span>
+<span><span class="co">#&gt; Minimization done (0.023min). Model converged. Estimating uncertainty.</span></span>
+<span><span class="co">#&gt; SDreporting done (0.17min).</span></span></code></pre>
 <p>The package includes a variety of functions that allows to inspect
 the results:</p>
 <p><img src="momo_files/figure-html/unnamed-chunk-6-1.png" alt="Simulated data and model predictions" width="768"></p>
